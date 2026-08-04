@@ -28,6 +28,7 @@
         <div class="dropdown-menu hidden" id="settings-menu">
           <button id="btn-export" class="dropdown-item">Export</button>
           <button id="btn-import" class="dropdown-item">Import</button>
+          <p class="dropdown-info">All data stays on this device. Import/export uses Anki's plain-text card format.</p>
         </div>
       </div>
     </header>
@@ -42,6 +43,26 @@
         <div class="stat-num" id="stat-total">0</div>
         <div class="stat-label">total cards</div>
       </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-streak">0 🔥</div>
+        <div class="stat-label">day streak</div>
+      </div>
+    </div>
+
+    <div class="mastery-block">
+      <div class="mastery-header">
+        <span class="field-label">Mastery</span>
+      </div>
+      <div class="mastery-bar" id="mastery-bar">
+        <div class="mastery-seg mastery-new" id="mastery-new"></div>
+        <div class="mastery-seg mastery-learning" id="mastery-learning"></div>
+        <div class="mastery-seg mastery-mastered" id="mastery-mastered"></div>
+      </div>
+      <div class="mastery-legend">
+        <span class="mastery-legend-item"><i class="mastery-dot dot-new"></i>New <b id="mastery-new-count">0</b></span>
+        <span class="mastery-legend-item"><i class="mastery-dot dot-learning"></i>Learning <b id="mastery-learning-count">0</b></span>
+        <span class="mastery-legend-item"><i class="mastery-dot dot-mastered"></i>Mastered <b id="mastery-mastered-count">0</b></span>
+      </div>
     </div>
 
     <button id="btn-study" class="btn btn-primary btn-big">Study</button>
@@ -54,8 +75,6 @@
     <div class="home-actions">
       <button id="btn-manage-sections" class="btn btn-secondary">Sections</button>
     </div>
-
-    <p class="hint">All data stays on this device. Import/export uses Anki's plain-text card format.</p>
   </section>
 
   <!-- ===== STUDY SETUP VIEW ===== -->

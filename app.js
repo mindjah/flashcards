@@ -6,32 +6,38 @@
   var MAX_BOX = BOX_INTERVALS_DAYS.length - 1;
 
   // ---------- storage ----------
+  function defaultStreak() {
+    return { current: 0, lastDate: null };
+  }
+
   function loadData() {
     try {
       var raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return { cards: [], sections: [] };
+      if (!raw) return { cards: [], sections: [], streak: defaultStreak() };
       var parsed = JSON.parse(raw);
       // migrate from the old format where the key held a bare cards array
       if (Array.isArray(parsed)) {
         parsed.forEach(function (c) { if (!Array.isArray(c.sectionIds)) c.sectionIds = []; });
-        return { cards: parsed, sections: [] };
+        return { cards: parsed, sections: [], streak: defaultStreak() };
       }
       var loadedCards = Array.isArray(parsed.cards) ? parsed.cards : [];
       loadedCards.forEach(function (c) { if (!Array.isArray(c.sectionIds)) c.sectionIds = []; });
-      return { cards: loadedCards, sections: Array.isArray(parsed.sections) ? parsed.sections : [] };
+      var loadedStreak = parsed.streak && typeof parsed.streak.current === "number" ? parsed.streak : defaultStreak();
+      return { cards: loadedCards, sections: Array.isArray(parsed.sections) ? parsed.sections : [], streak: loadedStreak };
     } catch (e) {
       console.error("Failed to load data", e);
-      return { cards: [], sections: [] };
+      return { cards: [], sections: [], streak: defaultStreak() };
     }
   }
 
   function saveData() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ cards: cards, sections: sections }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ cards: cards, sections: sections, streak: streak }));
   }
 
   var initialData = loadData();
   var cards = initialData.cards;
   var sections = initialData.sections;
+  var streak = initialData.streak;
 
   function uid() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
@@ -39,6 +45,40 @@
 
   function isDue(card, now) {
     return card.dueAt <= now;
+  }
+
+  // ---------- streak ----------
+  function pad2(n) { return n < 10 ? "0" + n : "" + n; }
+
+  function dateStr(d) {
+    return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
+  }
+
+  function todayStr() { return dateStr(new Date()); }
+
+  function yesterdayStr() {
+    var d = new Date();
+    d.setDate(d.getDate() - 1);
+    return dateStr(d);
+  }
+
+  function recordStudyActivity() {
+    var today = todayStr();
+    if (streak.lastDate === today) return;
+    streak.current = streak.lastDate === yesterdayStr() ? streak.current + 1 : 1;
+    streak.lastDate = today;
+    saveData();
+  }
+
+  // ---------- mastery ----------
+  function masteryBreakdown() {
+    var counts = { fresh: 0, learning: 0, mastered: 0 };
+    cards.forEach(function (c) {
+      if (c.box <= 0) counts.fresh++;
+      else if (c.box <= 2) counts.learning++;
+      else counts.mastered++;
+    });
+    return counts;
   }
 
   // ---------- sections ----------
@@ -123,6 +163,22 @@
   function refreshHome() {
     document.getElementById("stat-due").textContent = dueCards().length;
     document.getElementById("stat-total").textContent = cards.length;
+    document.getElementById("stat-streak").textContent = streak.current + " 🔥";
+
+    var m = masteryBreakdown();
+    var total = cards.length;
+    setMasterySegment("mastery-new", m.fresh, total);
+    setMasterySegment("mastery-learning", m.learning, total);
+    setMasterySegment("mastery-mastered", m.mastered, total);
+    document.getElementById("mastery-new-count").textContent = m.fresh;
+    document.getElementById("mastery-learning-count").textContent = m.learning;
+    document.getElementById("mastery-mastered-count").textContent = m.mastered;
+  }
+
+  function setMasterySegment(id, count, total) {
+    var el = document.getElementById(id);
+    el.classList.toggle("hidden", count === 0);
+    el.style.flexBasis = total > 0 ? (count / total * 100) + "%" : "0%";
   }
 
   document.getElementById("btn-add").addEventListener("click", function () {
@@ -712,6 +768,7 @@
     var c = session.current;
     if (!c) return;
     session.studied++;
+    recordStudyActivity();
 
     if (passed) {
       session.passed++;

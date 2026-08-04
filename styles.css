@@ -12,6 +12,9 @@
   --pass-dim: #1f4d3a;
   --fail: #ff6b6b;
   --fail-dim: #55272b;
+  --mastery-new: #184f95;
+  --mastery-learning: #3987e5;
+  --mastery-mastered: #86b6ef;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
@@ -109,10 +112,11 @@ body {
   position: absolute;
   top: 40px;
   right: 0;
-  min-width: 150px;
+  width: 260px;
+  max-width: calc(100vw - 32px);
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 14px;
   box-shadow: 0 8px 30px rgba(0,0,0,0.4);
   overflow: hidden;
   z-index: 20;
@@ -122,19 +126,26 @@ body {
   display: block;
   width: 100%;
   text-align: left;
-  padding: 13px 16px;
+  padding: 15px 18px;
   background: none;
   border: none;
   border-bottom: 1px solid var(--border);
   color: var(--text);
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
 }
 
-.dropdown-item:last-child { border-bottom: none; }
 .dropdown-item:active { background: var(--surface-2); }
+
+.dropdown-info {
+  margin: 0;
+  padding: 12px 18px 14px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-dim);
+}
 
 /* ===== HOME ===== */
 .home-stats {
@@ -173,13 +184,63 @@ body {
 
 .home-actions .btn { flex: 1; }
 
-.hint {
-  text-align: center;
-  color: var(--text-dim);
-  font-size: 13px;
-  margin-top: auto;
-  padding: 16px;
+/* ===== MASTERY ===== */
+.mastery-block {
+  padding: 14px 16px 0;
 }
+
+.mastery-header {
+  margin-bottom: 8px;
+}
+
+.mastery-bar {
+  display: flex;
+  gap: 2px;
+  height: 10px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.mastery-seg {
+  flex: 0 0 auto;
+  height: 100%;
+  transition: flex-basis 0.3s ease;
+}
+
+.mastery-new { background: var(--mastery-new); }
+.mastery-learning { background: var(--mastery-learning); }
+.mastery-mastered { background: var(--mastery-mastered); }
+
+.mastery-legend {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.mastery-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mastery-legend-item b {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.mastery-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot-new { background: var(--mastery-new); }
+.dot-learning { background: var(--mastery-learning); }
+.dot-mastered { background: var(--mastery-mastered); }
 
 /* ===== BUTTONS ===== */
 .btn {

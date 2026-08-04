@@ -108,18 +108,25 @@
   }
 
   // ---------- google translate ----------
-  // Always opens the web version in a separate browsing context (never by
-  // navigating this app's own page). No custom-scheme app-detection - that
-  // relied on visibilitychange/blur firing reliably when a standalone
-  // home-screen PWA hands off to another app, which it doesn't, and every
-  // attempt at it risked replacing this app's own page with the Translate
-  // website. Opening a new tab means this app's page is never touched.
+  // Dispatches a real, synchronous <a> click (not window.open/location.href)
+  // so the navigation carries full "trusted user gesture" status in WebKit -
+  // translate.google.com is a Universal Link domain, and a standalone
+  // home-screen PWA hands external navigation off to iOS's app-resolution
+  // layer, which can otherwise leave a stray browsing-context window behind
+  // that resurfaces over this app when you switch back to it.
   function openGoogleTranslate(text) {
     var trimmed = (text || "").trim();
     if (!trimmed) return;
     var query = encodeURIComponent(trimmed);
     var webUrl = "https://translate.google.com/?sl=es&tl=en&text=" + query + "&op=translate";
-    window.open(webUrl, "_blank");
+
+    var a = document.createElement("a");
+    a.href = webUrl;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   }
 
   // ---------- sections ----------

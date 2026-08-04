@@ -110,7 +110,11 @@
   // ---------- google translate ----------
   // Tries the Google Translate app's custom URL scheme first; if the page is
   // still visible after a short delay (nothing intercepted the scheme, so the
-  // app isn't installed) it falls back to the web version.
+  // app isn't installed) it falls back to the web version. The fallback is
+  // cancelled the instant the page is backgrounded (app opened) rather than
+  // checked after the delay - iOS can suspend JS while backgrounded, so a
+  // check-after-delay races with resuming and can fire the fallback late,
+  // navigating the app itself to the Translate website once you come back.
   function openGoogleTranslate(text) {
     var trimmed = (text || "").trim();
     if (!trimmed) return;
@@ -118,18 +122,20 @@
     var appUrl = "googletranslate://translate?sl=es&tl=en&text=" + query;
     var webUrl = "https://translate.google.com/?sl=es&tl=en&text=" + query + "&op=translate";
 
-    var switchedAway = false;
     function onVisibilityChange() {
-      if (document.hidden) switchedAway = true;
+      if (document.hidden) {
+        clearTimeout(fallbackTimer);
+        document.removeEventListener("visibilitychange", onVisibilityChange);
+      }
     }
     document.addEventListener("visibilitychange", onVisibilityChange);
 
-    window.location.href = appUrl;
-
-    setTimeout(function () {
+    var fallbackTimer = setTimeout(function () {
       document.removeEventListener("visibilitychange", onVisibilityChange);
-      if (!switchedAway) window.location.href = webUrl;
+      window.location.href = webUrl;
     }, 700);
+
+    window.location.href = appUrl;
   }
 
   // ---------- sections ----------

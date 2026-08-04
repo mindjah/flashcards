@@ -1,4 +1,4 @@
-var CACHE_NAME = "espanol-cards-v2";
+var CACHE_NAME = "espanol-cards-v3";
 var ASSETS = [
   "./",
   "./index.html",
@@ -33,8 +33,10 @@ self.addEventListener("activate", function (event) {
 
 self.addEventListener("fetch", function (event) {
   if (event.request.method !== "GET") return;
+  // "reload" bypasses the browser's own HTTP cache so a fresh deploy is
+  // never masked by GitHub Pages' Cache-Control: max-age=600 header.
   event.respondWith(
-    fetch(event.request).then(function (response) {
+    fetch(event.request, { cache: "reload" }).then(function (response) {
       if (response && response.status === 200) {
         var copy = response.clone();
         caches.open(CACHE_NAME).then(function (cache) { cache.put(event.request, copy); });

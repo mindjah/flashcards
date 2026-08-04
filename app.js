@@ -108,33 +108,18 @@
   }
 
   // ---------- google translate ----------
-  // Tries the Google Translate app's custom URL scheme first. As a standalone
-  // home-screen app, this PWA's own page can't be trusted to reliably report
-  // visibilitychange/blur when handing off to another app via a custom scheme -
-  // so rather than gate the fallback on that (which risks navigating this app's
-  // own page away to the Translate website once you return), the fallback is
-  // opened as a SEPARATE browsing context. Worst case if the app was actually
-  // installed: a harmless extra tab opens behind it. This app's own page never
-  // navigates away from itself.
+  // Always opens the web version in a separate browsing context (never by
+  // navigating this app's own page). No custom-scheme app-detection - that
+  // relied on visibilitychange/blur firing reliably when a standalone
+  // home-screen PWA hands off to another app, which it doesn't, and every
+  // attempt at it risked replacing this app's own page with the Translate
+  // website. Opening a new tab means this app's page is never touched.
   function openGoogleTranslate(text) {
     var trimmed = (text || "").trim();
     if (!trimmed) return;
     var query = encodeURIComponent(trimmed);
-    var appUrl = "googletranslate://translate?sl=es&tl=en&text=" + query;
     var webUrl = "https://translate.google.com/?sl=es&tl=en&text=" + query + "&op=translate";
-
-    var switchedAway = false;
-    function onHide() { switchedAway = true; }
-    document.addEventListener("visibilitychange", onHide);
-    window.addEventListener("blur", onHide);
-
-    window.location.href = appUrl;
-
-    setTimeout(function () {
-      document.removeEventListener("visibilitychange", onHide);
-      window.removeEventListener("blur", onHide);
-      if (!switchedAway) window.open(webUrl, "_blank");
-    }, 700);
+    window.open(webUrl, "_blank");
   }
 
   // ---------- sections ----------

@@ -179,13 +179,15 @@
       <span class="spacer"></span>
     </header>
     <input type="text" id="manage-search" class="search-input" placeholder="Search...">
-    <select id="manage-section-filter" class="search-input"></select>
-    <select id="manage-mastery-filter" class="search-input">
-      <option value="">All progress</option>
-      <option value="fresh">New</option>
-      <option value="learning">Learning</option>
-      <option value="mastered">Mastered</option>
-    </select>
+    <div class="filter-row">
+      <select id="manage-section-filter" class="search-input"></select>
+      <select id="manage-mastery-filter" class="search-input">
+        <option value="">All progress</option>
+        <option value="fresh">New</option>
+        <option value="learning">Learning</option>
+        <option value="mastered">Mastered</option>
+      </select>
+    </div>
     <div id="manage-list" class="manage-list"></div>
   </section>
 

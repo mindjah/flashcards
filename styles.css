@@ -532,6 +532,18 @@ body {
 
 .search-input:focus { outline: none; border-color: var(--accent); }
 
+.filter-row {
+  display: flex;
+  gap: 10px;
+  margin: 0 16px 8px;
+}
+
+.filter-row .search-input {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+
 .manage-list {
   flex: 1;
   overflow-y: auto;

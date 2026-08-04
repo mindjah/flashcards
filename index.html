@@ -26,8 +26,14 @@
       <div class="dropdown" id="settings-dropdown">
         <button class="icon-btn" id="btn-settings">⚙️</button>
         <div class="dropdown-menu hidden" id="settings-menu">
-          <button id="btn-export" class="dropdown-item">Export</button>
-          <button id="btn-import" class="dropdown-item">Import</button>
+          <button id="btn-export" class="dropdown-item">
+            <span class="dropdown-item-label">Export</span>
+            <span class="dropdown-item-hint">Save cards and progress</span>
+          </button>
+          <button id="btn-import" class="dropdown-item">
+            <span class="dropdown-item-label">Import</span>
+            <span class="dropdown-item-hint">Add new words from .txt</span>
+          </button>
           <p class="dropdown-info">All data stays on this device. Import/export uses Anki's plain-text card format.</p>
         </div>
       </div>

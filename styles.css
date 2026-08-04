@@ -123,21 +123,32 @@ body {
 }
 
 .dropdown-item {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   width: 100%;
   text-align: left;
-  padding: 15px 18px;
+  padding: 12px 18px;
   background: none;
   border: none;
   border-bottom: 1px solid var(--border);
-  color: var(--text);
-  font-size: 16px;
-  font-weight: 600;
   font-family: inherit;
   cursor: pointer;
 }
 
 .dropdown-item:active { background: var(--surface-2); }
+
+.dropdown-item-label {
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.dropdown-item-hint {
+  color: var(--text-dim);
+  font-size: 12px;
+  font-weight: 400;
+}
 
 .dropdown-info {
   margin: 0;

@@ -277,7 +277,7 @@
   });
 
   document.getElementById("settings-menu").addEventListener("click", function (e) {
-    if (e.target.classList.contains("dropdown-item")) {
+    if (e.target.closest(".dropdown-item")) {
       document.getElementById("settings-menu").classList.add("hidden");
     }
   });

@@ -67,9 +67,13 @@ body {
 
 .topbar h1 {
   flex: 1;
+  min-width: 0;
   font-size: 22px;
   margin: 0;
   font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .topbar h2 {

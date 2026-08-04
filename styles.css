@@ -206,13 +206,8 @@ body {
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 10px 14px;
-  font-family: inherit;
   color: var(--text);
-  cursor: pointer;
-  text-align: left;
 }
-
-.struggling-item:active { background: var(--surface-2); }
 
 .struggling-item-word {
   font-weight: 700;

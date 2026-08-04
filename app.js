@@ -235,8 +235,7 @@
     var list = document.getElementById("struggling-list");
     list.innerHTML = "";
     struggling.forEach(function (c) {
-      var item = document.createElement("button");
-      item.type = "button";
+      var item = document.createElement("div");
       item.className = "struggling-item";
 
       var word = document.createElement("span");
@@ -249,7 +248,6 @@
 
       item.appendChild(word);
       item.appendChild(translation);
-      item.addEventListener("click", function () { openAddView(c); });
       list.appendChild(item);
     });
   }
@@ -266,6 +264,7 @@
 
   document.getElementById("btn-manage").addEventListener("click", function () {
     populateManageSectionFilter();
+    document.getElementById("manage-mastery-filter").value = "";
     renderManageList();
     showView("manage");
   });

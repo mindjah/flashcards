@@ -110,8 +110,7 @@
     empty: document.getElementById("view-empty"),
     add: document.getElementById("view-add"),
     manage: document.getElementById("view-manage"),
-    sections: document.getElementById("view-sections"),
-    settings: document.getElementById("view-settings")
+    sections: document.getElementById("view-sections")
   };
 
   function showView(name) {
@@ -141,13 +140,22 @@
     showView("sections");
   });
 
+  // ---------- settings dropdown ----------
   document.getElementById("btn-settings").addEventListener("click", function () {
-    showView("settings");
+    document.getElementById("settings-menu").classList.toggle("hidden");
   });
 
-  document.getElementById("btn-settings-back").addEventListener("click", function () {
-    refreshHome();
-    showView("home");
+  document.getElementById("settings-menu").addEventListener("click", function (e) {
+    if (e.target.classList.contains("dropdown-item")) {
+      document.getElementById("settings-menu").classList.add("hidden");
+    }
+  });
+
+  document.addEventListener("click", function (e) {
+    var dropdown = document.getElementById("settings-dropdown");
+    if (!dropdown.contains(e.target)) {
+      document.getElementById("settings-menu").classList.add("hidden");
+    }
   });
 
   // ---------- add / edit card ----------

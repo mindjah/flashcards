@@ -23,8 +23,15 @@
   <section id="view-home" class="view">
     <header class="topbar">
       <h1>Español Cards</h1>
-      <button class="icon-btn" id="btn-settings">⚙️</button>
+      <div class="dropdown" id="settings-dropdown">
+        <button class="icon-btn" id="btn-settings">⚙️</button>
+        <div class="dropdown-menu hidden" id="settings-menu">
+          <button id="btn-export" class="dropdown-item">Export</button>
+          <button id="btn-import" class="dropdown-item">Import</button>
+        </div>
+      </div>
     </header>
+    <input type="file" id="file-import" accept=".txt,.tsv,text/plain,.json,application/json" hidden>
 
     <div class="home-stats">
       <div class="stat-card">
@@ -48,24 +55,7 @@
       <button id="btn-manage-sections" class="btn btn-secondary">Sections</button>
     </div>
 
-    <p class="hint">All data stays on this device.</p>
-  </section>
-
-  <!-- ===== SETTINGS VIEW ===== -->
-  <section id="view-settings" class="view hidden">
-    <header class="topbar">
-      <button class="icon-btn" id="btn-settings-back">✕</button>
-      <h2>Settings</h2>
-      <span class="spacer"></span>
-    </header>
-
-    <div class="home-actions">
-      <button id="btn-export" class="btn btn-secondary">Export</button>
-      <button id="btn-import" class="btn btn-secondary">Import</button>
-    </div>
-    <input type="file" id="file-import" accept=".txt,.tsv,text/plain,.json,application/json" hidden>
-
-    <p class="hint">Import/export uses Anki's plain-text card format (tab-separated .txt). All data stays on this device.</p>
+    <p class="hint">All data stays on this device. Import/export uses Anki's plain-text card format.</p>
   </section>
 
   <!-- ===== STUDY SETUP VIEW ===== -->

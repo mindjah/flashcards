@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<title>Español Cards</title>
+
+<meta name="theme-color" content="#12121a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Español Cards">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="manifest" href="manifest.json">
+
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ===== HOME VIEW ===== -->
+  <section id="view-home" class="view">
+    <header class="topbar">
+      <h1>Español Cards</h1>
+    </header>
+
+    <div class="home-stats">
+      <div class="stat-card">
+        <div class="stat-num" id="stat-due">0</div>
+        <div class="stat-label">due now</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-total">0</div>
+        <div class="stat-label">total cards</div>
+      </div>
+    </div>
+
+    <button id="btn-study" class="btn btn-primary btn-big">Study</button>
+
+    <div class="home-actions">
+      <button id="btn-add" class="btn btn-secondary">+ Add card</button>
+      <button id="btn-manage" class="btn btn-secondary">Manage cards</button>
+    </div>
+
+    <div class="home-actions">
+      <button id="btn-export" class="btn btn-ghost">Export</button>
+      <button id="btn-import" class="btn btn-ghost">Import</button>
+    </div>
+    <input type="file" id="file-import" accept="application/json" hidden>
+
+    <p class="hint">All data stays on this device.</p>
+  </section>
+
+  <!-- ===== STUDY VIEW ===== -->
+  <section id="view-study" class="view hidden">
+    <header class="topbar">
+      <button class="icon-btn" id="btn-study-back">✕</button>
+      <div class="progress-text" id="study-progress"></div>
+      <span class="spacer"></span>
+    </header>
+
+    <div class="study-area">
+      <div id="card" class="flashcard">
+        <div class="flashcard-inner">
+          <div class="card-face card-front">
+            <span id="card-word" class="card-word"></span>
+          </div>
+          <div class="card-face card-back">
+            <span id="card-translation" class="card-translation"></span>
+          </div>
+        </div>
+      </div>
+      <p class="tap-hint" id="tap-hint">Tap card to reveal</p>
+    </div>
+
+    <div class="study-controls hidden" id="study-answer-controls">
+      <button id="btn-fail" class="btn btn-fail">✕ Didn't know</button>
+      <button id="btn-pass" class="btn btn-pass">✓ Knew it</button>
+    </div>
+  </section>
+
+  <!-- ===== EMPTY / DONE VIEW ===== -->
+  <section id="view-empty" class="view hidden">
+    <header class="topbar">
+      <button class="icon-btn" id="btn-empty-back">✕</button>
+    </header>
+    <div class="empty-state">
+      <div class="empty-icon" id="empty-icon">🎉</div>
+      <p id="empty-text">All done for now!</p>
+      <button id="btn-study-all-anyway" class="btn btn-secondary hidden">Study all cards anyway</button>
+      <button id="btn-empty-home" class="btn btn-primary">Back home</button>
+    </div>
+  </section>
+
+  <!-- ===== ADD CARD VIEW ===== -->
+  <section id="view-add" class="view hidden">
+    <header class="topbar">
+      <button class="icon-btn" id="btn-add-back">✕</button>
+      <h2 id="add-view-title">Add card</h2>
+      <span class="spacer"></span>
+    </header>
+
+    <form id="form-add" class="form">
+      <label>Spanish word / phrase
+        <input type="text" id="input-word" autocomplete="off" autocapitalize="none" required>
+      </label>
+      <label>Translation
+        <input type="text" id="input-translation" autocomplete="off" required>
+      </label>
+      <label>Notes (optional)
+        <input type="text" id="input-notes" autocomplete="off">
+      </label>
+      <button type="submit" id="btn-save-card" class="btn btn-primary btn-big">Save card</button>
+      <p class="save-toast hidden" id="save-toast">Saved ✓ add another</p>
+    </form>
+  </section>
+
+  <!-- ===== MANAGE VIEW ===== -->
+  <section id="view-manage" class="view hidden">
+    <header class="topbar">
+      <button class="icon-btn" id="btn-manage-back">✕</button>
+      <h2>Manage cards</h2>
+      <span class="spacer"></span>
+    </header>
+    <input type="text" id="manage-search" class="search-input" placeholder="Search...">
+    <div id="manage-list" class="manage-list"></div>
+  </section>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

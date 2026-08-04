@@ -13,31 +13,42 @@
   function loadData() {
     try {
       var raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return { cards: [], sections: [], streak: defaultStreak() };
+      if (!raw) return { cards: [], sections: [], streak: defaultStreak(), lastExportAt: null };
       var parsed = JSON.parse(raw);
       // migrate from the old format where the key held a bare cards array
       if (Array.isArray(parsed)) {
         parsed.forEach(function (c) { if (!Array.isArray(c.sectionIds)) c.sectionIds = []; });
-        return { cards: parsed, sections: [], streak: defaultStreak() };
+        return { cards: parsed, sections: [], streak: defaultStreak(), lastExportAt: null };
       }
       var loadedCards = Array.isArray(parsed.cards) ? parsed.cards : [];
       loadedCards.forEach(function (c) { if (!Array.isArray(c.sectionIds)) c.sectionIds = []; });
       var loadedStreak = parsed.streak && typeof parsed.streak.current === "number" ? parsed.streak : defaultStreak();
-      return { cards: loadedCards, sections: Array.isArray(parsed.sections) ? parsed.sections : [], streak: loadedStreak };
+      return {
+        cards: loadedCards,
+        sections: Array.isArray(parsed.sections) ? parsed.sections : [],
+        streak: loadedStreak,
+        lastExportAt: typeof parsed.lastExportAt === "number" ? parsed.lastExportAt : null
+      };
     } catch (e) {
       console.error("Failed to load data", e);
-      return { cards: [], sections: [], streak: defaultStreak() };
+      return { cards: [], sections: [], streak: defaultStreak(), lastExportAt: null };
     }
   }
 
   function saveData() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ cards: cards, sections: sections, streak: streak }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      cards: cards,
+      sections: sections,
+      streak: streak,
+      lastExportAt: lastExportAt
+    }));
   }
 
   var initialData = loadData();
   var cards = initialData.cards;
   var sections = initialData.sections;
   var streak = initialData.streak;
+  var lastExportAt = initialData.lastExportAt;
 
   function uid() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
@@ -854,12 +865,14 @@
     return String(field).replace(/[\t\r\n]/g, " ").trim();
   }
 
-  document.getElementById("btn-export").addEventListener("click", function () {
+  function performExport() {
     var lines = [
       "#separator:tab",
       "#html:false",
       "#notetype:Basic",
-      "#tags column:4"
+      "#tags column:4",
+      "#streak-current:" + streak.current,
+      "#streak-last-date:" + (streak.lastDate || "")
     ];
 
     cards.forEach(function (c) {
@@ -868,7 +881,9 @@
         tsvEscape(c.word),
         tsvEscape(c.translation),
         tsvEscape(c.notes || ""),
-        tags
+        tags,
+        c.box,
+        c.dueAt
       ].join("\t"));
     });
 
@@ -883,7 +898,12 @@
     a.click();
     document.body.removeChild(a);
     setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-  });
+
+    lastExportAt = Date.now();
+    saveData();
+  }
+
+  document.getElementById("btn-export").addEventListener("click", performExport);
 
   document.getElementById("btn-import").addEventListener("click", function () {
     document.getElementById("file-import").click();
@@ -891,8 +911,21 @@
 
   function parseAnkiTsv(text) {
     var items = [];
+    var importedStreak = null;
+
     text.split(/\r?\n/).forEach(function (line) {
-      if (!line || line.charAt(0) === "#") return;
+      if (!line) return;
+      if (line.charAt(0) === "#") {
+        if (line.indexOf("#streak-current:") === 0) {
+          importedStreak = importedStreak || {};
+          importedStreak.current = parseInt(line.slice("#streak-current:".length), 10) || 0;
+        } else if (line.indexOf("#streak-last-date:") === 0) {
+          importedStreak = importedStreak || {};
+          importedStreak.lastDate = line.slice("#streak-last-date:".length).trim() || null;
+        }
+        return;
+      }
+
       var cols = line.split("\t");
       if (cols.length < 2) return;
 
@@ -909,9 +942,19 @@
         : [];
 
       if (!word.trim() || !translation.trim()) return;
-      items.push({ word: word, translation: translation, notes: notes, sectionNamesList: sectionNamesList });
+      var item = { word: word, translation: translation, notes: notes, sectionNamesList: sectionNamesList };
+
+      if (cols.length >= 6) {
+        var box = parseInt(cols[4], 10);
+        var dueAt = parseInt(cols[5], 10);
+        if (!isNaN(box)) item.box = box;
+        if (!isNaN(dueAt)) item.dueAt = dueAt;
+      }
+
+      items.push(item);
     });
-    return items;
+
+    return { items: items, streak: importedStreak };
   }
 
   // still accepted for backwards compatibility with files exported before this format changed
@@ -919,7 +962,7 @@
     var data = JSON.parse(text);
     var incoming = Array.isArray(data) ? data : data.cards;
     if (!Array.isArray(incoming)) throw new Error("Invalid file format");
-    return incoming
+    var items = incoming
       .filter(function (item) { return item && item.word && item.translation; })
       .map(function (item) {
         return {
@@ -932,6 +975,7 @@
           createdAt: typeof item.createdAt === "number" ? item.createdAt : Date.now()
         };
       });
+    return { items: items, streak: null };
   }
 
   document.getElementById("file-import").addEventListener("change", function (e) {
@@ -942,9 +986,14 @@
       try {
         var text = reader.result;
         var trimmed = text.trim();
-        var incoming = (trimmed.charAt(0) === "{" || trimmed.charAt(0) === "[")
+        var parsed = (trimmed.charAt(0) === "{" || trimmed.charAt(0) === "[")
           ? parseLegacyJson(text)
           : parseAnkiTsv(text);
+        var incoming = parsed.items;
+
+        if (parsed.streak) {
+          streak = { current: parsed.streak.current || 0, lastDate: parsed.streak.lastDate || null };
+        }
 
         var existingWords = new Set(cards.map(function (c) { return c.word.toLowerCase() + "|" + c.translation.toLowerCase(); }));
         var added = 0;
@@ -988,7 +1037,19 @@
     });
   }
 
+  // ---------- backup reminder ----------
+  function maybePromptBackup() {
+    if (cards.length === 0) return;
+    var weekMs = 7 * 86400000;
+    if (lastExportAt && Date.now() - lastExportAt < weekMs) return;
+    var msg = lastExportAt
+      ? "It's been a week since your last backup. Export your cards and progress now?"
+      : "You haven't backed up your cards yet. Export now?";
+    if (confirm(msg)) performExport();
+  }
+
   // ---------- init ----------
   refreshHome();
   showView("home");
+  maybePromptBackup();
 })();

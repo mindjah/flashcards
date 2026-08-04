@@ -195,6 +195,14 @@ body {
 
 .home-actions .btn { flex: 1; }
 
+.app-version {
+  margin: auto 0 0;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 11px;
+  padding: 16px;
+}
+
 /* ===== STRUGGLING WORDS ===== */
 .struggling-block {
   padding: 18px 16px 4px;

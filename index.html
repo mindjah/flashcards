@@ -35,7 +35,7 @@
             <span class="dropdown-item-hint">Add new words from .txt</span>
           </button>
           <p class="dropdown-info">All data stays on this device. Import/export uses Anki's plain-text card format.</p>
-          <p class="app-version">v1.0.9</p>
+          <p class="app-version">v1.1.0</p>
         </div>
       </div>
     </header>
@@ -93,11 +93,22 @@
   <section id="view-study-setup" class="view hidden">
     <header class="topbar">
       <button class="icon-btn" id="btn-study-setup-back">✕</button>
-      <h2>Choose sections</h2>
+      <h2>Study setup</h2>
       <span class="spacer"></span>
     </header>
 
-    <div id="section-picker-list" class="section-picker"></div>
+    <div class="field-block mode-picker">
+      <span class="field-label">Study mode</span>
+      <div class="chip-list" id="mode-picker">
+        <button type="button" class="chip" data-mode="normal">Spanish → Translation</button>
+        <button type="button" class="chip" data-mode="reversed">Translation → Spanish</button>
+      </div>
+    </div>
+
+    <div class="field-block section-picker-block">
+      <span class="field-label">Sections</span>
+      <div id="section-picker-list" class="section-picker"></div>
+    </div>
 
     <div class="home-actions">
       <button id="btn-section-picker-all" class="btn btn-ghost">Select all</button>

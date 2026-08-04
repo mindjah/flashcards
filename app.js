@@ -13,7 +13,7 @@
   function loadData() {
     try {
       var raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return { cards: [], sections: [], streak: defaultStreak(), lastExportAt: null };
+      if (!raw) return { cards: [], sections: [], streak: defaultStreak(), lastExportAt: null, lastStudyPrefs: null };
       var parsed = JSON.parse(raw);
       // migrate from the old format where the key held a bare cards array
       if (Array.isArray(parsed)) {
@@ -21,7 +21,7 @@
           if (!Array.isArray(c.sectionIds)) c.sectionIds = [];
           if (typeof c.reviewed !== "boolean") c.reviewed = c.box > 0;
         });
-        return { cards: parsed, sections: [], streak: defaultStreak(), lastExportAt: null };
+        return { cards: parsed, sections: [], streak: defaultStreak(), lastExportAt: null, lastStudyPrefs: null };
       }
       var loadedCards = Array.isArray(parsed.cards) ? parsed.cards : [];
       loadedCards.forEach(function (c) {
@@ -33,11 +33,12 @@
         cards: loadedCards,
         sections: Array.isArray(parsed.sections) ? parsed.sections : [],
         streak: loadedStreak,
-        lastExportAt: typeof parsed.lastExportAt === "number" ? parsed.lastExportAt : null
+        lastExportAt: typeof parsed.lastExportAt === "number" ? parsed.lastExportAt : null,
+        lastStudyPrefs: parsed.lastStudyPrefs && typeof parsed.lastStudyPrefs === "object" ? parsed.lastStudyPrefs : null
       };
     } catch (e) {
       console.error("Failed to load data", e);
-      return { cards: [], sections: [], streak: defaultStreak(), lastExportAt: null };
+      return { cards: [], sections: [], streak: defaultStreak(), lastExportAt: null, lastStudyPrefs: null };
     }
   }
 
@@ -46,7 +47,8 @@
       cards: cards,
       sections: sections,
       streak: streak,
-      lastExportAt: lastExportAt
+      lastExportAt: lastExportAt,
+      lastStudyPrefs: lastStudyPrefs
     }));
   }
 
@@ -55,6 +57,7 @@
   var sections = initialData.sections;
   var streak = initialData.streak;
   var lastExportAt = initialData.lastExportAt;
+  var lastStudyPrefs = initialData.lastStudyPrefs;
 
   function uid() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
@@ -681,30 +684,51 @@
     showView("home");
   });
 
-  // ---------- study setup (choose sections) ----------
+  // ---------- study setup (choose mode + sections) ----------
   var currentSectionFilter = null;
+  var currentStudyMode = (lastStudyPrefs && lastStudyPrefs.mode) || "normal";
+
+  function renderModePicker() {
+    var buttons = document.querySelectorAll("#mode-picker .chip");
+    Array.prototype.forEach.call(buttons, function (btn) {
+      btn.classList.toggle("active", btn.dataset.mode === currentStudyMode);
+    });
+  }
+
+  document.querySelectorAll("#mode-picker .chip").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      currentStudyMode = btn.dataset.mode;
+      renderModePicker();
+    });
+  });
 
   function renderStudySetup() {
+    renderModePicker();
+
+    var prefSectionIds = lastStudyPrefs ? lastStudyPrefs.sectionIds : null;
+    var prefIncludeUnsectioned = lastStudyPrefs ? lastStudyPrefs.includeUnsectioned : true;
+
     var list = document.getElementById("section-picker-list");
     list.innerHTML = "";
 
     sections.slice().sort(function (a, b) { return a.name.localeCompare(b.name); }).forEach(function (s) {
       var count = cards.filter(function (c) { return c.sectionIds.indexOf(s.id) !== -1; }).length;
-      list.appendChild(buildSectionPickerRow(s.id, s.name, count));
+      var checked = prefSectionIds ? prefSectionIds.indexOf(s.id) !== -1 : true;
+      list.appendChild(buildSectionPickerRow(s.id, s.name, count, checked));
     });
 
     var unsectionedCount = cards.filter(function (c) { return c.sectionIds.length === 0; }).length;
-    list.appendChild(buildSectionPickerRow("unsectioned", "No section", unsectionedCount));
+    list.appendChild(buildSectionPickerRow("unsectioned", "No section", unsectionedCount, prefIncludeUnsectioned));
   }
 
-  function buildSectionPickerRow(value, label, count) {
+  function buildSectionPickerRow(value, label, count, checked) {
     var row = document.createElement("label");
     row.className = "section-picker-row";
 
     var checkbox = document.createElement("input");
     checkbox.type = "checkbox";
     checkbox.value = value;
-    checkbox.checked = true;
+    checkbox.checked = checked;
 
     var text = document.createElement("span");
     text.textContent = label + " (" + count + ")";
@@ -736,26 +760,26 @@
   document.getElementById("btn-study-start").addEventListener("click", function () {
     var checked = studySetupCheckboxes().filter(function (cb) { return cb.checked; }).map(function (cb) { return cb.value; });
     var includeUnsectioned = checked.indexOf("unsectioned") !== -1;
-    var ids = new Set(checked.filter(function (v) { return v !== "unsectioned"; }));
-    currentSectionFilter = { ids: ids, includeUnsectioned: includeUnsectioned };
-    startStudy(false, currentSectionFilter);
+    var sectionIds = checked.filter(function (v) { return v !== "unsectioned"; });
+    currentSectionFilter = { ids: new Set(sectionIds), includeUnsectioned: includeUnsectioned };
+
+    lastStudyPrefs = { sectionIds: sectionIds, includeUnsectioned: includeUnsectioned, mode: currentStudyMode };
+    saveData();
+
+    startStudy(false, currentSectionFilter, currentStudyMode);
   });
 
   document.getElementById("btn-study").addEventListener("click", function () {
-    if (sections.length === 0) {
-      currentSectionFilter = null;
-      startStudy(false, null);
-      return;
-    }
     renderStudySetup();
     showView("studySetup");
   });
 
   // ---------- study session ----------
-  var session = { queue: [], current: null, revealed: false, studied: 0, passed: 0, failed: 0, allMode: false };
+  var session = { queue: [], current: null, revealed: false, studied: 0, passed: 0, failed: 0, allMode: false, mode: "normal" };
 
-  function startStudy(allMode, sectionFilter) {
+  function startStudy(allMode, sectionFilter, mode) {
     if (sectionFilter !== undefined) currentSectionFilter = sectionFilter;
+    if (mode !== undefined) currentStudyMode = mode;
     var matches = cards.filter(function (c) { return matchesFilter(c, currentSectionFilter); });
     var source = allMode ? matches : matches.filter(function (c) { return isDue(c, Date.now()); });
     if (source.length === 0) {
@@ -769,6 +793,7 @@
     session.passed = 0;
     session.failed = 0;
     session.allMode = !!allMode;
+    session.mode = currentStudyMode;
     showView("study");
     nextCard();
   }
@@ -794,8 +819,9 @@
     cardEl.style.transition = "";
     cardEl.style.transform = "";
     cardEl.style.opacity = "";
-    document.getElementById("card-word").textContent = session.current.word;
-    document.getElementById("card-translation").textContent = session.current.translation;
+    var reversed = session.mode === "reversed";
+    document.getElementById("card-word").textContent = reversed ? session.current.translation : session.current.word;
+    document.getElementById("card-translation").textContent = reversed ? session.current.word : session.current.translation;
     document.getElementById("tap-hint").textContent = "Tap card to reveal";
     document.getElementById("study-answer-controls").classList.add("hidden");
     updateProgress();

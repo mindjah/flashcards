@@ -159,6 +159,10 @@ body {
 }
 
 /* ===== HOME ===== */
+#view-home {
+  padding-bottom: 34px;
+}
+
 .home-stats {
   display: flex;
   gap: 12px;
@@ -196,11 +200,16 @@ body {
 .home-actions .btn { flex: 1; }
 
 .app-version {
-  margin-top: auto;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: 0;
   text-align: center;
   color: var(--text-dim);
   font-size: 11px;
-  padding: 32px 16px 4px;
+  padding: 6px 16px calc(var(--safe-bottom) + 6px);
+  pointer-events: none;
 }
 
 /* ===== STRUGGLING WORDS ===== */

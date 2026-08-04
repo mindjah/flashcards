@@ -107,6 +107,31 @@
       .slice(0, 5);
   }
 
+  // ---------- google translate ----------
+  // Tries the Google Translate app's custom URL scheme first; if the page is
+  // still visible after a short delay (nothing intercepted the scheme, so the
+  // app isn't installed) it falls back to the web version.
+  function openGoogleTranslate(text) {
+    var trimmed = (text || "").trim();
+    if (!trimmed) return;
+    var query = encodeURIComponent(trimmed);
+    var appUrl = "googletranslate://translate?sl=es&tl=en&text=" + query;
+    var webUrl = "https://translate.google.com/?sl=es&tl=en&text=" + query + "&op=translate";
+
+    var switchedAway = false;
+    function onVisibilityChange() {
+      if (document.hidden) switchedAway = true;
+    }
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    window.location.href = appUrl;
+
+    setTimeout(function () {
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      if (!switchedAway) window.location.href = webUrl;
+    }, 700);
+  }
+
   // ---------- sections ----------
   function sectionById(id) {
     return sections.find(function (s) { return s.id === id; });
@@ -341,6 +366,10 @@
     showView("add");
     wordEl.focus();
   }
+
+  document.getElementById("btn-add-translate").addEventListener("click", function () {
+    openGoogleTranslate(document.getElementById("input-word").value);
+  });
 
   document.getElementById("btn-add-back").addEventListener("click", function () {
     if (editingId) {
@@ -797,6 +826,10 @@
   });
   document.getElementById("btn-fail").addEventListener("click", function () {
     answerCard(false);
+  });
+
+  document.getElementById("btn-study-translate").addEventListener("click", function () {
+    if (session.current) openGoogleTranslate(session.current.word);
   });
 
   // ---------- swipe to answer ----------

@@ -105,7 +105,7 @@
     <header class="topbar">
       <button class="icon-btn" id="btn-study-back">✕</button>
       <div class="progress-text" id="study-progress"></div>
-      <span class="spacer"></span>
+      <button class="icon-btn" id="btn-study-translate" title="Open in Google Translate">🌐</button>
     </header>
 
     <div class="study-area">
@@ -151,7 +151,10 @@
 
     <form id="form-add" class="form">
       <label>Spanish word / phrase
-        <input type="text" id="input-word" autocomplete="off" autocapitalize="none" required>
+        <div class="input-with-action">
+          <input type="text" id="input-word" autocomplete="off" autocapitalize="none" required>
+          <button type="button" class="icon-btn" id="btn-add-translate" title="Open in Google Translate">🌐</button>
+        </div>
       </label>
       <label>Translation
         <input type="text" id="input-translation" autocomplete="off" required>

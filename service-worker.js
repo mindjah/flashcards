@@ -1,4 +1,4 @@
-var CACHE_NAME = "espanol-cards-v3";
+var CACHE_NAME = "espanol-cards-v4";
 var ASSETS = [
   "./",
   "./index.html",
@@ -31,15 +31,28 @@ self.addEventListener("activate", function (event) {
   self.clients.claim();
 });
 
+// These small text files determine the app's actual behavior/appearance -
+// GitHub Pages serves everything with Cache-Control: max-age=600, and a
+// default fetch() is allowed to reuse the browser's own HTTP cache within
+// that window even on a genuine relaunch of the installed home-screen app
+// (which is the primary target here, not just a browser tab), so these
+// always bypass it. Icons/manifest change rarely and are heavier, so they
+// stay on normal caching to keep ordinary loads fast. Built from the
+// worker's own registration scope rather than a hardcoded path so this
+// doesn't silently break if the repo/hosting path ever changes.
+var ALWAYS_FRESH_URLS = ["", "index.html", "app.js", "styles.css"].map(function (p) {
+  return new URL(p, self.registration.scope).href;
+});
+
 self.addEventListener("fetch", function (event) {
   if (event.request.method !== "GET") return;
-  // Default cache mode lets the browser's own HTTP cache satisfy this
-  // quickly within GitHub Pages' 10-minute max-age instead of forcing a
-  // full network round-trip on every single load forever - a real deploy
-  // still shows up within that window without a several-second delay on
-  // every ordinary app open.
+
+  var forceFresh = event.request.mode === "navigate" ||
+    ALWAYS_FRESH_URLS.indexOf(event.request.url) !== -1;
+  var fetchOptions = forceFresh ? { cache: "reload" } : undefined;
+
   event.respondWith(
-    fetch(event.request).then(function (response) {
+    fetch(event.request, fetchOptions).then(function (response) {
       if (response && response.status === 200) {
         var copy = response.clone();
         caches.open(CACHE_NAME).then(function (cache) { cache.put(event.request, copy); });

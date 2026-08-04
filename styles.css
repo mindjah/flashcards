@@ -12,9 +12,9 @@
   --pass-dim: #1f4d3a;
   --fail: #ff6b6b;
   --fail-dim: #55272b;
-  --mastery-new: #184f95;
-  --mastery-learning: #3987e5;
-  --mastery-mastered: #86b6ef;
+  --mastery-new: #d03b3b;
+  --mastery-learning: #fab219;
+  --mastery-mastered: #0ca30c;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }

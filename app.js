@@ -108,13 +108,14 @@
   }
 
   // ---------- google translate ----------
-  // Tries the Google Translate app's custom URL scheme first; if the page is
-  // still visible after a short delay (nothing intercepted the scheme, so the
-  // app isn't installed) it falls back to the web version. The fallback is
-  // cancelled the instant the page is backgrounded (app opened) rather than
-  // checked after the delay - iOS can suspend JS while backgrounded, so a
-  // check-after-delay races with resuming and can fire the fallback late,
-  // navigating the app itself to the Translate website once you come back.
+  // Tries the Google Translate app's custom URL scheme first. As a standalone
+  // home-screen app, this PWA's own page can't be trusted to reliably report
+  // visibilitychange/blur when handing off to another app via a custom scheme -
+  // so rather than gate the fallback on that (which risks navigating this app's
+  // own page away to the Translate website once you return), the fallback is
+  // opened as a SEPARATE browsing context. Worst case if the app was actually
+  // installed: a harmless extra tab opens behind it. This app's own page never
+  // navigates away from itself.
   function openGoogleTranslate(text) {
     var trimmed = (text || "").trim();
     if (!trimmed) return;
@@ -122,20 +123,18 @@
     var appUrl = "googletranslate://translate?sl=es&tl=en&text=" + query;
     var webUrl = "https://translate.google.com/?sl=es&tl=en&text=" + query + "&op=translate";
 
-    function onVisibilityChange() {
-      if (document.hidden) {
-        clearTimeout(fallbackTimer);
-        document.removeEventListener("visibilitychange", onVisibilityChange);
-      }
-    }
-    document.addEventListener("visibilitychange", onVisibilityChange);
-
-    var fallbackTimer = setTimeout(function () {
-      document.removeEventListener("visibilitychange", onVisibilityChange);
-      window.location.href = webUrl;
-    }, 700);
+    var switchedAway = false;
+    function onHide() { switchedAway = true; }
+    document.addEventListener("visibilitychange", onHide);
+    window.addEventListener("blur", onHide);
 
     window.location.href = appUrl;
+
+    setTimeout(function () {
+      document.removeEventListener("visibilitychange", onHide);
+      window.removeEventListener("blur", onHide);
+      if (!switchedAway) window.open(webUrl, "_blank");
+    }, 700);
   }
 
   // ---------- sections ----------

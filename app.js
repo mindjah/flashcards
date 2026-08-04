@@ -538,7 +538,7 @@
       var meta = document.createElement("div");
       meta.className = "manage-item-meta";
       var now = Date.now();
-      meta.textContent = isDue(c, now) ? "Due now" : "Due " + formatRelative(c.dueAt - now);
+      meta.textContent = isDue(c, now) ? "To study" : "Due " + formatRelative(c.dueAt - now);
       text.appendChild(meta);
 
       var actions = document.createElement("div");

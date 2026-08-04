@@ -1134,6 +1134,21 @@
     reader.readAsText(file);
   });
 
+  // ---------- viewport height ----------
+  // 100dvh under-reports the true screen height in iOS standalone display
+  // mode (it's designed around Safari's own dynamically-appearing toolbar,
+  // which doesn't exist once installed to the Home Screen), leaving a gap
+  // of plain <body> background below #app that no internal CSS can reach.
+  // window.innerHeight reports the real usable height in every mode, so
+  // it drives #app's height directly instead.
+  function setAppHeight() {
+    document.documentElement.style.setProperty("--app-height", window.innerHeight + "px");
+  }
+  setAppHeight();
+  window.addEventListener("resize", setAppHeight);
+  window.addEventListener("orientationchange", setAppHeight);
+  window.addEventListener("pageshow", setAppHeight);
+
   // ---------- service worker ----------
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", function () {

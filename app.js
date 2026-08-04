@@ -6,21 +6,32 @@
   var MAX_BOX = BOX_INTERVALS_DAYS.length - 1;
 
   // ---------- storage ----------
-  function loadCards() {
+  function loadData() {
     try {
       var raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : [];
+      if (!raw) return { cards: [], sections: [] };
+      var parsed = JSON.parse(raw);
+      // migrate from the old format where the key held a bare cards array
+      if (Array.isArray(parsed)) {
+        parsed.forEach(function (c) { if (!Array.isArray(c.sectionIds)) c.sectionIds = []; });
+        return { cards: parsed, sections: [] };
+      }
+      var loadedCards = Array.isArray(parsed.cards) ? parsed.cards : [];
+      loadedCards.forEach(function (c) { if (!Array.isArray(c.sectionIds)) c.sectionIds = []; });
+      return { cards: loadedCards, sections: Array.isArray(parsed.sections) ? parsed.sections : [] };
     } catch (e) {
-      console.error("Failed to load cards", e);
-      return [];
+      console.error("Failed to load data", e);
+      return { cards: [], sections: [] };
     }
   }
 
-  function saveCards(cards) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
+  function saveData() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ cards: cards, sections: sections }));
   }
 
-  var cards = loadCards();
+  var initialData = loadData();
+  var cards = initialData.cards;
+  var sections = initialData.sections;
 
   function uid() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
@@ -30,18 +41,77 @@
     return card.dueAt <= now;
   }
 
-  function dueCards() {
+  // ---------- sections ----------
+  function sectionById(id) {
+    return sections.find(function (s) { return s.id === id; });
+  }
+
+  function sectionNames(card) {
+    return card.sectionIds
+      .map(function (id) { var s = sectionById(id); return s ? s.name : null; })
+      .filter(Boolean);
+  }
+
+  function addSection(name) {
+    name = name.trim();
+    if (!name) return null;
+    var existing = sections.find(function (s) { return s.name.toLowerCase() === name.toLowerCase(); });
+    if (existing) return existing;
+    var section = { id: uid(), name: name, createdAt: Date.now() };
+    sections.push(section);
+    saveData();
+    return section;
+  }
+
+  function getOrCreateSectionByName(name) {
+    name = name.trim();
+    if (!name) return null;
+    var existing = sections.find(function (s) { return s.name.toLowerCase() === name.toLowerCase(); });
+    if (existing) return existing;
+    var section = { id: uid(), name: name, createdAt: Date.now() };
+    sections.push(section);
+    return section;
+  }
+
+  function renameSection(id, newName) {
+    var s = sectionById(id);
+    if (!s) return;
+    s.name = newName.trim();
+    saveData();
+  }
+
+  function deleteSection(id) {
+    sections = sections.filter(function (s) { return s.id !== id; });
+    cards.forEach(function (c) {
+      c.sectionIds = c.sectionIds.filter(function (sid) { return sid !== id; });
+    });
+    saveData();
+  }
+
+  // ---------- filtering ----------
+  // filter: null/undefined = no filtering (all cards).
+  // otherwise { ids: Set<sectionId>, includeUnsectioned: bool }
+  function matchesFilter(card, filter) {
+    if (!filter) return true;
+    if (card.sectionIds.length === 0) return filter.includeUnsectioned;
+    return card.sectionIds.some(function (id) { return filter.ids.has(id); });
+  }
+
+  function dueCards(filter) {
     var now = Date.now();
-    return cards.filter(function (c) { return isDue(c, now); });
+    return cards.filter(function (c) { return isDue(c, now) && matchesFilter(c, filter); });
   }
 
   // ---------- view management ----------
   var views = {
     home: document.getElementById("view-home"),
     study: document.getElementById("view-study"),
+    studySetup: document.getElementById("view-study-setup"),
     empty: document.getElementById("view-empty"),
     add: document.getElementById("view-add"),
-    manage: document.getElementById("view-manage")
+    manage: document.getElementById("view-manage"),
+    sections: document.getElementById("view-sections"),
+    settings: document.getElementById("view-settings")
   };
 
   function showView(name) {
@@ -61,12 +131,58 @@
   });
 
   document.getElementById("btn-manage").addEventListener("click", function () {
+    populateManageSectionFilter();
     renderManageList();
     showView("manage");
   });
 
+  document.getElementById("btn-manage-sections").addEventListener("click", function () {
+    renderSectionsList();
+    showView("sections");
+  });
+
+  document.getElementById("btn-settings").addEventListener("click", function () {
+    showView("settings");
+  });
+
+  document.getElementById("btn-settings-back").addEventListener("click", function () {
+    refreshHome();
+    showView("home");
+  });
+
   // ---------- add / edit card ----------
   var editingId = null;
+  var editingSectionIds = [];
+
+  function renderAddSectionsPicker() {
+    var list = document.getElementById("add-sections-list");
+    list.innerHTML = "";
+
+    if (sections.length === 0) {
+      var empty = document.createElement("div");
+      empty.className = "chip-list-empty";
+      empty.textContent = "No sections yet — create one in Sections.";
+      list.appendChild(empty);
+      return;
+    }
+
+    sections.forEach(function (s) {
+      var chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "chip" + (editingSectionIds.indexOf(s.id) !== -1 ? " active" : "");
+      chip.textContent = s.name;
+      chip.addEventListener("click", function () {
+        var idx = editingSectionIds.indexOf(s.id);
+        if (idx === -1) {
+          editingSectionIds.push(s.id);
+        } else {
+          editingSectionIds.splice(idx, 1);
+        }
+        chip.classList.toggle("active");
+      });
+      list.appendChild(chip);
+    });
+  }
 
   function openAddView(cardToEdit) {
     var wordEl = document.getElementById("input-word");
@@ -82,6 +198,7 @@
       wordEl.value = cardToEdit.word;
       transEl.value = cardToEdit.translation;
       notesEl.value = cardToEdit.notes || "";
+      editingSectionIds = cardToEdit.sectionIds.slice();
     } else {
       editingId = null;
       titleEl.textContent = "Add card";
@@ -89,8 +206,10 @@
       wordEl.value = "";
       transEl.value = "";
       notesEl.value = "";
+      editingSectionIds = [];
     }
 
+    renderAddSectionsPicker();
     document.getElementById("save-toast").classList.add("hidden");
     showView("add");
     wordEl.focus();
@@ -125,7 +244,8 @@
         target.word = word;
         target.translation = translation;
         target.notes = notes;
-        saveCards(cards);
+        target.sectionIds = editingSectionIds.slice();
+        saveData();
       }
       editingId = null;
       renderManageList(document.getElementById("manage-search").value);
@@ -138,11 +258,12 @@
       word: word,
       translation: translation,
       notes: notes,
+      sectionIds: editingSectionIds.slice(),
       box: 0,
       dueAt: Date.now(),
       createdAt: Date.now()
     });
-    saveCards(cards);
+    saveData();
 
     wordEl.value = "";
     transEl.value = "";
@@ -155,9 +276,38 @@
   });
 
   // ---------- manage ----------
+  function populateManageSectionFilter() {
+    var sel = document.getElementById("manage-section-filter");
+    var current = sel.value;
+    sel.innerHTML = "";
+
+    var allOpt = document.createElement("option");
+    allOpt.value = "";
+    allOpt.textContent = "All sections";
+    sel.appendChild(allOpt);
+
+    sections.forEach(function (s) {
+      var opt = document.createElement("option");
+      opt.value = s.id;
+      opt.textContent = s.name;
+      sel.appendChild(opt);
+    });
+
+    var unsectionedOpt = document.createElement("option");
+    unsectionedOpt.value = "unsectioned";
+    unsectionedOpt.textContent = "No section";
+    sel.appendChild(unsectionedOpt);
+
+    if (Array.prototype.some.call(sel.options, function (o) { return o.value === current; })) {
+      sel.value = current;
+    }
+  }
+
   function renderManageList(filter) {
     var list = document.getElementById("manage-list");
     list.innerHTML = "";
+
+    var sectionFilterVal = document.getElementById("manage-section-filter").value;
 
     var items = cards.slice().sort(function (a, b) { return b.createdAt - a.createdAt; });
     if (filter) {
@@ -166,6 +316,11 @@
         return c.word.toLowerCase().indexOf(f) !== -1 ||
                c.translation.toLowerCase().indexOf(f) !== -1;
       });
+    }
+    if (sectionFilterVal === "unsectioned") {
+      items = items.filter(function (c) { return c.sectionIds.length === 0; });
+    } else if (sectionFilterVal) {
+      items = items.filter(function (c) { return c.sectionIds.indexOf(sectionFilterVal) !== -1; });
     }
 
     if (items.length === 0) {
@@ -201,6 +356,19 @@
         text.appendChild(notes);
       }
 
+      var names = sectionNames(c);
+      if (names.length > 0) {
+        var sectionsRow = document.createElement("div");
+        sectionsRow.className = "chip-list chip-list-inline";
+        names.forEach(function (n) {
+          var chip = document.createElement("span");
+          chip.className = "chip chip-tag";
+          chip.textContent = n;
+          sectionsRow.appendChild(chip);
+        });
+        text.appendChild(sectionsRow);
+      }
+
       var meta = document.createElement("div");
       meta.className = "manage-item-meta";
       var now = Date.now();
@@ -223,7 +391,7 @@
       del.addEventListener("click", function () {
         if (!confirm('Delete "' + c.word + '"?')) return;
         cards = cards.filter(function (x) { return x.id !== c.id; });
-        saveCards(cards);
+        saveData();
         renderManageList(document.getElementById("manage-search").value);
       });
 
@@ -247,18 +415,177 @@
     renderManageList(e.target.value);
   });
 
+  document.getElementById("manage-section-filter").addEventListener("change", function () {
+    renderManageList(document.getElementById("manage-search").value);
+  });
+
   document.getElementById("btn-manage-back").addEventListener("click", function () {
     refreshHome();
     showView("home");
   });
 
+  // ---------- sections management ----------
+  function renderSectionsList() {
+    var list = document.getElementById("sections-list");
+    list.innerHTML = "";
+
+    if (sections.length === 0) {
+      var empty = document.createElement("div");
+      empty.className = "manage-empty";
+      empty.textContent = "No sections yet. Create one above to start grouping cards by topic.";
+      list.appendChild(empty);
+      return;
+    }
+
+    sections.slice().sort(function (a, b) { return a.name.localeCompare(b.name); }).forEach(function (s) {
+      var count = cards.filter(function (c) { return c.sectionIds.indexOf(s.id) !== -1; }).length;
+
+      var row = document.createElement("div");
+      row.className = "manage-item";
+
+      var text = document.createElement("div");
+      text.className = "manage-item-text";
+
+      var name = document.createElement("div");
+      name.className = "manage-item-word";
+      name.textContent = s.name;
+
+      var meta = document.createElement("div");
+      meta.className = "manage-item-meta";
+      meta.textContent = count + " card" + (count === 1 ? "" : "s");
+
+      text.appendChild(name);
+      text.appendChild(meta);
+
+      var actions = document.createElement("div");
+      actions.className = "manage-item-actions";
+
+      var rename = document.createElement("button");
+      rename.className = "manage-item-edit";
+      rename.textContent = "Rename";
+      rename.addEventListener("click", function () {
+        var newName = prompt("Rename section", s.name);
+        if (newName === null) return;
+        newName = newName.trim();
+        if (!newName) return;
+        renameSection(s.id, newName);
+        renderSectionsList();
+      });
+
+      var del = document.createElement("button");
+      del.className = "manage-item-delete";
+      del.textContent = "Delete";
+      del.addEventListener("click", function () {
+        if (!confirm('Delete section "' + s.name + '"? Cards keep their other sections.')) return;
+        deleteSection(s.id);
+        renderSectionsList();
+      });
+
+      actions.appendChild(rename);
+      actions.appendChild(del);
+
+      row.appendChild(text);
+      row.appendChild(actions);
+      list.appendChild(row);
+    });
+  }
+
+  document.getElementById("form-add-section").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var input = document.getElementById("input-section-name");
+    var name = input.value.trim();
+    if (!name) return;
+    addSection(name);
+    input.value = "";
+    renderSectionsList();
+  });
+
+  document.getElementById("btn-sections-back").addEventListener("click", function () {
+    refreshHome();
+    showView("home");
+  });
+
+  // ---------- study setup (choose sections) ----------
+  var currentSectionFilter = null;
+
+  function renderStudySetup() {
+    var list = document.getElementById("section-picker-list");
+    list.innerHTML = "";
+
+    sections.slice().sort(function (a, b) { return a.name.localeCompare(b.name); }).forEach(function (s) {
+      var count = cards.filter(function (c) { return c.sectionIds.indexOf(s.id) !== -1; }).length;
+      list.appendChild(buildSectionPickerRow(s.id, s.name, count));
+    });
+
+    var unsectionedCount = cards.filter(function (c) { return c.sectionIds.length === 0; }).length;
+    list.appendChild(buildSectionPickerRow("unsectioned", "No section", unsectionedCount));
+  }
+
+  function buildSectionPickerRow(value, label, count) {
+    var row = document.createElement("label");
+    row.className = "section-picker-row";
+
+    var checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.value = value;
+    checkbox.checked = true;
+
+    var text = document.createElement("span");
+    text.textContent = label + " (" + count + ")";
+
+    row.appendChild(checkbox);
+    row.appendChild(text);
+    return row;
+  }
+
+  function studySetupCheckboxes() {
+    return Array.prototype.slice.call(
+      document.querySelectorAll("#section-picker-list input[type=checkbox]")
+    );
+  }
+
+  document.getElementById("btn-section-picker-all").addEventListener("click", function () {
+    studySetupCheckboxes().forEach(function (cb) { cb.checked = true; });
+  });
+
+  document.getElementById("btn-section-picker-none").addEventListener("click", function () {
+    studySetupCheckboxes().forEach(function (cb) { cb.checked = false; });
+  });
+
+  document.getElementById("btn-study-setup-back").addEventListener("click", function () {
+    refreshHome();
+    showView("home");
+  });
+
+  document.getElementById("btn-study-start").addEventListener("click", function () {
+    var checked = studySetupCheckboxes().filter(function (cb) { return cb.checked; }).map(function (cb) { return cb.value; });
+    var includeUnsectioned = checked.indexOf("unsectioned") !== -1;
+    var ids = new Set(checked.filter(function (v) { return v !== "unsectioned"; }));
+    currentSectionFilter = { ids: ids, includeUnsectioned: includeUnsectioned };
+    startStudy(false, currentSectionFilter);
+  });
+
+  document.getElementById("btn-study").addEventListener("click", function () {
+    if (sections.length === 0) {
+      currentSectionFilter = null;
+      startStudy(false, null);
+      return;
+    }
+    renderStudySetup();
+    showView("studySetup");
+  });
+
   // ---------- study session ----------
   var session = { queue: [], current: null, revealed: false, studied: 0, passed: 0, failed: 0, allMode: false };
 
-  function startStudy(allMode) {
-    var source = allMode ? cards.slice() : dueCards();
+  function startStudy(allMode, sectionFilter) {
+    if (sectionFilter !== undefined) currentSectionFilter = sectionFilter;
+    var matches = cards.filter(function (c) { return matchesFilter(c, currentSectionFilter); });
+    var source = allMode ? matches : matches.filter(function (c) { return isDue(c, Date.now()); });
     if (source.length === 0) {
-      showEmpty(cards.length === 0 ? "no-cards" : "no-due");
+      if (cards.length === 0) showEmpty("no-cards");
+      else if (matches.length === 0) showEmpty("no-match");
+      else showEmpty("no-due");
       return;
     }
     session.queue = shuffle(source.slice());
@@ -381,7 +708,7 @@
       var insertAt = Math.min(session.queue.length, 2 + Math.floor(Math.random() * 3));
       session.queue.splice(insertAt, 0, c);
     }
-    saveCards(cards);
+    saveData();
     nextCard();
   }
 
@@ -400,6 +727,9 @@
     if (kind === "no-cards") {
       icon.textContent = "📝";
       msg.textContent = "No cards yet. Add some to start studying!";
+    } else if (kind === "no-match") {
+      icon.textContent = "🗂️";
+      msg.textContent = "No cards in the selected sections.";
     } else if (kind === "no-due") {
       icon.textContent = "✅";
       msg.textContent = "Nothing due right now. Nice work!";
@@ -410,10 +740,6 @@
     }
     showView("empty");
   }
-
-  document.getElementById("btn-study").addEventListener("click", function () {
-    startStudy(false);
-  });
 
   document.getElementById("btn-study-back").addEventListener("click", function () {
     refreshHome();
@@ -434,15 +760,51 @@
     startStudy(true);
   });
 
-  // ---------- import / export ----------
+  // ---------- import / export (Anki-style tab-separated text) ----------
+  // Same format Anki itself reads/writes via File > Export > "Notes in Plain Text (.txt)"
+  // and File > Import: "#"-prefixed header lines, then one note per line as
+  // tab-separated fields. Sections round-trip as hierarchical "section::Name" tags,
+  // Anki's own mechanism for grouping notes by more than one category at once.
+  var SECTION_TAG_PREFIX = "section::";
+
+  function tagForSection(name) {
+    return SECTION_TAG_PREFIX + name.replace(/\s+/g, "_");
+  }
+
+  function sectionNameFromTag(tag) {
+    if (tag.toLowerCase().indexOf(SECTION_TAG_PREFIX) !== 0) return null;
+    return tag.slice(SECTION_TAG_PREFIX.length).replace(/_/g, " ");
+  }
+
+  function tsvEscape(field) {
+    return String(field).replace(/[\t\r\n]/g, " ").trim();
+  }
+
   document.getElementById("btn-export").addEventListener("click", function () {
-    var data = JSON.stringify({ version: 1, exportedAt: Date.now(), cards: cards }, null, 2);
-    var blob = new Blob([data], { type: "application/json" });
+    var lines = [
+      "#separator:tab",
+      "#html:false",
+      "#notetype:Basic",
+      "#tags column:4"
+    ];
+
+    cards.forEach(function (c) {
+      var tags = sectionNames(c).map(tagForSection).join(" ");
+      lines.push([
+        tsvEscape(c.word),
+        tsvEscape(c.translation),
+        tsvEscape(c.notes || ""),
+        tags
+      ].join("\t"));
+    });
+
+    var data = lines.join("\n") + "\n";
+    var blob = new Blob([data], { type: "text/plain" });
     var url = URL.createObjectURL(blob);
     var a = document.createElement("a");
     var date = new Date().toISOString().slice(0, 10);
     a.href = url;
-    a.download = "spanish-cards-" + date + ".json";
+    a.download = "spanish-cards-" + date + ".txt";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -453,35 +815,87 @@
     document.getElementById("file-import").click();
   });
 
+  function parseAnkiTsv(text) {
+    var items = [];
+    text.split(/\r?\n/).forEach(function (line) {
+      if (!line || line.charAt(0) === "#") return;
+      var cols = line.split("\t");
+      if (cols.length < 2) return;
+
+      var word = cols[0], translation = cols[1], notes = "", tagsStr = "";
+      if (cols.length >= 4) {
+        notes = cols[2];
+        tagsStr = cols[3];
+      } else if (cols.length === 3) {
+        tagsStr = cols[2];
+      }
+
+      var sectionNamesList = tagsStr.trim()
+        ? tagsStr.trim().split(/\s+/).map(sectionNameFromTag).filter(Boolean)
+        : [];
+
+      if (!word.trim() || !translation.trim()) return;
+      items.push({ word: word, translation: translation, notes: notes, sectionNamesList: sectionNamesList });
+    });
+    return items;
+  }
+
+  // still accepted for backwards compatibility with files exported before this format changed
+  function parseLegacyJson(text) {
+    var data = JSON.parse(text);
+    var incoming = Array.isArray(data) ? data : data.cards;
+    if (!Array.isArray(incoming)) throw new Error("Invalid file format");
+    return incoming
+      .filter(function (item) { return item && item.word && item.translation; })
+      .map(function (item) {
+        return {
+          word: String(item.word),
+          translation: String(item.translation),
+          notes: item.notes ? String(item.notes) : "",
+          sectionNamesList: [],
+          box: typeof item.box === "number" ? Math.min(Math.max(item.box, 0), MAX_BOX) : 0,
+          dueAt: typeof item.dueAt === "number" ? item.dueAt : Date.now(),
+          createdAt: typeof item.createdAt === "number" ? item.createdAt : Date.now()
+        };
+      });
+  }
+
   document.getElementById("file-import").addEventListener("change", function (e) {
     var file = e.target.files[0];
     if (!file) return;
     var reader = new FileReader();
     reader.onload = function () {
       try {
-        var data = JSON.parse(reader.result);
-        var incoming = Array.isArray(data) ? data : data.cards;
-        if (!Array.isArray(incoming)) throw new Error("Invalid file format");
+        var text = reader.result;
+        var trimmed = text.trim();
+        var incoming = (trimmed.charAt(0) === "{" || trimmed.charAt(0) === "[")
+          ? parseLegacyJson(text)
+          : parseAnkiTsv(text);
 
         var existingWords = new Set(cards.map(function (c) { return c.word.toLowerCase() + "|" + c.translation.toLowerCase(); }));
         var added = 0;
         incoming.forEach(function (item) {
-          if (!item || !item.word || !item.translation) return;
-          var key = String(item.word).toLowerCase() + "|" + String(item.translation).toLowerCase();
+          var key = item.word.toLowerCase() + "|" + item.translation.toLowerCase();
           if (existingWords.has(key)) return;
           existingWords.add(key);
+
+          var sectionIds = item.sectionNamesList.map(function (name) {
+            return getOrCreateSectionByName(name).id;
+          });
+
           cards.push({
             id: uid(),
-            word: String(item.word),
-            translation: String(item.translation),
-            notes: item.notes ? String(item.notes) : "",
-            box: typeof item.box === "number" ? Math.min(Math.max(item.box, 0), MAX_BOX) : 0,
+            word: item.word,
+            translation: item.translation,
+            notes: item.notes,
+            sectionIds: sectionIds,
+            box: typeof item.box === "number" ? item.box : 0,
             dueAt: typeof item.dueAt === "number" ? item.dueAt : Date.now(),
             createdAt: typeof item.createdAt === "number" ? item.createdAt : Date.now()
           });
           added++;
         });
-        saveCards(cards);
+        saveData();
         refreshHome();
         alert("Imported " + added + " new card" + (added === 1 ? "" : "s") +
           (incoming.length - added > 0 ? " (" + (incoming.length - added) + " duplicates skipped)" : ""));

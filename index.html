@@ -23,6 +23,7 @@
   <section id="view-home" class="view">
     <header class="topbar">
       <h1>Español Cards</h1>
+      <button class="icon-btn" id="btn-settings">⚙️</button>
     </header>
 
     <div class="home-stats">
@@ -44,12 +45,45 @@
     </div>
 
     <div class="home-actions">
-      <button id="btn-export" class="btn btn-ghost">Export</button>
-      <button id="btn-import" class="btn btn-ghost">Import</button>
+      <button id="btn-manage-sections" class="btn btn-secondary">Sections</button>
     </div>
-    <input type="file" id="file-import" accept="application/json" hidden>
 
     <p class="hint">All data stays on this device.</p>
+  </section>
+
+  <!-- ===== SETTINGS VIEW ===== -->
+  <section id="view-settings" class="view hidden">
+    <header class="topbar">
+      <button class="icon-btn" id="btn-settings-back">✕</button>
+      <h2>Settings</h2>
+      <span class="spacer"></span>
+    </header>
+
+    <div class="home-actions">
+      <button id="btn-export" class="btn btn-secondary">Export</button>
+      <button id="btn-import" class="btn btn-secondary">Import</button>
+    </div>
+    <input type="file" id="file-import" accept=".txt,.tsv,text/plain,.json,application/json" hidden>
+
+    <p class="hint">Import/export uses Anki's plain-text card format (tab-separated .txt). All data stays on this device.</p>
+  </section>
+
+  <!-- ===== STUDY SETUP VIEW ===== -->
+  <section id="view-study-setup" class="view hidden">
+    <header class="topbar">
+      <button class="icon-btn" id="btn-study-setup-back">✕</button>
+      <h2>Choose sections</h2>
+      <span class="spacer"></span>
+    </header>
+
+    <div id="section-picker-list" class="section-picker"></div>
+
+    <div class="home-actions">
+      <button id="btn-section-picker-all" class="btn btn-ghost">Select all</button>
+      <button id="btn-section-picker-none" class="btn btn-ghost">Select none</button>
+    </div>
+
+    <button id="btn-study-start" class="btn btn-primary btn-big">Start studying</button>
   </section>
 
   <!-- ===== STUDY VIEW ===== -->
@@ -111,6 +145,10 @@
       <label>Notes (optional)
         <input type="text" id="input-notes" autocomplete="off">
       </label>
+      <div class="field-block">
+        <span class="field-label">Sections</span>
+        <div id="add-sections-list" class="chip-list"></div>
+      </div>
       <button type="submit" id="btn-save-card" class="btn btn-primary btn-big">Save card</button>
       <p class="save-toast hidden" id="save-toast">Saved ✓ add another</p>
     </form>
@@ -124,7 +162,24 @@
       <span class="spacer"></span>
     </header>
     <input type="text" id="manage-search" class="search-input" placeholder="Search...">
+    <select id="manage-section-filter" class="search-input"></select>
     <div id="manage-list" class="manage-list"></div>
+  </section>
+
+  <!-- ===== SECTIONS VIEW ===== -->
+  <section id="view-sections" class="view hidden">
+    <header class="topbar">
+      <button class="icon-btn" id="btn-sections-back">✕</button>
+      <h2>Sections</h2>
+      <span class="spacer"></span>
+    </header>
+    <form id="form-add-section" class="form section-add-form">
+      <label>New section
+        <input type="text" id="input-section-name" autocomplete="off" placeholder="e.g. Food, Travel">
+      </label>
+      <button type="submit" class="btn btn-primary">Add section</button>
+    </form>
+    <div id="sections-list" class="manage-list"></div>
   </section>
 
 </div>

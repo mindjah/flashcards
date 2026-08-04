@@ -66,6 +66,7 @@ body {
 }
 
 .topbar h1 {
+  flex: 1;
   font-size: 22px;
   margin: 0;
   font-weight: 700;
@@ -435,4 +436,92 @@ body {
   text-align: center;
   color: var(--text-dim);
   padding: 40px 16px;
+}
+
+/* ===== SECTIONS / CHIPS ===== */
+.field-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-label {
+  font-size: 13px;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip-list-empty {
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.chip {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+}
+
+.chip.active {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.chip-list-inline {
+  margin-top: 4px;
+}
+
+.chip-tag {
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  border-color: var(--accent-dim);
+  background: transparent;
+}
+
+.section-add-form {
+  flex: none;
+  padding-bottom: 8px;
+}
+
+.section-picker {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 8px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.section-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 16px;
+}
+
+.section-picker-row input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent);
+  flex-shrink: 0;
 }

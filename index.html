@@ -54,14 +54,14 @@
         <span class="field-label">Mastery</span>
       </div>
       <div class="mastery-bar" id="mastery-bar">
-        <div class="mastery-seg mastery-new" id="mastery-new"></div>
-        <div class="mastery-seg mastery-learning" id="mastery-learning"></div>
-        <div class="mastery-seg mastery-mastered" id="mastery-mastered"></div>
+        <button type="button" class="mastery-seg mastery-new" id="mastery-new" data-tier="fresh"></button>
+        <button type="button" class="mastery-seg mastery-learning" id="mastery-learning" data-tier="learning"></button>
+        <button type="button" class="mastery-seg mastery-mastered" id="mastery-mastered" data-tier="mastered"></button>
       </div>
       <div class="mastery-legend">
-        <span class="mastery-legend-item"><i class="mastery-dot dot-new"></i>New <b id="mastery-new-count">0</b></span>
-        <span class="mastery-legend-item"><i class="mastery-dot dot-learning"></i>Learning <b id="mastery-learning-count">0</b></span>
-        <span class="mastery-legend-item"><i class="mastery-dot dot-mastered"></i>Mastered <b id="mastery-mastered-count">0</b></span>
+        <button type="button" class="mastery-legend-item" data-tier="fresh"><i class="mastery-dot dot-new"></i>New <b id="mastery-new-count">0</b></button>
+        <button type="button" class="mastery-legend-item" data-tier="learning"><i class="mastery-dot dot-learning"></i>Learning <b id="mastery-learning-count">0</b></button>
+        <button type="button" class="mastery-legend-item" data-tier="mastered"><i class="mastery-dot dot-mastered"></i>Mastered <b id="mastery-mastered-count">0</b></button>
       </div>
     </div>
 
@@ -74,6 +74,11 @@
 
     <div class="home-actions">
       <button id="btn-manage-sections" class="btn btn-secondary">Sections</button>
+    </div>
+
+    <div class="struggling-block hidden" id="struggling-block">
+      <div class="field-label">Keep practicing</div>
+      <div class="struggling-list" id="struggling-list"></div>
     </div>
   </section>
 
@@ -172,6 +177,12 @@
     </header>
     <input type="text" id="manage-search" class="search-input" placeholder="Search...">
     <select id="manage-section-filter" class="search-input"></select>
+    <select id="manage-mastery-filter" class="search-input">
+      <option value="">All progress</option>
+      <option value="fresh">New</option>
+      <option value="learning">Learning</option>
+      <option value="mastered">Mastered</option>
+    </select>
     <div id="manage-list" class="manage-list"></div>
   </section>
 

@@ -17,11 +17,17 @@
       var parsed = JSON.parse(raw);
       // migrate from the old format where the key held a bare cards array
       if (Array.isArray(parsed)) {
-        parsed.forEach(function (c) { if (!Array.isArray(c.sectionIds)) c.sectionIds = []; });
+        parsed.forEach(function (c) {
+          if (!Array.isArray(c.sectionIds)) c.sectionIds = [];
+          if (typeof c.reviewed !== "boolean") c.reviewed = c.box > 0;
+        });
         return { cards: parsed, sections: [], streak: defaultStreak(), lastExportAt: null };
       }
       var loadedCards = Array.isArray(parsed.cards) ? parsed.cards : [];
-      loadedCards.forEach(function (c) { if (!Array.isArray(c.sectionIds)) c.sectionIds = []; });
+      loadedCards.forEach(function (c) {
+        if (!Array.isArray(c.sectionIds)) c.sectionIds = [];
+        if (typeof c.reviewed !== "boolean") c.reviewed = c.box > 0;
+      });
       var loadedStreak = parsed.streak && typeof parsed.streak.current === "number" ? parsed.streak : defaultStreak();
       return {
         cards: loadedCards,
@@ -82,14 +88,23 @@
   }
 
   // ---------- mastery ----------
+  function masteryTier(c) {
+    if (c.box <= 0) return "fresh";
+    if (c.box <= 2) return "learning";
+    return "mastered";
+  }
+
   function masteryBreakdown() {
     var counts = { fresh: 0, learning: 0, mastered: 0 };
-    cards.forEach(function (c) {
-      if (c.box <= 0) counts.fresh++;
-      else if (c.box <= 2) counts.learning++;
-      else counts.mastered++;
-    });
+    cards.forEach(function (c) { counts[masteryTier(c)]++; });
     return counts;
+  }
+
+  function strugglingCards() {
+    return cards
+      .filter(function (c) { return c.box <= 0 && c.reviewed; })
+      .sort(function (a, b) { return b.dueAt - a.dueAt; })
+      .slice(0, 5);
   }
 
   // ---------- sections ----------
@@ -184,6 +199,34 @@
     document.getElementById("mastery-new-count").textContent = m.fresh;
     document.getElementById("mastery-learning-count").textContent = m.learning;
     document.getElementById("mastery-mastered-count").textContent = m.mastered;
+
+    renderStrugglingList();
+  }
+
+  function renderStrugglingList() {
+    var struggling = strugglingCards();
+    document.getElementById("struggling-block").classList.toggle("hidden", struggling.length === 0);
+
+    var list = document.getElementById("struggling-list");
+    list.innerHTML = "";
+    struggling.forEach(function (c) {
+      var item = document.createElement("button");
+      item.type = "button";
+      item.className = "struggling-item";
+
+      var word = document.createElement("span");
+      word.className = "struggling-item-word";
+      word.textContent = c.word;
+
+      var translation = document.createElement("span");
+      translation.className = "struggling-item-translation";
+      translation.textContent = c.translation;
+
+      item.appendChild(word);
+      item.appendChild(translation);
+      item.addEventListener("click", function () { openAddView(c); });
+      list.appendChild(item);
+    });
   }
 
   function setMasterySegment(id, count, total) {
@@ -344,6 +387,7 @@
       notes: notes,
       sectionIds: editingSectionIds.slice(),
       box: 0,
+      reviewed: false,
       dueAt: Date.now(),
       createdAt: Date.now()
     });
@@ -392,6 +436,7 @@
     list.innerHTML = "";
 
     var sectionFilterVal = document.getElementById("manage-section-filter").value;
+    var masteryFilterVal = document.getElementById("manage-mastery-filter").value;
 
     var items = cards.slice().sort(function (a, b) { return b.createdAt - a.createdAt; });
     if (filter) {
@@ -405,6 +450,9 @@
       items = items.filter(function (c) { return c.sectionIds.length === 0; });
     } else if (sectionFilterVal) {
       items = items.filter(function (c) { return c.sectionIds.indexOf(sectionFilterVal) !== -1; });
+    }
+    if (masteryFilterVal) {
+      items = items.filter(function (c) { return masteryTier(c) === masteryFilterVal; });
     }
 
     if (items.length === 0) {
@@ -501,6 +549,25 @@
 
   document.getElementById("manage-section-filter").addEventListener("change", function () {
     renderManageList(document.getElementById("manage-search").value);
+  });
+
+  document.getElementById("manage-mastery-filter").addEventListener("change", function () {
+    renderManageList(document.getElementById("manage-search").value);
+  });
+
+  function openManageFilteredByMastery(tier) {
+    populateManageSectionFilter();
+    document.getElementById("manage-section-filter").value = "";
+    document.getElementById("manage-mastery-filter").value = tier;
+    document.getElementById("manage-search").value = "";
+    renderManageList();
+    showView("manage");
+  }
+
+  document.querySelectorAll(".mastery-seg, .mastery-legend-item").forEach(function (el) {
+    el.addEventListener("click", function () {
+      openManageFilteredByMastery(el.dataset.tier);
+    });
   });
 
   document.getElementById("btn-manage-back").addEventListener("click", function () {
@@ -780,6 +847,7 @@
     if (!c) return;
     session.studied++;
     recordStudyActivity();
+    c.reviewed = true;
 
     if (passed) {
       session.passed++;
@@ -883,7 +951,8 @@
         tsvEscape(c.notes || ""),
         tags,
         c.box,
-        c.dueAt
+        c.dueAt,
+        c.reviewed ? 1 : 0
       ].join("\t"));
     });
 
@@ -950,6 +1019,9 @@
         if (!isNaN(box)) item.box = box;
         if (!isNaN(dueAt)) item.dueAt = dueAt;
       }
+      if (cols.length >= 7) {
+        item.reviewed = cols[6] === "1";
+      }
 
       items.push(item);
     });
@@ -1006,13 +1078,16 @@
             return getOrCreateSectionByName(name).id;
           });
 
+          var importedBox = typeof item.box === "number" ? item.box : 0;
+
           cards.push({
             id: uid(),
             word: item.word,
             translation: item.translation,
             notes: item.notes,
             sectionIds: sectionIds,
-            box: typeof item.box === "number" ? item.box : 0,
+            box: importedBox,
+            reviewed: typeof item.reviewed === "boolean" ? item.reviewed : importedBox > 0,
             dueAt: typeof item.dueAt === "number" ? item.dueAt : Date.now(),
             createdAt: typeof item.createdAt === "number" ? item.createdAt : Date.now()
           });

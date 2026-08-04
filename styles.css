@@ -184,6 +184,50 @@ body {
 
 .home-actions .btn { flex: 1; }
 
+/* ===== STRUGGLING WORDS ===== */
+.struggling-block {
+  padding: 18px 16px 4px;
+}
+
+.struggling-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.struggling-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-family: inherit;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+}
+
+.struggling-item:active { background: var(--surface-2); }
+
+.struggling-item-word {
+  font-weight: 700;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.struggling-item-translation {
+  color: var(--text-dim);
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* ===== MASTERY ===== */
 .mastery-block {
   padding: 14px 16px 0;
@@ -205,8 +249,13 @@ body {
 .mastery-seg {
   flex: 0 0 auto;
   height: 100%;
+  padding: 0;
+  border: none;
+  cursor: pointer;
   transition: flex-basis 0.3s ease;
 }
+
+.mastery-seg:active { opacity: 0.75; }
 
 .mastery-new { background: var(--mastery-new); }
 .mastery-learning { background: var(--mastery-learning); }
@@ -224,7 +273,16 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
+  background: none;
+  border: none;
+  padding: 4px 0;
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
 }
+
+.mastery-legend-item:active { opacity: 0.7; }
 
 .mastery-legend-item b {
   color: var(--text);

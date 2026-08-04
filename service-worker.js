@@ -1,4 +1,4 @@
-var CACHE_NAME = "espanol-cards-v1";
+var CACHE_NAME = "espanol-cards-v2";
 var ASSETS = [
   "./",
   "./index.html",
@@ -34,15 +34,14 @@ self.addEventListener("activate", function (event) {
 self.addEventListener("fetch", function (event) {
   if (event.request.method !== "GET") return;
   event.respondWith(
-    caches.match(event.request).then(function (cached) {
-      var fetchPromise = fetch(event.request).then(function (response) {
-        if (response && response.status === 200) {
-          var copy = response.clone();
-          caches.open(CACHE_NAME).then(function (cache) { cache.put(event.request, copy); });
-        }
-        return response;
-      }).catch(function () { return cached; });
-      return cached || fetchPromise;
+    fetch(event.request).then(function (response) {
+      if (response && response.status === 200) {
+        var copy = response.clone();
+        caches.open(CACHE_NAME).then(function (cache) { cache.put(event.request, copy); });
+      }
+      return response;
+    }).catch(function () {
+      return caches.match(event.request);
     })
   );
 });

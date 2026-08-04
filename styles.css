@@ -479,6 +479,11 @@ body {
   color: var(--text);
 }
 
+.chip-add {
+  border-style: dashed;
+  color: var(--accent);
+}
+
 .chip-list-inline {
   margin-top: 4px;
 }

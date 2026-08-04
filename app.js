@@ -158,14 +158,6 @@
     var list = document.getElementById("add-sections-list");
     list.innerHTML = "";
 
-    if (sections.length === 0) {
-      var empty = document.createElement("div");
-      empty.className = "chip-list-empty";
-      empty.textContent = "No sections yet — create one in Sections.";
-      list.appendChild(empty);
-      return;
-    }
-
     sections.forEach(function (s) {
       var chip = document.createElement("button");
       chip.type = "button";
@@ -182,6 +174,23 @@
       });
       list.appendChild(chip);
     });
+
+    var addChip = document.createElement("button");
+    addChip.type = "button";
+    addChip.className = "chip chip-add";
+    addChip.textContent = "+ New section";
+    addChip.addEventListener("click", function () {
+      var name = prompt("New section name");
+      if (name === null) return;
+      name = name.trim();
+      if (!name) return;
+      var section = addSection(name);
+      if (section && editingSectionIds.indexOf(section.id) === -1) {
+        editingSectionIds.push(section.id);
+      }
+      renderAddSectionsPicker();
+    });
+    list.appendChild(addChip);
   }
 
   function openAddView(cardToEdit) {

@@ -1196,5 +1196,8 @@
   // ---------- init ----------
   refreshHome();
   showView("home");
-  maybePromptBackup();
+  // confirm() blocks the main thread and can fire before the browser has
+  // painted anything - a short delay lets the home screen actually render
+  // first instead of a black screen holding until the dialog is dismissed.
+  setTimeout(maybePromptBackup, 400);
 })();

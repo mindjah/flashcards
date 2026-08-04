@@ -33,10 +33,13 @@ self.addEventListener("activate", function (event) {
 
 self.addEventListener("fetch", function (event) {
   if (event.request.method !== "GET") return;
-  // "reload" bypasses the browser's own HTTP cache so a fresh deploy is
-  // never masked by GitHub Pages' Cache-Control: max-age=600 header.
+  // Default cache mode lets the browser's own HTTP cache satisfy this
+  // quickly within GitHub Pages' 10-minute max-age instead of forcing a
+  // full network round-trip on every single load forever - a real deploy
+  // still shows up within that window without a several-second delay on
+  // every ordinary app open.
   event.respondWith(
-    fetch(event.request, { cache: "reload" }).then(function (response) {
+    fetch(event.request).then(function (response) {
       if (response && response.status === 200) {
         var copy = response.clone();
         caches.open(CACHE_NAME).then(function (cache) { cache.put(event.request, copy); });

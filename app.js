@@ -320,11 +320,13 @@
   document.getElementById("struggling-toggle").addEventListener("click", function () {
     strugglingExpanded = !strugglingExpanded;
     renderStrugglingList();
+    if (!strugglingExpanded) document.getElementById("view-home").scrollTo({ top: 0, behavior: "smooth" });
   });
 
   document.getElementById("recent-toggle").addEventListener("click", function () {
     recentExpanded = !recentExpanded;
     renderStrugglingList();
+    if (!recentExpanded) document.getElementById("view-home").scrollTo({ top: 0, behavior: "smooth" });
   });
 
   function setMasterySegment(id, count, total) {

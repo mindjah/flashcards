@@ -221,7 +221,8 @@
     empty: document.getElementById("view-empty"),
     add: document.getElementById("view-add"),
     manage: document.getElementById("view-manage"),
-    sections: document.getElementById("view-sections")
+    sections: document.getElementById("view-sections"),
+    readme: document.getElementById("view-readme")
   };
 
   function showView(name) {
@@ -429,6 +430,15 @@
   document.getElementById("btn-manage-sections").addEventListener("click", function () {
     renderSectionsList();
     showView("sections");
+  });
+
+  document.getElementById("btn-readme").addEventListener("click", function () {
+    showView("readme");
+  });
+
+  document.getElementById("btn-readme-back").addEventListener("click", function () {
+    refreshHome();
+    showView("home");
   });
 
   // ---------- settings dropdown ----------

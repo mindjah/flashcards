@@ -34,8 +34,12 @@
             <span class="dropdown-item-label">Import</span>
             <span class="dropdown-item-hint">Add new words from .txt</span>
           </button>
+          <button id="btn-readme" class="dropdown-item">
+            <span class="dropdown-item-label">README</span>
+            <span class="dropdown-item-hint">How practice, decks & mastery work</span>
+          </button>
           <p class="dropdown-info">All data stays on this device. Import/export uses Anki's plain-text card format.</p>
-          <p class="app-version">v1.8.0</p>
+          <p class="app-version">v1.9.0</p>
         </div>
       </div>
     </header>
@@ -244,6 +248,53 @@
       <button type="submit" class="btn btn-primary">Add card deck</button>
     </form>
     <div id="sections-list" class="manage-list"></div>
+  </section>
+
+  <!-- ===== README VIEW ===== -->
+  <section id="view-readme" class="view hidden">
+    <header class="topbar">
+      <button class="icon-btn" id="btn-readme-back">✕</button>
+      <h2>README</h2>
+      <span class="spacer"></span>
+    </header>
+
+    <div class="readme-content">
+      <div class="readme-section">
+        <h3>Practice &amp; "To learn"</h3>
+        <p>Every card sits in a box from 0 to 5, a spaced-repetition schedule. New cards start in box 0, due immediately. <b>To learn</b> on the home screen is simply the count of cards whose due date has already passed - box 0 cards plus anything whose review interval has come back around.</p>
+        <p>Tapping <b>Practice</b> → <b>Start practicing</b> studies only those due cards by default. If nothing is due, you'll see a "Nothing due right now" screen with a <b>Practice all cards anyway</b> option, which is the only way to study cards that aren't due yet.</p>
+        <p>Answering <b>Knew it</b> moves a card up one box and pushes its due date out (box intervals: 1, 3, 7, 16, 35 days). Answering <b>Didn't know</b> drops it straight back to box 0, due immediately, and requeues it a few cards later in the same session so you see it again before finishing.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Mastery bar</h3>
+        <p>The mastery bar groups every card into one of three tiers based on its box: <b>New</b> (box 0), <b>Learning</b> (box 1-2), and <b>Mastered</b> (box 3+). Tapping a segment or its legend opens Manage cards pre-filtered to that tier.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Practice modes</h3>
+        <p>Choose <b>Spanish → Translation</b> or <b>Translation → Spanish</b> in Practice setup - it decides which side of the card shows first. Your last choice, along with your deck selection, is remembered for next time.</p>
+        <p>During a session, tap the card to flip it, then swipe right (or tap <b>Knew it</b>) or swipe left (or tap <b>Didn't know</b>) to answer.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Card decks</h3>
+        <p>Decks are tags you can put on a card - a card can belong to any number of decks, or none. Each deck gets a random color as soon as you create it, so its label is easy to spot at a glance in Manage cards.</p>
+        <p>Practice setup and Manage cards both let you filter by deck, including a "No card deck" bucket for untagged cards. In Practice setup, use the small <b>Select all</b> / <b>Unselect</b> chips to quickly check or clear every deck - Start practicing stays disabled until at least one is selected. Tapping a deck from the Card decks screen jumps straight into Manage cards filtered to it.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Keep practicing &amp; Recently added</h3>
+        <p><b>Keep practicing</b> lists cards you've recently gotten wrong (failed back down to box 0), most recent first, up to 20. <b>Recently added</b> shows your newest cards instead, but only when nothing is currently struggling - only one of the two lists is shown at a time. Both start collapsed to 3 rows with a "Show more" toggle.</p>
+        <p>Tap a word in either list to reveal its translation and notes without leaving the home screen.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Export / Import</h3>
+        <p>Export saves a plain-text file in Anki's tab-separated note format (word, translation, notes, deck tags, box, due date, reviewed), so it opens directly in Anki too. Deck memberships are stored as <code>deck::Name</code> tags - a card in several decks gets several tags. Your streak is saved in a couple of header comment lines.</p>
+        <p>Import reads that same format (older JSON exports still work too). Matching is by word + translation, case-insensitive: a duplicate isn't re-added, but any new deck tags on it are merged in. Missing decks mentioned in tags are created automatically. If it's been a week since your last export, the app will offer to back up on launch.</p>
+      </div>
+    </div>
   </section>
 
 </div>

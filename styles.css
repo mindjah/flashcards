@@ -880,3 +880,41 @@ body {
   accent-color: var(--accent);
   flex-shrink: 0;
 }
+
+/* ===== README ===== */
+.readme-content {
+  padding: 4px 16px 24px;
+}
+
+.readme-section {
+  margin-bottom: 22px;
+}
+
+.readme-section h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  color: var(--accent);
+}
+
+.readme-section p {
+  margin: 0 0 8px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
+.readme-section p:last-child {
+  margin-bottom: 0;
+}
+
+.readme-section b {
+  color: var(--text);
+}
+
+.readme-section code {
+  background: var(--surface-2);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 13px;
+  color: var(--text);
+}

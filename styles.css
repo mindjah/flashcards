@@ -213,6 +213,12 @@ body {
   border-radius: 16px;
   padding: 18px 12px;
   text-align: center;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.stat-card:active {
+  background: var(--surface-2);
 }
 
 .stat-num {

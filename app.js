@@ -211,6 +211,18 @@
   }
 
   // ---------- home ----------
+  document.getElementById("stat-card-due").addEventListener("click", function () {
+    alert("To learn: cards that are due for review right now - new cards plus any whose review interval has passed. Tap Practice to work through them.");
+  });
+
+  document.getElementById("stat-card-total").addEventListener("click", function () {
+    alert("Total cards: every card in your collection, across all card decks.");
+  });
+
+  document.getElementById("stat-card-streak").addEventListener("click", function () {
+    alert("Day streak: consecutive days you've practiced at least one card. Practice today to keep it going.");
+  });
+
   function refreshHome() {
     document.getElementById("stat-due").textContent = dueCards().length;
     document.getElementById("stat-total").textContent = cards.length;

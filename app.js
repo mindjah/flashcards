@@ -228,28 +228,48 @@
     renderStrugglingList();
   }
 
+  function buildHintRow(c) {
+    var item = document.createElement("div");
+    item.className = "struggling-item";
+
+    var word = document.createElement("span");
+    word.className = "struggling-item-word";
+    word.textContent = c.word;
+
+    var translation = document.createElement("span");
+    translation.className = "struggling-item-translation";
+    translation.textContent = c.translation;
+
+    item.appendChild(word);
+    item.appendChild(translation);
+    return item;
+  }
+
+  function recentlyAddedCards() {
+    return cards.slice().sort(function (a, b) { return b.createdAt - a.createdAt; }).slice(0, 5);
+  }
+
   function renderStrugglingList() {
     var struggling = strugglingCards();
-    document.getElementById("struggling-block").classList.toggle("hidden", struggling.length === 0);
+    var showStruggling = struggling.length > 0;
 
+    document.getElementById("struggling-block").classList.toggle("hidden", !showStruggling);
     var list = document.getElementById("struggling-list");
     list.innerHTML = "";
-    struggling.forEach(function (c) {
-      var item = document.createElement("div");
-      item.className = "struggling-item";
+    struggling.forEach(function (c) { list.appendChild(buildHintRow(c)); });
 
-      var word = document.createElement("span");
-      word.className = "struggling-item-word";
-      word.textContent = c.word;
+    // Only one of these two hint sections shows at a time - recently added
+    // cards fill the space when nothing is currently struggling.
+    if (showStruggling) {
+      document.getElementById("recent-block").classList.add("hidden");
+      return;
+    }
 
-      var translation = document.createElement("span");
-      translation.className = "struggling-item-translation";
-      translation.textContent = c.translation;
-
-      item.appendChild(word);
-      item.appendChild(translation);
-      list.appendChild(item);
-    });
+    var recent = recentlyAddedCards();
+    document.getElementById("recent-block").classList.toggle("hidden", recent.length === 0);
+    var recentList = document.getElementById("recent-list");
+    recentList.innerHTML = "";
+    recent.forEach(function (c) { recentList.appendChild(buildHintRow(c)); });
   }
 
   function setMasterySegment(id, count, total) {

@@ -994,14 +994,20 @@
   // tab-separated fields. Card decks round-trip as hierarchical "deck::Name" tags,
   // Anki's own mechanism for grouping notes by more than one category at once.
   var SECTION_TAG_PREFIX = "deck::";
+  // "section::" is recognized on import too - it was this app's tag prefix
+  // before card decks were renamed from "sections", and files exported
+  // under that name would otherwise have their deck tags silently dropped.
+  var SECTION_TAG_PREFIXES_READ = ["deck::", "section::"];
 
   function tagForSection(name) {
     return SECTION_TAG_PREFIX + name.replace(/\s+/g, "_");
   }
 
   function sectionNameFromTag(tag) {
-    if (tag.toLowerCase().indexOf(SECTION_TAG_PREFIX) !== 0) return null;
-    return tag.slice(SECTION_TAG_PREFIX.length).replace(/_/g, " ");
+    var lower = tag.toLowerCase();
+    var prefix = SECTION_TAG_PREFIXES_READ.filter(function (p) { return lower.indexOf(p) === 0; })[0];
+    if (!prefix) return null;
+    return tag.slice(prefix.length).replace(/_/g, " ");
   }
 
   function tsvEscape(field) {
@@ -1142,20 +1148,31 @@
           streak = { current: parsed.streak.current || 0, lastDate: parsed.streak.lastDate || null };
         }
 
-        var existingWords = new Set(cards.map(function (c) { return c.word.toLowerCase() + "|" + c.translation.toLowerCase(); }));
+        var existingByKey = {};
+        cards.forEach(function (c) {
+          existingByKey[c.word.toLowerCase() + "|" + c.translation.toLowerCase()] = c;
+        });
         var added = 0;
         incoming.forEach(function (item) {
           var key = item.word.toLowerCase() + "|" + item.translation.toLowerCase();
-          if (existingWords.has(key)) return;
-          existingWords.add(key);
 
           var sectionIds = item.sectionNamesList.map(function (name) {
             return getOrCreateSectionByName(name).id;
           });
 
+          var existing = existingByKey[key];
+          if (existing) {
+            // A duplicate word shouldn't mean its deck tags in the imported
+            // file get silently ignored - merge in any new memberships.
+            sectionIds.forEach(function (id) {
+              if (existing.sectionIds.indexOf(id) === -1) existing.sectionIds.push(id);
+            });
+            return;
+          }
+
           var importedBox = typeof item.box === "number" ? item.box : 0;
 
-          cards.push({
+          var newCard = {
             id: uid(),
             word: item.word,
             translation: item.translation,
@@ -1165,7 +1182,9 @@
             reviewed: typeof item.reviewed === "boolean" ? item.reviewed : importedBox > 0,
             dueAt: typeof item.dueAt === "number" ? item.dueAt : Date.now(),
             createdAt: typeof item.createdAt === "number" ? item.createdAt : Date.now()
-          });
+          };
+          cards.push(newCard);
+          existingByKey[key] = newCard;
           added++;
         });
         saveData();

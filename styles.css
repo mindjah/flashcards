@@ -499,6 +499,8 @@ body {
 .card-back {
   transform: rotateY(180deg);
   background: var(--surface-2);
+  flex-direction: column;
+  gap: 14px;
 }
 
 .card-word {
@@ -512,6 +514,19 @@ body {
   font-weight: 600;
   color: var(--accent);
   word-break: break-word;
+}
+
+.card-note {
+  margin: 0;
+  font-size: 14px;
+  font-style: italic;
+  color: var(--text-dim);
+  word-break: break-word;
+}
+
+.card-note-label {
+  font-style: normal;
+  font-weight: 700;
 }
 
 .tap-hint {

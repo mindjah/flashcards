@@ -875,6 +875,11 @@
     var reversed = session.mode === "reversed";
     document.getElementById("card-word").textContent = reversed ? session.current.translation : session.current.word;
     document.getElementById("card-translation").textContent = reversed ? session.current.word : session.current.translation;
+
+    var hasNote = !!session.current.notes;
+    document.getElementById("card-note").classList.toggle("hidden", !hasNote);
+    document.getElementById("card-note-text").textContent = hasNote ? session.current.notes : "";
+
     document.getElementById("tap-hint").textContent = "Tap card to reveal";
     document.getElementById("study-answer-controls").classList.add("hidden");
     updateProgress();

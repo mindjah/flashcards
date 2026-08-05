@@ -288,11 +288,9 @@
   }
 
   function buildHintRow(c) {
-    var hasNote = !!c.notes;
-
     var item = document.createElement("button");
     item.type = "button";
-    item.className = "struggling-item info-trigger" + (hasNote ? " has-note" : "");
+    item.className = "struggling-item info-trigger";
 
     var word = document.createElement("span");
     word.className = "struggling-item-word";
@@ -301,23 +299,17 @@
     var right = document.createElement("span");
     right.className = "struggling-item-right";
 
-    var translation = document.createElement("span");
-    translation.className = "struggling-item-translation";
-    translation.textContent = c.translation;
-    right.appendChild(translation);
-
-    if (hasNote) {
-      var noteIcon = document.createElement("span");
-      noteIcon.className = "struggling-item-note-icon";
-      noteIcon.textContent = "📝";
-      right.appendChild(noteIcon);
-    }
+    var revealIcon = document.createElement("span");
+    revealIcon.className = "struggling-item-icon";
+    revealIcon.textContent = "👁️";
+    right.appendChild(revealIcon);
 
     item.appendChild(word);
     item.appendChild(right);
 
     item.addEventListener("click", function () {
-      if (hasNote) showInfoPopup(item, "📝 Note: " + c.notes);
+      var text = "Translation: " + c.translation + (c.notes ? "\n📝 Note: " + c.notes : "");
+      showInfoPopup(item, text);
     });
 
     return item;

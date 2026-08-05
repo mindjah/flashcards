@@ -222,6 +222,7 @@ body {
   color: var(--text-dim);
   font-size: 14px;
   line-height: 1.4;
+  white-space: pre-line;
 }
 
 .stat-card {
@@ -293,10 +294,10 @@ body {
   color: var(--text);
   font-family: inherit;
   text-align: left;
+  cursor: pointer;
 }
 
-.struggling-item.has-note { cursor: pointer; }
-.struggling-item.has-note:active { background: var(--surface-2); }
+.struggling-item:active { background: var(--surface-2); }
 
 .struggling-item-word {
   font-weight: 700;
@@ -308,22 +309,11 @@ body {
   display: flex;
   align-items: baseline;
   gap: 5px;
-  overflow: hidden;
-  min-width: 0;
-}
-
-.struggling-item-translation {
-  color: var(--text-dim);
-  font-size: 13px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  min-width: 0;
-}
-
-.struggling-item-note-icon {
   flex-shrink: 0;
-  font-size: 11px;
+}
+
+.struggling-item-icon {
+  font-size: 13px;
 }
 
 .hint-toggle {

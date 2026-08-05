@@ -319,7 +319,7 @@
     return cards.slice().sort(function (a, b) { return b.createdAt - a.createdAt; }).slice(0, 20);
   }
 
-  var HINT_COLLAPSED_COUNT = 4;
+  var HINT_COLLAPSED_COUNT = 3;
   var strugglingExpanded = false;
   var recentExpanded = false;
 

@@ -211,16 +211,37 @@
   }
 
   // ---------- home ----------
-  document.getElementById("stat-card-due").addEventListener("click", function () {
-    alert("To learn: cards that are due for review right now - new cards plus any whose review interval has passed. Tap Practice to work through them.");
+  var STAT_INFO = {
+    "stat-card-due": "To learn: cards that are due for review right now - new cards plus any whose review interval has passed. Tap Practice to work through them.",
+    "stat-card-total": "Total cards: every card in your collection, across all card decks.",
+    "stat-card-streak": "Day streak: consecutive days you've practiced at least one card. Practice today to keep it going."
+  };
+
+  function toggleStatInfo(cardId) {
+    var popup = document.getElementById("stat-info-popup");
+    var alreadyOpenForThis = !popup.classList.contains("hidden") && popup.dataset.for === cardId;
+    if (alreadyOpenForThis) {
+      popup.classList.add("hidden");
+      return;
+    }
+    document.getElementById("stat-info-text").textContent = STAT_INFO[cardId];
+    popup.dataset.for = cardId;
+    popup.classList.remove("hidden");
+  }
+
+  Object.keys(STAT_INFO).forEach(function (cardId) {
+    document.getElementById(cardId).addEventListener("click", function () {
+      toggleStatInfo(cardId);
+    });
   });
 
-  document.getElementById("stat-card-total").addEventListener("click", function () {
-    alert("Total cards: every card in your collection, across all card decks.");
-  });
-
-  document.getElementById("stat-card-streak").addEventListener("click", function () {
-    alert("Day streak: consecutive days you've practiced at least one card. Practice today to keep it going.");
+  document.addEventListener("click", function (e) {
+    var popup = document.getElementById("stat-info-popup");
+    if (!popup.classList.contains("hidden") &&
+        !popup.contains(e.target) &&
+        !e.target.closest(".stat-card")) {
+      popup.classList.add("hidden");
+    }
   });
 
   function refreshHome() {

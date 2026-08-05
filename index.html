@@ -35,7 +35,7 @@
             <span class="dropdown-item-hint">Add new words from .txt</span>
           </button>
           <p class="dropdown-info">All data stays on this device. Import/export uses Anki's plain-text card format.</p>
-          <p class="app-version">v1.7.0</p>
+          <p class="app-version">v1.8.0</p>
         </div>
       </div>
     </header>
@@ -125,12 +125,11 @@
 
     <div class="field-block section-picker-block">
       <span class="field-label">Card decks</span>
+      <div class="chip-list">
+        <button type="button" id="btn-section-picker-all" class="chip">Select all</button>
+        <button type="button" id="btn-section-picker-none" class="chip">Unselect</button>
+      </div>
       <div id="section-picker-list" class="section-picker"></div>
-    </div>
-
-    <div class="home-actions">
-      <button id="btn-section-picker-all" class="btn btn-ghost">Select all</button>
-      <button id="btn-section-picker-none" class="btn btn-ghost">Select none</button>
     </div>
 
     <button id="btn-study-start" class="btn btn-primary btn-big">Start practicing</button>

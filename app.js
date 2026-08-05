@@ -5,6 +5,16 @@
   var BOX_INTERVALS_DAYS = [0, 1, 3, 7, 16, 35]; // index = box number, box0 = due immediately
   var MAX_BOX = BOX_INTERVALS_DAYS.length - 1;
 
+  var SECTION_COLORS = [
+    "#f1bf00", "#3ecf8e", "#ff6b6b", "#5b8def", "#c77dff",
+    "#ff9f45", "#38d9d9", "#f06595", "#82c91e", "#748ffc",
+    "#ffa8a8", "#63e6be"
+  ];
+
+  function randomSectionColor() {
+    return SECTION_COLORS[Math.floor(Math.random() * SECTION_COLORS.length)];
+  }
+
   // ---------- storage ----------
   function defaultStreak() {
     return { current: 0, lastDate: null };
@@ -28,10 +38,14 @@
         if (!Array.isArray(c.sectionIds)) c.sectionIds = [];
         if (typeof c.reviewed !== "boolean") c.reviewed = c.box > 0;
       });
+      var loadedSections = Array.isArray(parsed.sections) ? parsed.sections : [];
+      loadedSections.forEach(function (s) {
+        if (!s.color) s.color = randomSectionColor();
+      });
       var loadedStreak = parsed.streak && typeof parsed.streak.current === "number" ? parsed.streak : defaultStreak();
       return {
         cards: loadedCards,
-        sections: Array.isArray(parsed.sections) ? parsed.sections : [],
+        sections: loadedSections,
         streak: loadedStreak,
         lastExportAt: typeof parsed.lastExportAt === "number" ? parsed.lastExportAt : null,
         lastStudyPrefs: parsed.lastStudyPrefs && typeof parsed.lastStudyPrefs === "object" ? parsed.lastStudyPrefs : null
@@ -143,12 +157,18 @@
       .filter(Boolean);
   }
 
+  function sectionRefs(card) {
+    return card.sectionIds
+      .map(function (id) { return sectionById(id); })
+      .filter(Boolean);
+  }
+
   function addSection(name) {
     name = name.trim();
     if (!name) return null;
     var existing = sections.find(function (s) { return s.name.toLowerCase() === name.toLowerCase(); });
     if (existing) return existing;
-    var section = { id: uid(), name: name, createdAt: Date.now() };
+    var section = { id: uid(), name: name, color: randomSectionColor(), createdAt: Date.now() };
     sections.push(section);
     saveData();
     return section;
@@ -159,7 +179,7 @@
     if (!name) return null;
     var existing = sections.find(function (s) { return s.name.toLowerCase() === name.toLowerCase(); });
     if (existing) return existing;
-    var section = { id: uid(), name: name, createdAt: Date.now() };
+    var section = { id: uid(), name: name, color: randomSectionColor(), createdAt: Date.now() };
     sections.push(section);
     return section;
   }
@@ -385,12 +405,26 @@
     openAddView(null);
   });
 
+  var manageReturnTo = "home";
+
   document.getElementById("btn-manage").addEventListener("click", function () {
+    manageReturnTo = "home";
     populateManageSectionFilter();
+    document.getElementById("manage-section-filter").value = "";
     document.getElementById("manage-mastery-filter").value = "";
     renderManageList();
     showView("manage");
   });
+
+  function openManageForSection(sectionId) {
+    manageReturnTo = "sections";
+    populateManageSectionFilter();
+    document.getElementById("manage-section-filter").value = sectionId;
+    document.getElementById("manage-mastery-filter").value = "";
+    document.getElementById("manage-search").value = "";
+    renderManageList();
+    showView("manage");
+  }
 
   document.getElementById("btn-manage-sections").addEventListener("click", function () {
     renderSectionsList();
@@ -639,14 +673,16 @@
         text.appendChild(notes);
       }
 
-      var names = sectionNames(c);
-      if (names.length > 0) {
+      var deckRefs = sectionRefs(c);
+      if (deckRefs.length > 0) {
         var sectionsRow = document.createElement("div");
         sectionsRow.className = "chip-list chip-list-inline";
-        names.forEach(function (n) {
+        deckRefs.forEach(function (s) {
           var chip = document.createElement("span");
           chip.className = "chip chip-tag";
-          chip.textContent = n;
+          chip.textContent = s.name;
+          chip.style.borderColor = s.color;
+          chip.style.color = "#fff";
           sectionsRow.appendChild(chip);
         });
         text.appendChild(sectionsRow);
@@ -707,6 +743,7 @@
   });
 
   function openManageFilteredByMastery(tier) {
+    manageReturnTo = "home";
     populateManageSectionFilter();
     document.getElementById("manage-section-filter").value = "";
     document.getElementById("manage-mastery-filter").value = tier;
@@ -722,8 +759,14 @@
   });
 
   document.getElementById("btn-manage-back").addEventListener("click", function () {
-    refreshHome();
-    showView("home");
+    if (manageReturnTo === "sections") {
+      renderSectionsList();
+      showView("sections");
+    } else {
+      refreshHome();
+      showView("home");
+    }
+    manageReturnTo = "home";
   });
 
   // ---------- sections management ----------
@@ -743,7 +786,11 @@
       var count = cards.filter(function (c) { return c.sectionIds.indexOf(s.id) !== -1; }).length;
 
       var row = document.createElement("div");
-      row.className = "manage-item";
+      row.className = "manage-item manage-item-linkable";
+      row.addEventListener("click", function (e) {
+        if (e.target.closest(".manage-item-actions")) return;
+        openManageForSection(s.id);
+      });
 
       var text = document.createElement("div");
       text.className = "manage-item-text";
@@ -842,6 +889,8 @@
 
     var unsectionedCount = cards.filter(function (c) { return c.sectionIds.length === 0; }).length;
     list.appendChild(buildSectionPickerRow("unsectioned", "No card deck", unsectionedCount, prefIncludeUnsectioned));
+
+    updateStudyStartState();
   }
 
   function buildSectionPickerRow(value, label, count, checked) {
@@ -867,12 +916,21 @@
     );
   }
 
+  function updateStudyStartState() {
+    var anyChecked = studySetupCheckboxes().some(function (cb) { return cb.checked; });
+    document.getElementById("btn-study-start").disabled = !anyChecked;
+  }
+
+  document.getElementById("section-picker-list").addEventListener("change", updateStudyStartState);
+
   document.getElementById("btn-section-picker-all").addEventListener("click", function () {
     studySetupCheckboxes().forEach(function (cb) { cb.checked = true; });
+    updateStudyStartState();
   });
 
   document.getElementById("btn-section-picker-none").addEventListener("click", function () {
     studySetupCheckboxes().forEach(function (cb) { cb.checked = false; });
+    updateStudyStartState();
   });
 
   document.getElementById("btn-study-setup-back").addEventListener("click", function () {

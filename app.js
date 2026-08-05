@@ -107,7 +107,7 @@
     return cards
       .filter(function (c) { return c.box <= 0 && c.reviewed; })
       .sort(function (a, b) { return b.dueAt - a.dueAt; })
-      .slice(0, 5);
+      .slice(0, 20);
   }
 
   // ---------- google translate ----------
@@ -279,7 +279,23 @@
   }
 
   function recentlyAddedCards() {
-    return cards.slice().sort(function (a, b) { return b.createdAt - a.createdAt; }).slice(0, 5);
+    return cards.slice().sort(function (a, b) { return b.createdAt - a.createdAt; }).slice(0, 20);
+  }
+
+  var HINT_COLLAPSED_COUNT = 4;
+  var strugglingExpanded = false;
+  var recentExpanded = false;
+
+  function renderHintSection(listId, toggleId, items, expanded) {
+    var list = document.getElementById(listId);
+    list.innerHTML = "";
+    items.slice(0, expanded ? 20 : HINT_COLLAPSED_COUNT).forEach(function (c) {
+      list.appendChild(buildHintRow(c));
+    });
+
+    var toggle = document.getElementById(toggleId);
+    toggle.classList.toggle("hidden", items.length <= HINT_COLLAPSED_COUNT);
+    toggle.textContent = expanded ? "Show less" : "Show more";
   }
 
   function renderStrugglingList() {
@@ -287,23 +303,29 @@
     var showStruggling = struggling.length > 0;
 
     document.getElementById("struggling-block").classList.toggle("hidden", !showStruggling);
-    var list = document.getElementById("struggling-list");
-    list.innerHTML = "";
-    struggling.forEach(function (c) { list.appendChild(buildHintRow(c)); });
 
     // Only one of these two hint sections shows at a time - recently added
     // cards fill the space when nothing is currently struggling.
     if (showStruggling) {
+      renderHintSection("struggling-list", "struggling-toggle", struggling, strugglingExpanded);
       document.getElementById("recent-block").classList.add("hidden");
       return;
     }
 
     var recent = recentlyAddedCards();
     document.getElementById("recent-block").classList.toggle("hidden", recent.length === 0);
-    var recentList = document.getElementById("recent-list");
-    recentList.innerHTML = "";
-    recent.forEach(function (c) { recentList.appendChild(buildHintRow(c)); });
+    renderHintSection("recent-list", "recent-toggle", recent, recentExpanded);
   }
+
+  document.getElementById("struggling-toggle").addEventListener("click", function () {
+    strugglingExpanded = !strugglingExpanded;
+    renderStrugglingList();
+  });
+
+  document.getElementById("recent-toggle").addEventListener("click", function () {
+    recentExpanded = !recentExpanded;
+    renderStrugglingList();
+  });
 
   function setMasterySegment(id, count, total) {
     var el = document.getElementById(id);

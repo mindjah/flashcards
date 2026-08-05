@@ -211,38 +211,64 @@
   }
 
   // ---------- home ----------
+  // Generic small info popup, positioned dynamically off whichever element
+  // triggered it (stat cards are fixed in place; hint-row words scroll, so
+  // this can't just be anchored via CSS like the settings dropdown is).
+  var infoPopupAnchor = null;
+
+  function showInfoPopup(anchorEl, text) {
+    var popup = document.getElementById("stat-info-popup");
+    if (!popup.classList.contains("hidden") && infoPopupAnchor === anchorEl) {
+      hideInfoPopup();
+      return;
+    }
+    document.getElementById("stat-info-text").textContent = text;
+    popup.classList.remove("hidden");
+    infoPopupAnchor = anchorEl;
+
+    var margin = 16;
+    var anchorRect = anchorEl.getBoundingClientRect();
+    var popupRect = popup.getBoundingClientRect();
+
+    var left = anchorRect.left + anchorRect.width / 2 - popupRect.width / 2;
+    left = Math.max(margin, Math.min(left, window.innerWidth - popupRect.width - margin));
+
+    var top = anchorRect.bottom + 8;
+    if (top + popupRect.height + margin > window.innerHeight) {
+      top = anchorRect.top - popupRect.height - 8;
+    }
+
+    popup.style.left = left + "px";
+    popup.style.top = top + "px";
+  }
+
+  function hideInfoPopup() {
+    document.getElementById("stat-info-popup").classList.add("hidden");
+    infoPopupAnchor = null;
+  }
+
   var STAT_INFO = {
     "stat-card-due": "To learn: cards that are due for review right now - new cards plus any whose review interval has passed. Tap Practice to work through them.",
     "stat-card-total": "Total cards: every card in your collection, across all card decks.",
     "stat-card-streak": "Day streak: consecutive days you've practiced at least one card. Practice today to keep it going."
   };
 
-  function toggleStatInfo(cardId) {
-    var popup = document.getElementById("stat-info-popup");
-    var alreadyOpenForThis = !popup.classList.contains("hidden") && popup.dataset.for === cardId;
-    if (alreadyOpenForThis) {
-      popup.classList.add("hidden");
-      return;
-    }
-    document.getElementById("stat-info-text").textContent = STAT_INFO[cardId];
-    popup.dataset.for = cardId;
-    popup.classList.remove("hidden");
-  }
-
   Object.keys(STAT_INFO).forEach(function (cardId) {
-    document.getElementById(cardId).addEventListener("click", function () {
-      toggleStatInfo(cardId);
+    var el = document.getElementById(cardId);
+    el.addEventListener("click", function () {
+      showInfoPopup(el, STAT_INFO[cardId]);
     });
   });
 
   document.addEventListener("click", function (e) {
-    var popup = document.getElementById("stat-info-popup");
-    if (!popup.classList.contains("hidden") &&
-        !popup.contains(e.target) &&
-        !e.target.closest(".stat-card")) {
-      popup.classList.add("hidden");
+    if (!document.getElementById("stat-info-popup").classList.contains("hidden") &&
+        !e.target.closest("#stat-info-popup") &&
+        !e.target.closest(".info-trigger")) {
+      hideInfoPopup();
     }
   });
+
+  document.getElementById("view-home").addEventListener("scroll", hideInfoPopup);
 
   function refreshHome() {
     document.getElementById("stat-due").textContent = dueCards().length;
@@ -262,19 +288,38 @@
   }
 
   function buildHintRow(c) {
-    var item = document.createElement("div");
-    item.className = "struggling-item";
+    var hasNote = !!c.notes;
+
+    var item = document.createElement("button");
+    item.type = "button";
+    item.className = "struggling-item info-trigger" + (hasNote ? " has-note" : "");
 
     var word = document.createElement("span");
     word.className = "struggling-item-word";
     word.textContent = c.word;
 
+    var right = document.createElement("span");
+    right.className = "struggling-item-right";
+
     var translation = document.createElement("span");
     translation.className = "struggling-item-translation";
     translation.textContent = c.translation;
+    right.appendChild(translation);
+
+    if (hasNote) {
+      var noteIcon = document.createElement("span");
+      noteIcon.className = "struggling-item-note-icon";
+      noteIcon.textContent = "📝";
+      right.appendChild(noteIcon);
+    }
 
     item.appendChild(word);
-    item.appendChild(translation);
+    item.appendChild(right);
+
+    item.addEventListener("click", function () {
+      if (hasNote) showInfoPopup(item, "📝 Note: " + c.notes);
+    });
+
     return item;
   }
 
@@ -299,6 +344,7 @@
   }
 
   function renderStrugglingList() {
+    hideInfoPopup(); // rows are rebuilt below - don't leave a stale-anchored popup on screen
     var struggling = strugglingCards();
     var showStruggling = struggling.length > 0;
 
@@ -320,13 +366,21 @@
   document.getElementById("struggling-toggle").addEventListener("click", function () {
     strugglingExpanded = !strugglingExpanded;
     renderStrugglingList();
-    if (!strugglingExpanded) document.getElementById("view-home").scrollTo({ top: 0, behavior: "smooth" });
+    if (strugglingExpanded) {
+      document.getElementById("struggling-block").scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      document.getElementById("view-home").scrollTo({ top: 0, behavior: "smooth" });
+    }
   });
 
   document.getElementById("recent-toggle").addEventListener("click", function () {
     recentExpanded = !recentExpanded;
     renderStrugglingList();
-    if (!recentExpanded) document.getElementById("view-home").scrollTo({ top: 0, behavior: "smooth" });
+    if (recentExpanded) {
+      document.getElementById("recent-block").scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      document.getElementById("view-home").scrollTo({ top: 0, behavior: "smooth" });
+    }
   });
 
   function setMasterySegment(id, count, total) {

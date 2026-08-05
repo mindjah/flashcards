@@ -1195,6 +1195,69 @@
   window.addEventListener("orientationchange", setAppHeight);
   window.addEventListener("pageshow", setAppHeight);
 
+  // ---------- install banner (iOS manual steps / Android native prompt) ----------
+  var INSTALL_DISMISSED_KEY = "installBannerDismissed";
+  var deferredInstallPrompt = null;
+
+  function isStandaloneMode() {
+    return window.navigator.standalone === true ||
+      window.matchMedia("(display-mode: standalone)").matches;
+  }
+
+  function isIOS() { return /iphone|ipad|ipod/i.test(navigator.userAgent); }
+  function isAndroid() { return /android/i.test(navigator.userAgent); }
+
+  function showInstallBanner(kind) {
+    if (isStandaloneMode() || localStorage.getItem(INSTALL_DISMISSED_KEY)) return;
+
+    var textEl = document.getElementById("install-banner-text");
+    var actionBtn = document.getElementById("btn-install-banner-action");
+
+    if (kind === "prompt") {
+      textEl.innerHTML = "Install this app for the full experience";
+      actionBtn.classList.remove("hidden");
+    } else if (kind === "ios") {
+      textEl.innerHTML = "📤 Tap <b>Share</b>, then <b>Add to Home Screen</b> for the full app experience";
+      actionBtn.classList.add("hidden");
+    } else if (kind === "android-manual") {
+      textEl.innerHTML = "Tap <b>⋮ menu</b>, then <b>Add to Home screen</b> for the full app experience";
+      actionBtn.classList.add("hidden");
+    } else {
+      return;
+    }
+    document.getElementById("install-banner").classList.remove("hidden");
+  }
+
+  function dismissInstallBanner() {
+    localStorage.setItem(INSTALL_DISMISSED_KEY, "1");
+    document.getElementById("install-banner").classList.add("hidden");
+  }
+
+  window.addEventListener("beforeinstallprompt", function (e) {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    showInstallBanner("prompt");
+  });
+
+  document.getElementById("btn-install-banner-action").addEventListener("click", function () {
+    if (deferredInstallPrompt) {
+      deferredInstallPrompt.prompt();
+      deferredInstallPrompt.userChoice.finally(function () { deferredInstallPrompt = null; });
+    }
+    dismissInstallBanner();
+  });
+
+  document.getElementById("btn-install-banner-close").addEventListener("click", dismissInstallBanner);
+
+  // Chrome/Android fires beforeinstallprompt asynchronously; give it a beat
+  // before falling back to manual per-platform instructions (iOS never
+  // fires it at all - there's no native install prompt API in Safari).
+  setTimeout(function () {
+    if (deferredInstallPrompt || isStandaloneMode()) return;
+    if (isIOS()) showInstallBanner("ios");
+    else if (isAndroid()) showInstallBanner("android-manual");
+  }, 1500);
+
   // ---------- service worker ----------
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", function () {

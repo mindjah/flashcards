@@ -605,6 +605,10 @@ body {
   flex: 1;
 }
 
+.form .btn-big {
+  margin: 0;
+}
+
 .form label {
   display: flex;
   flex-direction: column;

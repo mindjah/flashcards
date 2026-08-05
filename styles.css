@@ -34,7 +34,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  font-family: ui-monospace, "SF Mono", "Menlo", "Monaco", "Cascadia Code", "Roboto Mono", "Courier New", monospace;
   font-size: 17px;
   -webkit-font-smoothing: antialiased;
   user-select: none;

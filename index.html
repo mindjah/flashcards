@@ -35,7 +35,7 @@
             <span class="dropdown-item-hint">Add new words from .txt</span>
           </button>
           <p class="dropdown-info">All data stays on this device. Import/export uses Anki's plain-text card format.</p>
-          <p class="app-version">v1.1.4</p>
+          <p class="app-version">v1.2.0</p>
         </div>
       </div>
     </header>
@@ -44,7 +44,7 @@
     <div class="home-stats">
       <div class="stat-card">
         <div class="stat-num" id="stat-due">0</div>
-        <div class="stat-label">to study</div>
+        <div class="stat-label">to learn</div>
       </div>
       <div class="stat-card">
         <div class="stat-num" id="stat-total">0</div>
@@ -72,7 +72,7 @@
       </div>
     </div>
 
-    <button id="btn-study" class="btn btn-primary btn-big">Study</button>
+    <button id="btn-study" class="btn btn-primary btn-big">Practice</button>
 
     <div class="home-actions">
       <button id="btn-add" class="btn btn-secondary">+ Add card</button>
@@ -80,7 +80,7 @@
     </div>
 
     <div class="home-actions">
-      <button id="btn-manage-sections" class="btn btn-secondary">Sections</button>
+      <button id="btn-manage-sections" class="btn btn-secondary">Card decks</button>
     </div>
 
     <div class="struggling-block hidden" id="struggling-block">
@@ -93,12 +93,12 @@
   <section id="view-study-setup" class="view hidden">
     <header class="topbar">
       <button class="icon-btn" id="btn-study-setup-back">✕</button>
-      <h2>Study setup</h2>
+      <h2>Practice setup</h2>
       <span class="spacer"></span>
     </header>
 
     <div class="field-block mode-picker">
-      <span class="field-label">Study mode</span>
+      <span class="field-label">Practice mode</span>
       <div class="chip-list" id="mode-picker">
         <button type="button" class="chip" data-mode="normal">Spanish → Translation</button>
         <button type="button" class="chip" data-mode="reversed">Translation → Spanish</button>
@@ -106,7 +106,7 @@
     </div>
 
     <div class="field-block section-picker-block">
-      <span class="field-label">Sections</span>
+      <span class="field-label">Card decks</span>
       <div id="section-picker-list" class="section-picker"></div>
     </div>
 
@@ -115,7 +115,7 @@
       <button id="btn-section-picker-none" class="btn btn-ghost">Select none</button>
     </div>
 
-    <button id="btn-study-start" class="btn btn-primary btn-big">Start studying</button>
+    <button id="btn-study-start" class="btn btn-primary btn-big">Start practicing</button>
   </section>
 
   <!-- ===== STUDY VIEW ===== -->
@@ -154,7 +154,7 @@
     <div class="empty-state">
       <div class="empty-icon" id="empty-icon">🎉</div>
       <p id="empty-text">All done for now!</p>
-      <button id="btn-study-all-anyway" class="btn btn-secondary hidden">Study all cards anyway</button>
+      <button id="btn-study-all-anyway" class="btn btn-secondary hidden">Practice all cards anyway</button>
       <button id="btn-empty-home" class="btn btn-primary">Back home</button>
     </div>
   </section>
@@ -181,7 +181,7 @@
         <input type="text" id="input-notes" autocomplete="off">
       </label>
       <div class="field-block">
-        <span class="field-label">Sections</span>
+        <span class="field-label">Card decks</span>
         <div id="add-sections-list" class="chip-list"></div>
       </div>
       <button type="submit" id="btn-save-card" class="btn btn-primary btn-big">Save card</button>
@@ -213,14 +213,14 @@
   <section id="view-sections" class="view hidden">
     <header class="topbar">
       <button class="icon-btn" id="btn-sections-back">✕</button>
-      <h2>Sections</h2>
+      <h2>Card decks</h2>
       <span class="spacer"></span>
     </header>
     <form id="form-add-section" class="form section-add-form">
-      <label>New section
+      <label>New card deck
         <input type="text" id="input-section-name" autocomplete="off" placeholder="e.g. Food, Travel">
       </label>
-      <button type="submit" class="btn btn-primary">Add section</button>
+      <button type="submit" class="btn btn-primary">Add card deck</button>
     </form>
     <div id="sections-list" class="manage-list"></div>
   </section>

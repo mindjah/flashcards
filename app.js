@@ -320,9 +320,9 @@
     var addChip = document.createElement("button");
     addChip.type = "button";
     addChip.className = "chip chip-add";
-    addChip.textContent = "+ New section";
+    addChip.textContent = "+ New card deck";
     addChip.addEventListener("click", function () {
-      var name = prompt("New section name");
+      var name = prompt("New card deck name");
       if (name === null) return;
       name = name.trim();
       if (!name) return;
@@ -439,7 +439,7 @@
 
     var allOpt = document.createElement("option");
     allOpt.value = "";
-    allOpt.textContent = "All sections";
+    allOpt.textContent = "All card decks";
     sel.appendChild(allOpt);
 
     sections.forEach(function (s) {
@@ -451,7 +451,7 @@
 
     var unsectionedOpt = document.createElement("option");
     unsectionedOpt.value = "unsectioned";
-    unsectionedOpt.textContent = "No section";
+    unsectionedOpt.textContent = "No card deck";
     sel.appendChild(unsectionedOpt);
 
     if (Array.prototype.some.call(sel.options, function (o) { return o.value === current; })) {
@@ -532,7 +532,7 @@
       var meta = document.createElement("div");
       meta.className = "manage-item-meta";
       var now = Date.now();
-      meta.textContent = isDue(c, now) ? "To study" : "Due " + formatRelative(c.dueAt - now);
+      meta.textContent = isDue(c, now) ? "To learn" : "Due " + formatRelative(c.dueAt - now);
       text.appendChild(meta);
 
       var actions = document.createElement("div");
@@ -611,7 +611,7 @@
     if (sections.length === 0) {
       var empty = document.createElement("div");
       empty.className = "manage-empty";
-      empty.textContent = "No sections yet. Create one above to start grouping cards by topic.";
+      empty.textContent = "No card decks yet. Create one above to start grouping cards by topic.";
       list.appendChild(empty);
       return;
     }
@@ -643,7 +643,7 @@
       rename.className = "manage-item-edit";
       rename.textContent = "Rename";
       rename.addEventListener("click", function () {
-        var newName = prompt("Rename section", s.name);
+        var newName = prompt("Rename card deck", s.name);
         if (newName === null) return;
         newName = newName.trim();
         if (!newName) return;
@@ -655,7 +655,7 @@
       del.className = "manage-item-delete";
       del.textContent = "Delete";
       del.addEventListener("click", function () {
-        if (!confirm('Delete section "' + s.name + '"? Cards keep their other sections.')) return;
+        if (!confirm('Delete card deck "' + s.name + '"? Cards keep their other card decks.')) return;
         deleteSection(s.id);
         renderSectionsList();
       });
@@ -718,7 +718,7 @@
     });
 
     var unsectionedCount = cards.filter(function (c) { return c.sectionIds.length === 0; }).length;
-    list.appendChild(buildSectionPickerRow("unsectioned", "No section", unsectionedCount, prefIncludeUnsectioned));
+    list.appendChild(buildSectionPickerRow("unsectioned", "No card deck", unsectionedCount, prefIncludeUnsectioned));
   }
 
   function buildSectionPickerRow(value, label, count, checked) {
@@ -921,7 +921,7 @@
   }
 
   function finishStudy() {
-    var text = "Studied " + session.studied + " card" + (session.studied === 1 ? "" : "s") +
+    var text = "Practiced " + session.studied + " card" + (session.studied === 1 ? "" : "s") +
       " · " + session.passed + " knew it · " + session.failed + " didn't know";
     showEmpty("finished", text);
   }
@@ -934,10 +934,10 @@
 
     if (kind === "no-cards") {
       icon.textContent = "📝";
-      msg.textContent = "No cards yet. Add some to start studying!";
+      msg.textContent = "No cards yet. Add some to start practicing!";
     } else if (kind === "no-match") {
       icon.textContent = "🗂️";
-      msg.textContent = "No cards in the selected sections.";
+      msg.textContent = "No cards in the selected card decks.";
     } else if (kind === "no-due") {
       icon.textContent = "✅";
       msg.textContent = "Nothing due right now. Nice work!";
@@ -971,9 +971,9 @@
   // ---------- import / export (Anki-style tab-separated text) ----------
   // Same format Anki itself reads/writes via File > Export > "Notes in Plain Text (.txt)"
   // and File > Import: "#"-prefixed header lines, then one note per line as
-  // tab-separated fields. Sections round-trip as hierarchical "section::Name" tags,
+  // tab-separated fields. Card decks round-trip as hierarchical "deck::Name" tags,
   // Anki's own mechanism for grouping notes by more than one category at once.
-  var SECTION_TAG_PREFIX = "section::";
+  var SECTION_TAG_PREFIX = "deck::";
 
   function tagForSection(name) {
     return SECTION_TAG_PREFIX + name.replace(/\s+/g, "_");

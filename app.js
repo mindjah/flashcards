@@ -1077,10 +1077,17 @@
     var typeInput = document.getElementById("type-answer-input");
     typeInput.value = "";
     typeInput.readOnly = false;
-    typeInput.classList.remove("type-answer-correct", "type-answer-incorrect");
+    typeInput.classList.remove("hidden");
     document.getElementById("btn-type-check").disabled = true;
     document.getElementById("type-answer-buttons").classList.remove("hidden");
     document.getElementById("btn-study-next").classList.add("hidden");
+
+    // Reserve space below the card equal to the bar's resting height (input +
+    // buttons visible, not yet floated above a keyboard), so the card centers
+    // between the header and where the bar sits rather than behind it.
+    document.documentElement.style.setProperty(
+      "--type-bar-height", isTypeMode ? typeBar.offsetHeight + "px" : "0px"
+    );
 
     document.getElementById("tap-hint").textContent = isTypeMode ? "" : "Tap card to reveal";
     document.getElementById("study-answer-controls").classList.add("hidden");
@@ -1111,8 +1118,7 @@
       session.typeCorrect = correct;
       typeInput.readOnly = true;
       typeInput.blur();
-      typeInput.classList.toggle("type-answer-correct", correct);
-      typeInput.classList.toggle("type-answer-incorrect", !correct);
+      typeInput.classList.add("hidden");
       document.getElementById("type-answer-buttons").classList.add("hidden");
       document.getElementById("btn-study-next").classList.remove("hidden");
     } else {

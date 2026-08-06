@@ -1089,7 +1089,9 @@
       "--type-bar-height", isTypeMode ? typeBar.offsetHeight + "px" : "0px"
     );
 
-    document.getElementById("tap-hint").textContent = isTypeMode ? "" : "Tap card to reveal";
+    var tapHintEl = document.getElementById("tap-hint");
+    tapHintEl.classList.toggle("hidden", isTypeMode);
+    tapHintEl.textContent = isTypeMode ? "" : "Tap card to reveal";
     document.getElementById("study-answer-controls").classList.add("hidden");
     updateProgress();
   }

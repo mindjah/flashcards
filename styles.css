@@ -3,9 +3,6 @@
   --bg: #12121a;
   --surface: #1c1c27;
   --surface-2: #262632;
-  --surface-grey: #4a4a4a;
-  --surface-grey-active: #58585a;
-  --border-grey: #6b6b6b;
   --border: #33333f;
   --text: #f0f0f5;
   --text-dim: #9797a8;
@@ -616,6 +613,36 @@ body {
 
 .study-controls .btn { flex: 1; padding: 18px; font-size: 17px; }
 
+.type-answer-block {
+  width: 100%;
+  max-width: 420px;
+}
+
+.type-answer-input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 17px;
+  color: var(--text);
+  font-family: inherit;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.type-answer-input:focus { outline: none; border-color: var(--accent); }
+
+.type-answer-input.type-answer-correct {
+  border-color: var(--pass);
+  color: var(--pass);
+}
+
+.type-answer-input.type-answer-incorrect {
+  border-color: var(--fail);
+  color: var(--fail);
+}
+
 /* ===== EMPTY ===== */
 .empty-state {
   flex: 1;
@@ -735,8 +762,8 @@ body {
 }
 
 .manage-item {
-  background: var(--surface-grey);
-  border: 1px solid var(--border-grey);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 14px;
   padding: 12px 14px;
   display: flex;
@@ -805,7 +832,7 @@ body {
 }
 
 .manage-item-linkable:active {
-  background: var(--surface-grey-active);
+  background: var(--surface-2);
 }
 
 /* ===== SECTIONS / CHIPS ===== */
@@ -877,12 +904,12 @@ body {
 }
 
 .mode-picker .chip-list {
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
 .mode-picker .chip {
-  flex: 1;
+  flex: 1 1 40%;
   text-align: center;
   padding: 16px 10px;
   font-size: 15px;

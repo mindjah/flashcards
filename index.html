@@ -39,7 +39,7 @@
             <span class="dropdown-item-hint">How practice, decks & mastery work</span>
           </button>
           <p class="dropdown-info">All data stays on this device. Import/export uses Anki's plain-text card format.</p>
-          <p class="app-version">v1.9.2</p>
+          <p class="app-version">v1.10.0</p>
         </div>
       </div>
     </header>
@@ -122,8 +122,9 @@
     <div class="field-block mode-picker">
       <span class="field-label">Practice mode</span>
       <div class="chip-list" id="mode-picker">
-        <button type="button" class="chip" data-mode="normal">Spanish → Translation</button>
-        <button type="button" class="chip" data-mode="reversed">Translation → Spanish</button>
+        <button type="button" class="chip" data-mode="normal">Flip Spanish card</button>
+        <button type="button" class="chip" data-mode="reversed">Flip Translation card</button>
+        <button type="button" class="chip" data-mode="type">Type the Spanish word</button>
       </div>
     </div>
 
@@ -162,12 +163,18 @@
           </div>
         </div>
       </div>
+      <div class="type-answer-block hidden" id="type-answer-block">
+        <input type="text" id="type-answer-input" class="type-answer-input" placeholder="Type the word in Spanish" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+      </div>
       <p class="tap-hint" id="tap-hint">Tap card to reveal</p>
     </div>
 
     <div class="study-controls hidden" id="study-answer-controls">
       <button id="btn-fail" class="btn btn-fail">✕ Didn't know</button>
       <button id="btn-pass" class="btn btn-pass">✓ Knew it</button>
+    </div>
+    <div class="study-controls hidden" id="study-next-controls">
+      <button id="btn-study-next" class="btn btn-primary">Next</button>
     </div>
   </section>
 
@@ -273,8 +280,9 @@
 
       <div class="readme-section">
         <h3>Practice modes</h3>
-        <p>Choose <b>Spanish → Translation</b> or <b>Translation → Spanish</b> in Practice setup - it decides which side of the card shows first. Your last choice, along with your deck selection, is remembered for next time.</p>
-        <p>During a session, tap the card to flip it, then swipe right (or tap <b>Knew it</b>) or swipe left (or tap <b>Didn't know</b>) to answer.</p>
+        <p>Choose <b>Flip Spanish card</b>, <b>Flip Translation card</b>, or <b>Type the Spanish word</b> in Practice setup. Your last choice, along with your deck selection, is remembered for next time.</p>
+        <p>In <b>Flip Spanish card</b> and <b>Flip Translation card</b>, tap the card to flip it, then swipe right (or tap <b>Knew it</b>) or swipe left (or tap <b>Didn't know</b>) to answer.</p>
+        <p>In <b>Type the Spanish word</b>, the card shows the translation - type the Spanish word into the field below it, then tap the card to flip and check your answer (not case-sensitive). There's no <b>Knew it</b> / <b>Didn't know</b> here: a correct answer counts as knew it and an incorrect one counts as didn't know, then tap <b>Next</b> to continue.</p>
       </div>
 
       <div class="readme-section">

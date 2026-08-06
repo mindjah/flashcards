@@ -657,7 +657,7 @@
 
     var allOpt = document.createElement("option");
     allOpt.value = "";
-    allOpt.textContent = "All card decks";
+    allOpt.textContent = "All decks";
     sel.appendChild(allOpt);
 
     sections.forEach(function (s) {
@@ -1062,7 +1062,8 @@
     cardEl.style.transition = "";
     cardEl.style.transform = "";
     cardEl.style.opacity = "";
-    var reversed = session.mode === "reversed";
+    var isTypeMode = session.mode === "type";
+    var reversed = session.mode === "reversed" || isTypeMode;
     document.getElementById("card-word").textContent = reversed ? session.current.translation : session.current.word;
     document.getElementById("card-translation").textContent = reversed ? session.current.word : session.current.translation;
 
@@ -1070,8 +1071,16 @@
     document.getElementById("card-note").classList.toggle("hidden", !hasNote);
     document.getElementById("card-note-text").textContent = hasNote ? session.current.notes : "";
 
-    document.getElementById("tap-hint").textContent = "Tap card to reveal";
+    document.getElementById("type-answer-block").classList.toggle("hidden", !isTypeMode);
+    var typeInput = document.getElementById("type-answer-input");
+    typeInput.value = "";
+    typeInput.readOnly = false;
+    typeInput.classList.remove("type-answer-correct", "type-answer-incorrect");
+    if (isTypeMode) typeInput.focus();
+
+    document.getElementById("tap-hint").textContent = isTypeMode ? "Type the word, then tap card to check" : "Tap card to reveal";
     document.getElementById("study-answer-controls").classList.add("hidden");
+    document.getElementById("study-next-controls").classList.add("hidden");
     updateProgress();
   }
 
@@ -1086,7 +1095,19 @@
     session.revealed = true;
     document.getElementById("card").classList.add("flipped");
     document.getElementById("tap-hint").textContent = "";
-    document.getElementById("study-answer-controls").classList.remove("hidden");
+
+    if (session.mode === "type") {
+      var typeInput = document.getElementById("type-answer-input");
+      var typed = typeInput.value.trim().toLowerCase();
+      var correct = typed === session.current.word.trim().toLowerCase();
+      session.typeCorrect = correct;
+      typeInput.readOnly = true;
+      typeInput.classList.toggle("type-answer-correct", correct);
+      typeInput.classList.toggle("type-answer-incorrect", !correct);
+      document.getElementById("study-next-controls").classList.remove("hidden");
+    } else {
+      document.getElementById("study-answer-controls").classList.remove("hidden");
+    }
   }
 
   document.getElementById("card").addEventListener("click", revealCard);
@@ -1096,6 +1117,9 @@
   });
   document.getElementById("btn-fail").addEventListener("click", function () {
     answerCard(false);
+  });
+  document.getElementById("btn-study-next").addEventListener("click", function () {
+    answerCard(!!session.typeCorrect);
   });
 
   document.getElementById("btn-study-translate").addEventListener("click", function () {
@@ -1108,7 +1132,7 @@
   var swipeCardEl = document.getElementById("card");
 
   swipeCardEl.addEventListener("touchstart", function (e) {
-    if (!session.revealed) return;
+    if (!session.revealed || session.mode === "type") return;
     var t = e.touches[0];
     swipe = { startX: t.clientX, startY: t.clientY, dx: 0, dy: 0 };
     swipeCardEl.style.transition = "none";

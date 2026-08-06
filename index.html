@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no, interactive-widget=resizes-visual">
 <title>Español Flashcards</title>
 
 <meta name="theme-color" content="#12121a">
@@ -39,7 +39,7 @@
             <span class="dropdown-item-hint">How practice, decks & mastery work</span>
           </button>
           <p class="dropdown-info">All data stays on this device. Import/export uses Anki's plain-text card format.</p>
-          <p class="app-version">v1.10.0</p>
+          <p class="app-version">v1.10.1</p>
         </div>
       </div>
     </header>
@@ -163,9 +163,6 @@
           </div>
         </div>
       </div>
-      <div class="type-answer-block hidden" id="type-answer-block">
-        <input type="text" id="type-answer-input" class="type-answer-input" placeholder="Type the word in Spanish" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
-      </div>
       <p class="tap-hint" id="tap-hint">Tap card to reveal</p>
     </div>
 
@@ -173,8 +170,11 @@
       <button id="btn-fail" class="btn btn-fail">✕ Didn't know</button>
       <button id="btn-pass" class="btn btn-pass">✓ Knew it</button>
     </div>
-    <div class="study-controls hidden" id="study-next-controls">
-      <button id="btn-study-next" class="btn btn-primary">Next</button>
+
+    <div class="type-answer-bar hidden" id="type-answer-bar">
+      <input type="text" id="type-answer-input" class="type-answer-input" placeholder="Type the word in Spanish" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+      <button type="button" id="btn-type-check" class="btn btn-primary" disabled>Check</button>
+      <button type="button" id="btn-study-next" class="btn btn-primary hidden">Next</button>
     </div>
   </section>
 
@@ -282,7 +282,7 @@
         <h3>Practice modes</h3>
         <p>Choose <b>Flip Spanish card</b>, <b>Flip Translation card</b>, or <b>Type the Spanish word</b> in Practice setup. Your last choice, along with your deck selection, is remembered for next time.</p>
         <p>In <b>Flip Spanish card</b> and <b>Flip Translation card</b>, tap the card to flip it, then swipe right (or tap <b>Knew it</b>) or swipe left (or tap <b>Didn't know</b>) to answer.</p>
-        <p>In <b>Type the Spanish word</b>, the card shows the translation - type the Spanish word into the field below it, then tap the card to flip and check your answer (not case-sensitive). There's no <b>Knew it</b> / <b>Didn't know</b> here: a correct answer counts as knew it and an incorrect one counts as didn't know, then tap <b>Next</b> to continue.</p>
+        <p>In <b>Type the Spanish word</b>, the card shows the translation - type the Spanish word into the field below it, then tap <b>Check</b> (enabled once you've typed something) to flip the card and check your answer (not case-sensitive). There's no <b>Knew it</b> / <b>Didn't know</b> here: a correct answer counts as knew it and an incorrect one counts as didn't know, then tap <b>Next</b> to continue.</p>
       </div>
 
       <div class="readme-section">

@@ -1071,16 +1071,20 @@
     document.getElementById("card-note").classList.toggle("hidden", !hasNote);
     document.getElementById("card-note-text").textContent = hasNote ? session.current.notes : "";
 
-    document.getElementById("type-answer-block").classList.toggle("hidden", !isTypeMode);
+    var typeBar = document.getElementById("type-answer-bar");
+    typeBar.classList.toggle("hidden", !isTypeMode);
+    typeBar.style.transform = "";
     var typeInput = document.getElementById("type-answer-input");
     typeInput.value = "";
     typeInput.readOnly = false;
     typeInput.classList.remove("type-answer-correct", "type-answer-incorrect");
+    document.getElementById("btn-type-check").disabled = true;
+    document.getElementById("btn-type-check").classList.remove("hidden");
+    document.getElementById("btn-study-next").classList.add("hidden");
     if (isTypeMode) typeInput.focus();
 
-    document.getElementById("tap-hint").textContent = isTypeMode ? "Type the word, then tap card to check" : "Tap card to reveal";
+    document.getElementById("tap-hint").textContent = isTypeMode ? "" : "Tap card to reveal";
     document.getElementById("study-answer-controls").classList.add("hidden");
-    document.getElementById("study-next-controls").classList.add("hidden");
     updateProgress();
   }
 
@@ -1102,15 +1106,20 @@
       var correct = typed === session.current.word.trim().toLowerCase();
       session.typeCorrect = correct;
       typeInput.readOnly = true;
+      typeInput.blur();
       typeInput.classList.toggle("type-answer-correct", correct);
       typeInput.classList.toggle("type-answer-incorrect", !correct);
-      document.getElementById("study-next-controls").classList.remove("hidden");
+      document.getElementById("btn-type-check").classList.add("hidden");
+      document.getElementById("btn-study-next").classList.remove("hidden");
     } else {
       document.getElementById("study-answer-controls").classList.remove("hidden");
     }
   }
 
-  document.getElementById("card").addEventListener("click", revealCard);
+  document.getElementById("card").addEventListener("click", function () {
+    if (session.mode === "type") return;
+    revealCard();
+  });
 
   document.getElementById("btn-pass").addEventListener("click", function () {
     answerCard(true);
@@ -1118,8 +1127,13 @@
   document.getElementById("btn-fail").addEventListener("click", function () {
     answerCard(false);
   });
+  document.getElementById("btn-type-check").addEventListener("click", revealCard);
   document.getElementById("btn-study-next").addEventListener("click", function () {
     answerCard(!!session.typeCorrect);
+  });
+
+  document.getElementById("type-answer-input").addEventListener("input", function () {
+    document.getElementById("btn-type-check").disabled = !this.value.trim();
   });
 
   document.getElementById("btn-study-translate").addEventListener("click", function () {
@@ -1458,13 +1472,44 @@
   // of plain <body> background below #app that no internal CSS can reach.
   // window.innerHeight reports the real usable height in every mode, so
   // it drives #app's height directly instead.
+  //
+  // On some Android browsers, window.innerHeight itself shrinks when the
+  // on-screen keyboard opens, which would otherwise re-flow #app's flex
+  // layout and drag the centered flashcard up with it. appHeightFrozen
+  // pauses that recalculation while the type-answer input is focused, so
+  // the card stays put and only the floating input/Check bar tracks the
+  // keyboard (see positionTypeAnswerBar below).
+  var appHeightFrozen = false;
   function setAppHeight() {
+    if (appHeightFrozen) return;
     document.documentElement.style.setProperty("--app-height", window.innerHeight + "px");
   }
   setAppHeight();
   window.addEventListener("resize", setAppHeight);
   window.addEventListener("orientationchange", setAppHeight);
   window.addEventListener("pageshow", setAppHeight);
+
+  // ---------- type-answer bar follows the keyboard, card stays put ----------
+  var typeAnswerInputEl = document.getElementById("type-answer-input");
+  typeAnswerInputEl.addEventListener("focus", function () {
+    appHeightFrozen = true;
+  });
+  typeAnswerInputEl.addEventListener("blur", function () {
+    appHeightFrozen = false;
+    setAppHeight();
+  });
+
+  function positionTypeAnswerBar() {
+    var bar = document.getElementById("type-answer-bar");
+    if (!window.visualViewport || bar.classList.contains("hidden")) return;
+    var vv = window.visualViewport;
+    var overlap = window.innerHeight - vv.height - vv.offsetTop;
+    bar.style.transform = overlap > 0 ? "translateY(-" + overlap + "px)" : "";
+  }
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", positionTypeAnswerBar);
+    window.visualViewport.addEventListener("scroll", positionTypeAnswerBar);
+  }
 
   // ---------- install banner (iOS manual steps / Android native prompt) ----------
   var INSTALL_DISMISSED_KEY = "installBannerDismissed";

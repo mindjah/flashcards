@@ -1079,9 +1079,8 @@
     typeInput.readOnly = false;
     typeInput.classList.remove("type-answer-correct", "type-answer-incorrect");
     document.getElementById("btn-type-check").disabled = true;
-    document.getElementById("btn-type-check").classList.remove("hidden");
+    document.getElementById("type-answer-buttons").classList.remove("hidden");
     document.getElementById("btn-study-next").classList.add("hidden");
-    if (isTypeMode) typeInput.focus({ preventScroll: true });
 
     document.getElementById("tap-hint").textContent = isTypeMode ? "" : "Tap card to reveal";
     document.getElementById("study-answer-controls").classList.add("hidden");
@@ -1094,7 +1093,7 @@
       session.studied + " done · " + remaining + " left";
   }
 
-  function revealCard() {
+  function revealCard(forceIncorrect) {
     if (session.revealed || !session.current) return;
     session.revealed = true;
     document.getElementById("card").classList.add("flipped");
@@ -1102,14 +1101,19 @@
 
     if (session.mode === "type") {
       var typeInput = document.getElementById("type-answer-input");
-      var typed = typeInput.value.trim().toLowerCase();
-      var correct = typed === session.current.word.trim().toLowerCase();
+      var correct;
+      if (forceIncorrect) {
+        correct = false;
+      } else {
+        var typed = typeInput.value.trim().toLowerCase();
+        correct = typed === session.current.word.trim().toLowerCase();
+      }
       session.typeCorrect = correct;
       typeInput.readOnly = true;
       typeInput.blur();
       typeInput.classList.toggle("type-answer-correct", correct);
       typeInput.classList.toggle("type-answer-incorrect", !correct);
-      document.getElementById("btn-type-check").classList.add("hidden");
+      document.getElementById("type-answer-buttons").classList.add("hidden");
       document.getElementById("btn-study-next").classList.remove("hidden");
     } else {
       document.getElementById("study-answer-controls").classList.remove("hidden");
@@ -1127,7 +1131,12 @@
   document.getElementById("btn-fail").addEventListener("click", function () {
     answerCard(false);
   });
-  document.getElementById("btn-type-check").addEventListener("click", revealCard);
+  document.getElementById("btn-type-check").addEventListener("click", function () {
+    revealCard(false);
+  });
+  document.getElementById("btn-type-idk").addEventListener("click", function () {
+    revealCard(true);
+  });
   document.getElementById("btn-study-next").addEventListener("click", function () {
     answerCard(!!session.typeCorrect);
   });
@@ -1505,17 +1514,6 @@
     if (studyViewEl.scrollTop !== 0) studyViewEl.scrollTop = 0;
   }
 
-  typeAnswerInputEl.addEventListener("focus", function () {
-    appHeightFrozen = true;
-  });
-  typeAnswerInputEl.addEventListener("blur", function () {
-    appHeightFrozen = false;
-    setAppHeight();
-    cancelViewportPan();
-    var bar = document.getElementById("type-answer-bar");
-    bar.style.bottom = "";
-  });
-
   function positionTypeAnswerBar() {
     var bar = document.getElementById("type-answer-bar");
     if (!window.visualViewport || bar.classList.contains("hidden")) return;
@@ -1524,10 +1522,34 @@
     var overlap = window.innerHeight - vv.height - vv.offsetTop;
     bar.style.bottom = overlap > 0 ? overlap + "px" : "";
   }
-  if (window.visualViewport) {
-    window.visualViewport.addEventListener("resize", positionTypeAnswerBar);
-    window.visualViewport.addEventListener("scroll", positionTypeAnswerBar);
+
+  // Relying only on visualViewport's resize/scroll events proved unreliable
+  // on refocus (a second tap into the input after it had already lost focus
+  // once could leave the bar stuck at its resting position, hidden behind
+  // the keyboard). Polling every frame while focused sidesteps that timing
+  // quirk entirely - positionTypeAnswerBar() is cheap arithmetic, so this
+  // costs nothing once the loop stops on blur.
+  var typeAnswerPositionRaf = null;
+  function pollTypeAnswerBarPosition() {
+    positionTypeAnswerBar();
+    typeAnswerPositionRaf = requestAnimationFrame(pollTypeAnswerBarPosition);
   }
+
+  typeAnswerInputEl.addEventListener("focus", function () {
+    appHeightFrozen = true;
+    if (typeAnswerPositionRaf) cancelAnimationFrame(typeAnswerPositionRaf);
+    pollTypeAnswerBarPosition();
+  });
+  typeAnswerInputEl.addEventListener("blur", function () {
+    if (typeAnswerPositionRaf) {
+      cancelAnimationFrame(typeAnswerPositionRaf);
+      typeAnswerPositionRaf = null;
+    }
+    appHeightFrozen = false;
+    setAppHeight();
+    cancelViewportPan();
+    document.getElementById("type-answer-bar").style.bottom = "";
+  });
 
   // ---------- install banner (iOS manual steps / Android native prompt) ----------
   var INSTALL_DISMISSED_KEY = "installBannerDismissed";

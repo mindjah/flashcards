@@ -619,7 +619,7 @@ body {
   right: 0;
   bottom: 0;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 10px;
   padding: 12px 16px calc(12px + var(--safe-bottom));
   background: var(--bg);
@@ -628,8 +628,7 @@ body {
 }
 
 .type-answer-input {
-  flex: 1;
-  min-width: 0;
+  width: 100%;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -643,6 +642,15 @@ body {
 
 .type-answer-input:focus { outline: none; border-color: var(--accent); }
 
+.type-answer-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.type-answer-buttons .btn {
+  flex: 1;
+}
+
 .type-answer-input.type-answer-correct {
   border-color: var(--pass);
   color: var(--pass);
@@ -653,9 +661,6 @@ body {
   color: var(--fail);
 }
 
-.type-answer-bar .btn {
-  flex-shrink: 0;
-}
 
 /* ===== EMPTY ===== */
 .empty-state {

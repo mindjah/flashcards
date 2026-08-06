@@ -3,6 +3,9 @@
   --bg: #12121a;
   --surface: #1c1c27;
   --surface-2: #262632;
+  --surface-grey: #4a4a4a;
+  --surface-grey-active: #58585a;
+  --border-grey: #6b6b6b;
   --border: #33333f;
   --text: #f0f0f5;
   --text-dim: #9797a8;
@@ -277,8 +280,7 @@ body {
 .struggling-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-top: 8px;
+  margin-top: 6px;
 }
 
 .struggling-item {
@@ -287,15 +289,18 @@ body {
   justify-content: space-between;
   gap: 10px;
   width: 100%;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 10px 14px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  padding: 12px 2px;
   color: var(--text);
   font-family: inherit;
   text-align: left;
   cursor: pointer;
 }
+
+.struggling-item:last-child { border-bottom: none; }
 
 .struggling-item:active { background: var(--surface-2); }
 
@@ -307,13 +312,26 @@ body {
 
 .struggling-item-right {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 5px;
   flex-shrink: 0;
 }
 
 .struggling-item-icon {
-  font-size: 13px;
+  display: flex;
+  align-items: center;
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+.struggling-item-icon svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+.struggling-item-icon.is-open {
+  color: var(--accent);
 }
 
 .hint-toggle {
@@ -690,8 +708,8 @@ body {
 }
 
 .manage-item {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--surface-grey);
+  border: 1px solid var(--border-grey);
   border-radius: 14px;
   padding: 12px 14px;
   display: flex;
@@ -760,7 +778,7 @@ body {
 }
 
 .manage-item-linkable:active {
-  background: var(--surface-2);
+  background: var(--surface-grey-active);
 }
 
 /* ===== SECTIONS / CHIPS ===== */

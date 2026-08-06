@@ -229,6 +229,7 @@ body {
 }
 
 .stat-card {
+  position: relative;
   flex: 1;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -241,6 +242,32 @@ body {
 
 .stat-card:active {
   background: var(--surface-2);
+}
+
+.flame-particle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  font-size: 18px;
+  line-height: 1;
+  pointer-events: none;
+  animation-name: flame-burst;
+  animation-timing-function: ease-out;
+  animation-fill-mode: forwards;
+}
+
+@keyframes flame-burst {
+  0% {
+    transform: translate(-50%, -50%) scale(0.3) rotate(0deg);
+    opacity: 1;
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(var(--scale)) rotate(var(--rot));
+    opacity: 0;
+  }
 }
 
 .stat-num {

@@ -285,6 +285,37 @@
     });
   });
 
+  // ---------- streak flame burst ----------
+  function spawnFlameBurst(anchorEl) {
+    var COUNT = 7;
+    for (var i = 0; i < COUNT; i++) {
+      var flame = document.createElement("span");
+      flame.className = "flame-particle";
+      flame.textContent = "🔥";
+
+      var dx = (Math.random() - 0.5) * 90;
+      var dy = -(35 + Math.random() * 45);
+      var rot = (Math.random() - 0.5) * 140;
+      var scale = 0.5 + Math.random() * 0.6;
+      var duration = 500 + Math.random() * 300;
+
+      flame.style.setProperty("--dx", dx + "px");
+      flame.style.setProperty("--dy", dy + "px");
+      flame.style.setProperty("--rot", rot + "deg");
+      flame.style.setProperty("--scale", scale);
+      flame.style.animationDuration = duration + "ms";
+
+      flame.addEventListener("animationend", function () {
+        flame.remove();
+      });
+      anchorEl.appendChild(flame);
+    }
+  }
+
+  document.getElementById("stat-card-streak").addEventListener("click", function () {
+    spawnFlameBurst(this);
+  });
+
   document.addEventListener("click", function (e) {
     if (!document.getElementById("stat-info-popup").classList.contains("hidden") &&
         !e.target.closest("#stat-info-popup") &&

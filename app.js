@@ -1073,7 +1073,7 @@
 
     var typeBar = document.getElementById("type-answer-bar");
     typeBar.classList.toggle("hidden", !isTypeMode);
-    typeBar.style.transform = "";
+    typeBar.style.bottom = "";
     var typeInput = document.getElementById("type-answer-input");
     typeInput.value = "";
     typeInput.readOnly = false;
@@ -1081,7 +1081,7 @@
     document.getElementById("btn-type-check").disabled = true;
     document.getElementById("btn-type-check").classList.remove("hidden");
     document.getElementById("btn-study-next").classList.add("hidden");
-    if (isTypeMode) typeInput.focus();
+    if (isTypeMode) typeInput.focus({ preventScroll: true });
 
     document.getElementById("tap-hint").textContent = isTypeMode ? "" : "Tap card to reveal";
     document.getElementById("study-answer-controls").classList.add("hidden");
@@ -1490,21 +1490,39 @@
   window.addEventListener("pageshow", setAppHeight);
 
   // ---------- type-answer bar follows the keyboard, card stays put ----------
+  // iOS pans/scrolls the whole page to bring a focused field above the
+  // keyboard, even when that field is position:fixed - which is what was
+  // dragging the header and card up too, and occasionally left the page
+  // stuck mid-pan (a blank/black strip of plain <body>) after the keyboard
+  // closed. Forcing scroll back to 0 on every visualViewport change cancels
+  // that native pan; the bar's own position is then driven purely by our
+  // own bottom-offset below, based on how much the keyboard covers.
   var typeAnswerInputEl = document.getElementById("type-answer-input");
+  var studyViewEl = document.getElementById("view-study");
+
+  function cancelViewportPan() {
+    if (window.scrollX !== 0 || window.scrollY !== 0) window.scrollTo(0, 0);
+    if (studyViewEl.scrollTop !== 0) studyViewEl.scrollTop = 0;
+  }
+
   typeAnswerInputEl.addEventListener("focus", function () {
     appHeightFrozen = true;
   });
   typeAnswerInputEl.addEventListener("blur", function () {
     appHeightFrozen = false;
     setAppHeight();
+    cancelViewportPan();
+    var bar = document.getElementById("type-answer-bar");
+    bar.style.bottom = "";
   });
 
   function positionTypeAnswerBar() {
     var bar = document.getElementById("type-answer-bar");
     if (!window.visualViewport || bar.classList.contains("hidden")) return;
+    cancelViewportPan();
     var vv = window.visualViewport;
     var overlap = window.innerHeight - vv.height - vv.offsetTop;
-    bar.style.transform = overlap > 0 ? "translateY(-" + overlap + "px)" : "";
+    bar.style.bottom = overlap > 0 ? overlap + "px" : "";
   }
   if (window.visualViewport) {
     window.visualViewport.addEventListener("resize", positionTypeAnswerBar);

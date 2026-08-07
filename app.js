@@ -1758,10 +1758,26 @@
     ensureViewportDebugEl().textContent = viewportDebugLines.join("\n");
   }
 
+  // The tab bar is position:fixed (the reliable, documented case for
+  // env(safe-area-inset-*)), but its `bottom` is set here directly as a
+  // plain inline style instead of through CSS env()/calc() - every debug
+  // capture showed this JS-read value was consistently correct even when
+  // what actually painted wasn't, so computing it here and assigning it
+  // directly sidesteps whatever's unreliable in the CSS cascade path.
+  // Same approach already proven for the type-answer bar that tracks the
+  // keyboard (see positionTypeAnswerBar below).
+  function positionTabbar() {
+    var bar = document.getElementById("bottom-tabbar");
+    if (!bar) return;
+    var safeBottom = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--safe-bottom")) || 0;
+    bar.style.bottom = (14 + safeBottom) + "px";
+  }
+
   var appHeightFrozen = false;
   function setAppHeight() {
     if (appHeightFrozen) return;
     document.documentElement.style.setProperty("--app-height", window.innerHeight + "px");
+    positionTabbar();
     logViewportDebug();
   }
   setAppHeight();

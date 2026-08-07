@@ -679,7 +679,7 @@ body {
   font-size: 17px;
   color: var(--text);
   font-family: inherit;
-  text-align: center;
+  text-align: left;
   box-sizing: border-box;
 }
 

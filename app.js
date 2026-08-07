@@ -1559,9 +1559,19 @@
   // default position once the bar isn't overlapping it anymore.
   function nudgeCardWordAboveBar(bar) {
     var wordEl = document.getElementById("card-word");
+    var frontEl = wordEl.parentElement; // .card-front, centers the word via flex and is never itself transformed pre-flip
     var barTop = bar.getBoundingClientRect().top;
-    var wordRect = wordEl.getBoundingClientRect();
-    var overlap = wordRect.bottom + 8 - barTop;
+    // Derive the word's natural (untransformed) bottom edge from its parent's
+    // stable centered layout instead of measuring the word element itself -
+    // its own rect reflects whatever transform (and, with the transition on
+    // .card-word, whatever mid-animation position) was already applied,
+    // which made each correction chase a moving target instead of the true
+    // natural position. The word's own height is unaffected by its
+    // translateY though, so combining that with the parent's rect is exact.
+    var frontRect = frontEl.getBoundingClientRect();
+    var wordHeight = wordEl.getBoundingClientRect().height;
+    var naturalBottom = frontRect.top + frontRect.height / 2 + wordHeight / 2;
+    var overlap = naturalBottom + 8 - barTop;
     wordEl.style.transform = overlap > 0 ? "translateY(-" + overlap + "px)" : "";
   }
 

@@ -1730,16 +1730,23 @@
 
   // On a cold launch from the Home Screen icon (standalone mode), iOS can
   // report a stale window.innerHeight until WebKit finishes settling the
-  // launch viewport - and how long that takes varies launch to launch
-  // (sometimes one frame, sometimes closer to a second), so a fixed
-  // one-shot recheck catches it on some launches and misses it on others.
-  // Rechecking repeatedly over the first ~1.5s covers that whole window;
-  // it's cheap idempotent work that stops on its own once done. The
-  // first-touch recheck stays as a backstop for whatever's left.
+  // launch viewport - and that settling isn't a single flip: it can land
+  // in more than one intermediate value before reaching the true one, in
+  // response to actual touch activity rather than elapsed time alone (a
+  // one-shot recheck on the first touch caught an intermediate value and
+  // stopped listening before the real one arrived). Keeping this listener
+  // active for every touch, not just the first, converges on the true
+  // value regardless of how many steps it takes. Re-checking on resume
+  // from the background covers relaunches that don't re-run this script
+  // at all, since iOS often resumes a suspended standalone instance
+  // instead of restarting it.
   for (var i = 0; i < 10; i++) {
     setTimeout(setAppHeight, i * 150);
   }
-  document.addEventListener("touchend", setAppHeight, { passive: true, once: true });
+  document.addEventListener("touchend", setAppHeight, { passive: true });
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible") setAppHeight();
+  });
 
   // ---------- type-answer bar follows the keyboard, card stays put ----------
   // iOS pans/scrolls the whole page to bring a focused field above the

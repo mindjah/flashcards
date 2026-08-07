@@ -1717,29 +1717,52 @@
   // pauses that recalculation while the type-answer input is focused, so
   // the card stays put and only the floating input/Check bar tracks the
   // keyboard (see positionTypeAnswerBar below).
+  // ---------- TEMPORARY viewport debug overlay ----------
+  // Diagnosing an iOS standalone-mode launch bug (the bottom tab bar
+  // sometimes ends up above the true bottom edge, inconsistently across
+  // launches) without a way to inspect the actual device in real time.
+  // This logs every raw reading that feeds --app-height, plus the tab
+  // bar's own measured position, so the exact sequence during a bad
+  // launch can be read directly off the screen instead of guessed at.
+  // Remove once the real fix is confirmed.
+  var viewportDebugStart = Date.now();
+  var viewportDebugEl = null;
+  var viewportDebugLines = [];
+
+  function ensureViewportDebugEl() {
+    if (viewportDebugEl) return viewportDebugEl;
+    viewportDebugEl = document.createElement("pre");
+    viewportDebugEl.style.cssText =
+      "position:fixed;top:0;left:0;right:0;z-index:9999;margin:0;" +
+      "padding:4px 6px;font-family:ui-monospace,monospace;font-size:9px;" +
+      "line-height:1.3;color:#0f0;background:rgba(0,0,0,0.78);" +
+      "pointer-events:none;white-space:pre;max-height:46vh;overflow:hidden;";
+    document.body.appendChild(viewportDebugEl);
+    return viewportDebugEl;
+  }
+
+  function logViewportDebug() {
+    var bar = document.getElementById("bottom-tabbar");
+    var barRect = bar ? bar.getBoundingClientRect() : null;
+    var vv = window.visualViewport;
+    var safeBottom = getComputedStyle(document.documentElement).getPropertyValue("--safe-bottom");
+    var line =
+      "t=" + (Date.now() - viewportDebugStart) +
+      " innerH=" + window.innerHeight +
+      " vvH=" + (vv ? Math.round(vv.height) : "-") +
+      " safeB=" + safeBottom.trim() +
+      " appH=" + getComputedStyle(document.documentElement).getPropertyValue("--app-height").trim() +
+      (barRect ? " barBottom=" + Math.round(barRect.bottom) + " gapBelowBar=" + Math.round(window.innerHeight - barRect.bottom) : "");
+    viewportDebugLines.push(line);
+    if (viewportDebugLines.length > 40) viewportDebugLines.shift();
+    ensureViewportDebugEl().textContent = viewportDebugLines.join("\n");
+  }
+
   var appHeightFrozen = false;
-
-  // Right after a standalone cold launch, window.innerHeight isn't just
-  // slow to settle - it can report a momentarily *smaller* value than the
-  // correct one already shown on the very first frame, as iOS finishes
-  // its launch transition, and nothing afterward corrects it back up. For
-  // the first couple of seconds only, track the largest reading seen and
-  // never shrink below it, so that phantom dip can't get locked in; a
-  // real resize (rotation, Split View) happening in that same narrow
-  // window is rare enough to accept the trade-off. After the window
-  // closes, every reading applies normally, so legitimate later resizes
-  // (rotation, the on-screen keyboard elsewhere, Split View) still work.
-  var appHeightSettleUntil = Date.now() + 2500;
-  var appHeightSettleMax = 0;
-
   function setAppHeight() {
     if (appHeightFrozen) return;
-    var h = window.innerHeight;
-    if (Date.now() < appHeightSettleUntil) {
-      h = Math.max(h, appHeightSettleMax);
-      appHeightSettleMax = h;
-    }
-    document.documentElement.style.setProperty("--app-height", h + "px");
+    document.documentElement.style.setProperty("--app-height", window.innerHeight + "px");
+    logViewportDebug();
   }
   setAppHeight();
   window.addEventListener("resize", setAppHeight);

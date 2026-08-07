@@ -1,9 +1,9 @@
 :root {
   color-scheme: dark;
-  --bg: #181820;
-  --surface: #1c1c27;
-  --surface-2: #262632;
-  --border: #33333f;
+  --bg: #26262e;
+  --surface: #2a2a35;
+  --surface-2: #343440;
+  --border: #41414d;
   --text: #f0f0f5;
   --text-dim: #9797a8;
   --accent: #f1bf00;

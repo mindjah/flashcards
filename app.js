@@ -510,6 +510,86 @@
     }
   });
 
+  // ---------- flag icon easter egg ----------
+  var flagAnimating = false;
+  document.getElementById("flag-icon").addEventListener("click", function () {
+    if (flagAnimating) return;
+    flagAnimating = true;
+
+    var flagEl = this;
+    var rect = flagEl.getBoundingClientRect();
+    var restLeft = rect.left, restTop = rect.top;
+    var startFontSize = parseFloat(getComputedStyle(flagEl).fontSize);
+    var centerX = rect.left + rect.width / 2;
+    var centerY = rect.top + rect.height / 2;
+
+    flagEl.style.visibility = "hidden";
+
+    var clone = document.createElement("span");
+    clone.textContent = flagEl.textContent;
+    clone.className = "flag-flying";
+    clone.style.fontSize = startFontSize + "px";
+    clone.style.left = restLeft + "px";
+    clone.style.top = restTop + "px";
+    document.body.appendChild(clone);
+
+    requestAnimationFrame(function () {
+      clone.style.fontSize = (startFontSize * 5) + "px";
+    });
+
+    var angle = Math.random() * Math.PI * 2;
+    var speed = 350;
+    var vx = Math.cos(angle) * speed;
+    var vy = Math.sin(angle) * speed;
+    var rotation = 0;
+    var rotationSpeed = (Math.random() < 0.5 ? -1 : 1) * (360 + Math.random() * 360);
+    var x = restLeft, y = restTop;
+    var startTime = null;
+    var lastTime = null;
+    var duration = 5000;
+
+    function step(timestamp) {
+      if (startTime === null) startTime = timestamp;
+      if (lastTime === null) lastTime = timestamp;
+      var dt = (timestamp - lastTime) / 1000;
+      lastTime = timestamp;
+      var elapsed = timestamp - startTime;
+
+      var size = clone.getBoundingClientRect();
+      var w = size.width, h = size.height;
+
+      x += vx * dt;
+      y += vy * dt;
+
+      if (x <= 0) { x = 0; vx = Math.abs(vx); }
+      if (x + w >= window.innerWidth) { x = window.innerWidth - w; vx = -Math.abs(vx); }
+      if (y <= 0) { y = 0; vy = Math.abs(vy); }
+      if (y + h >= window.innerHeight) { y = window.innerHeight - h; vy = -Math.abs(vy); }
+
+      rotation += rotationSpeed * dt;
+
+      clone.style.left = x + "px";
+      clone.style.top = y + "px";
+      clone.style.transform = "rotate(" + rotation + "deg)";
+
+      if (elapsed < duration) {
+        requestAnimationFrame(step);
+      } else {
+        clone.style.transition = "left 0.4s ease-in-out, top 0.4s ease-in-out, transform 0.4s ease-in-out, font-size 0.4s ease-in-out";
+        clone.style.left = (centerX - rect.width / 2) + "px";
+        clone.style.top = (centerY - rect.height / 2) + "px";
+        clone.style.transform = "rotate(0deg)";
+        clone.style.fontSize = startFontSize + "px";
+        setTimeout(function () {
+          clone.remove();
+          flagEl.style.visibility = "";
+          flagAnimating = false;
+        }, 450);
+      }
+    }
+    requestAnimationFrame(step);
+  });
+
   // ---------- add / edit card ----------
   var editingId = null;
   var editingSectionIds = [];

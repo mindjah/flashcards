@@ -79,6 +79,20 @@ body {
   text-overflow: ellipsis;
 }
 
+.flag-icon {
+  cursor: pointer;
+  display: inline-block;
+}
+
+.flag-flying {
+  position: fixed;
+  z-index: 100;
+  pointer-events: none;
+  line-height: 1;
+  transition: font-size 0.3s ease-out;
+  will-change: transform, left, top, font-size;
+}
+
 .topbar h2 {
   font-size: 18px;
   margin: 0;

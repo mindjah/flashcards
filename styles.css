@@ -1171,13 +1171,13 @@ body {
 
 /* ---------- bottom tab bar (liquid glass) ---------- */
 #view-home, #view-add {
-  padding-bottom: calc(88px + var(--safe-bottom));
+  padding-bottom: calc(112px + var(--safe-bottom));
 }
 
 /* .manage-list (#manage-list, #sections-list) scrolls independently of
    its parent .view, so it needs its own clearance above the floating bar. */
 #view-manage .manage-list, #view-sections .manage-list {
-  padding-bottom: calc(88px + var(--safe-bottom));
+  padding-bottom: calc(112px + var(--safe-bottom));
 }
 
 .bottom-tabbar {

@@ -1064,7 +1064,9 @@
     cardEl.style.opacity = "";
     var isTypeMode = session.mode === "type";
     var reversed = session.mode === "reversed" || isTypeMode;
-    document.getElementById("card-word").textContent = reversed ? session.current.translation : session.current.word;
+    var cardWordEl = document.getElementById("card-word");
+    cardWordEl.style.transform = "";
+    cardWordEl.textContent = reversed ? session.current.translation : session.current.word;
     document.getElementById("card-translation").textContent = reversed ? session.current.word : session.current.translation;
 
     var hasNote = !!session.current.notes;
@@ -1250,6 +1252,8 @@
     var studyAllBtn = document.getElementById("btn-study-all-anyway");
     studyAllBtn.classList.add("hidden");
 
+    icon.classList.remove("celebrate");
+
     if (kind === "no-cards") {
       icon.textContent = "📝";
       msg.textContent = "No cards yet. Add some to start practicing!";
@@ -1263,6 +1267,8 @@
     } else {
       icon.textContent = "🎉";
       msg.textContent = text || "All done for now!";
+      void icon.offsetWidth; // force reflow so the animation restarts every time
+      icon.classList.add("celebrate");
     }
     showView("empty");
   }
@@ -1544,6 +1550,19 @@
     var vv = window.visualViewport;
     var overlap = window.innerHeight - vv.height - vv.offsetTop;
     bar.style.bottom = overlap > 0 ? overlap + "px" : "";
+    nudgeCardWordAboveBar(bar);
+  }
+
+  // If the floating bar rises high enough to cover the card's word (a tall
+  // keyboard on a short screen), nudge just the word text up above it - the
+  // card itself stays put, only its text shifts, and it settles back to its
+  // default position once the bar isn't overlapping it anymore.
+  function nudgeCardWordAboveBar(bar) {
+    var wordEl = document.getElementById("card-word");
+    var barTop = bar.getBoundingClientRect().top;
+    var wordRect = wordEl.getBoundingClientRect();
+    var overlap = wordRect.bottom + 8 - barTop;
+    wordEl.style.transform = overlap > 0 ? "translateY(-" + overlap + "px)" : "";
   }
 
   // Relying only on visualViewport's resize/scroll events proved unreliable
@@ -1572,6 +1591,7 @@
     setAppHeight();
     cancelViewportPan();
     document.getElementById("type-answer-bar").style.bottom = "";
+    document.getElementById("card-word").style.transform = "";
   });
 
   // ---------- install banner (iOS manual steps / Android native prompt) ----------

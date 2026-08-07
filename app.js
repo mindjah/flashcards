@@ -1726,6 +1726,19 @@
   window.addEventListener("resize", setAppHeight);
   window.addEventListener("orientationchange", setAppHeight);
   window.addEventListener("pageshow", setAppHeight);
+  if (window.visualViewport) window.visualViewport.addEventListener("resize", setAppHeight);
+
+  // On a cold launch from the Home Screen icon (standalone mode), iOS can
+  // report a stale window.innerHeight for the first frame or two, before
+  // WebKit finishes settling the launch viewport - the very first tap
+  // afterwards is what triggers the correction, which otherwise leaves
+  // #app permanently undersized (and everything anchored to its bottom,
+  // like the tab bar, sitting above where it should) until the user
+  // happens to interact. Re-checking a couple of frames after load, and
+  // once more on the first touch, gets the correction without relying on
+  // the user to discover that tapping fixes it.
+  requestAnimationFrame(function () { requestAnimationFrame(setAppHeight); });
+  document.addEventListener("touchend", setAppHeight, { passive: true, once: true });
 
   // ---------- type-answer bar follows the keyboard, card stays put ----------
   // iOS pans/scrolls the whole page to bring a focused field above the

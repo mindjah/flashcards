@@ -39,7 +39,7 @@
             <span class="dropdown-item-hint">How practice, decks & mastery work</span>
           </button>
           <p class="dropdown-info">All data stays on this device. Import/export uses Anki's plain-text card format.</p>
-          <p class="app-version">v1.11.1</p>
+          <p class="app-version">v1.11.2</p>
         </div>
       </div>
     </header>
@@ -224,11 +224,14 @@
           </button>
           <div class="deck-dropdown-panel hidden" id="deck-dropdown-panel">
             <div id="add-sections-list" class="deck-dropdown-list"></div>
-            <button type="button" class="deck-dropdown-new" id="deck-dropdown-new">+ New card deck</button>
+            <div class="deck-dropdown-actions">
+              <button type="button" class="deck-dropdown-action" id="deck-dropdown-apply">Apply</button>
+              <button type="button" class="deck-dropdown-action" id="deck-dropdown-new">+ New card deck</button>
+            </div>
           </div>
         </div>
       </div>
-      <button type="submit" id="btn-save-card" class="btn btn-primary btn-big">Save card</button>
+      <button type="submit" id="btn-save-card" class="btn btn-primary btn-big" disabled>Save card</button>
       <p class="save-toast hidden" id="save-toast">Saved ✓ add another</p>
     </form>
   </section>
@@ -264,7 +267,7 @@
       <label>New card deck
         <input type="text" id="input-section-name" autocomplete="off" placeholder="e.g. Food, Travel">
       </label>
-      <button type="submit" class="btn btn-primary">Add card deck</button>
+      <button type="submit" id="btn-add-section" class="btn btn-primary" disabled>Add card deck</button>
     </form>
     <div id="sections-list" class="manage-list"></div>
   </section>

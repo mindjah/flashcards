@@ -643,6 +643,10 @@
     document.getElementById("deck-dropdown-panel").classList.toggle("hidden");
   });
 
+  document.getElementById("deck-dropdown-apply").addEventListener("click", function () {
+    document.getElementById("deck-dropdown-panel").classList.add("hidden");
+  });
+
   document.getElementById("deck-dropdown-new").addEventListener("click", function () {
     var name = prompt("New card deck name");
     if (name === null) return;
@@ -690,9 +694,19 @@
     renderAddSectionsPicker();
     document.getElementById("deck-dropdown-panel").classList.add("hidden");
     document.getElementById("save-toast").classList.add("hidden");
+    updateSaveCardButtonState();
     showView("add");
     wordEl.focus();
   }
+
+  function updateSaveCardButtonState() {
+    var word = document.getElementById("input-word").value.trim();
+    var translation = document.getElementById("input-translation").value.trim();
+    document.getElementById("btn-save-card").disabled = !(word && translation);
+  }
+
+  document.getElementById("input-word").addEventListener("input", updateSaveCardButtonState);
+  document.getElementById("input-translation").addEventListener("input", updateSaveCardButtonState);
 
   document.getElementById("btn-add-translate").addEventListener("click", function () {
     openGoogleTranslate(document.getElementById("input-word").value);
@@ -752,6 +766,7 @@
     wordEl.value = "";
     transEl.value = "";
     notesEl.value = "";
+    updateSaveCardButtonState();
     wordEl.focus();
 
     var toast = document.getElementById("save-toast");
@@ -1011,6 +1026,10 @@
     });
   }
 
+  document.getElementById("input-section-name").addEventListener("input", function () {
+    document.getElementById("btn-add-section").disabled = !this.value.trim();
+  });
+
   document.getElementById("form-add-section").addEventListener("submit", function (e) {
     e.preventDefault();
     var input = document.getElementById("input-section-name");
@@ -1018,6 +1037,7 @@
     if (!name) return;
     addSection(name);
     input.value = "";
+    document.getElementById("btn-add-section").disabled = true;
     renderSectionsList();
   });
 

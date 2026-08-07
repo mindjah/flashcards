@@ -968,29 +968,41 @@ body {
   gap: 6px;
 }
 
-.deck-dropdown-row {
+.deck-dropdown-list .deck-dropdown-row {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 12px;
-  font-size: 15px;
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 400;
 }
 
-.deck-dropdown-row input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
+.deck-dropdown-list .deck-dropdown-row input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
   accent-color: var(--accent);
-  flex-shrink: 0;
-}
-
-.deck-dropdown-new {
   flex-shrink: 0;
   background: none;
   border: none;
+  border-radius: 0;
+  padding: 0;
+}
+
+.deck-dropdown-actions {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
   border-top: 1px solid var(--border);
+}
+
+.deck-dropdown-action {
+  background: none;
+  border: none;
   color: var(--accent);
   font-family: inherit;
   font-weight: 600;

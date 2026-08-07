@@ -554,24 +554,29 @@
     renderHintSection("recent-list", "recent-toggle", recent, recentExpanded);
   }
 
+  // Keeps the toggle button itself - "Show less" once expanded, "Show
+  // more" again once collapsed - just above the floating tab bar rather
+  // than scrolling to the top of the block, which left an expanded list's
+  // toggle far below the fold with no automatic way to reach it.
+  function scrollToggleAboveTabbar(toggleId) {
+    var view = document.getElementById("view-home");
+    var toggle = document.getElementById(toggleId);
+    var tabbarRect = document.getElementById("bottom-tabbar").getBoundingClientRect();
+    var toggleRect = toggle.getBoundingClientRect();
+    var delta = toggleRect.bottom - (tabbarRect.top - 16);
+    view.scrollBy({ top: delta, behavior: "smooth" });
+  }
+
   document.getElementById("struggling-toggle").addEventListener("click", function () {
     strugglingExpanded = !strugglingExpanded;
     renderStrugglingList();
-    if (strugglingExpanded) {
-      document.getElementById("struggling-block").scrollIntoView({ behavior: "smooth", block: "start" });
-    } else {
-      document.getElementById("view-home").scrollTo({ top: 0, behavior: "smooth" });
-    }
+    scrollToggleAboveTabbar("struggling-toggle");
   });
 
   document.getElementById("recent-toggle").addEventListener("click", function () {
     recentExpanded = !recentExpanded;
     renderStrugglingList();
-    if (recentExpanded) {
-      document.getElementById("recent-block").scrollIntoView({ behavior: "smooth", block: "start" });
-    } else {
-      document.getElementById("view-home").scrollTo({ top: 0, behavior: "smooth" });
-    }
+    scrollToggleAboveTabbar("recent-toggle");
   });
 
   function setMasterySegment(id, count, total) {

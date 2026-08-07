@@ -130,6 +130,31 @@ body {
 
 .icon-btn:disabled { opacity: 0.4; pointer-events: none; }
 
+.icon-btn-plain {
+  background: none;
+  border-radius: 0;
+}
+
+.icon-btn-plain svg { width: 24px; height: 24px; }
+
+.streak-btn {
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 16px;
+  border: none;
+  background: var(--surface-2);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.streak-btn:active { background: var(--surface); }
+
 .icon-btn-translate {
   background: #4285f4;
   color: #fff;
@@ -414,7 +439,7 @@ body {
 /* ===== DAILY CARD ===== */
 .daily-card {
   margin: 16px 16px 0;
-  height: 118px;
+  height: 236px;
   perspective: 1200px;
 }
 

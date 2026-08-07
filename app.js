@@ -403,11 +403,20 @@
   });
 
   document.getElementById("view-home").addEventListener("scroll", hideInfoPopup);
+  document.getElementById("view-manage").addEventListener("scroll", hideInfoPopup);
 
-  function refreshHome() {
+  // "To learn"/"Total cards" (now shown on the Manage screen) and the
+  // streak (now a compact header button) are global counts unrelated to
+  // Manage's own search/filters, so they're refreshed from both here and
+  // openManageView() rather than only whenever the home screen updates.
+  function updateGlobalStats() {
     document.getElementById("stat-due").textContent = dueCards().length;
     document.getElementById("stat-total").textContent = cards.length;
-    document.getElementById("stat-streak").textContent = streak.current + " 🔥";
+    document.getElementById("stat-streak").textContent = "🔥 " + streak.current;
+  }
+
+  function refreshHome() {
+    updateGlobalStats();
 
     var m = masteryBreakdown();
     var total = cards.length;
@@ -588,6 +597,7 @@
 
   function openManageView() {
     manageReturnTo = "home";
+    updateGlobalStats();
     populateManageSectionFilter();
     document.getElementById("manage-section-filter").value = "";
     document.getElementById("manage-mastery-filter").value = "";
@@ -597,6 +607,7 @@
 
   function openManageForSection(sectionId) {
     manageReturnTo = "sections";
+    updateGlobalStats();
     populateManageSectionFilter();
     document.getElementById("manage-section-filter").value = sectionId;
     document.getElementById("manage-mastery-filter").value = "";
@@ -1102,6 +1113,7 @@
 
   function openManageFilteredByMastery(tier) {
     manageReturnTo = "home";
+    updateGlobalStats();
     populateManageSectionFilter();
     document.getElementById("manage-section-filter").value = "";
     document.getElementById("manage-mastery-filter").value = tier;

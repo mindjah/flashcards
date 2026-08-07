@@ -555,16 +555,15 @@
   }
 
   // Keeps the toggle button itself - "Show less" once expanded, "Show
-  // more" again once collapsed - just above the floating tab bar rather
-  // than scrolling to the top of the block, which left an expanded list's
-  // toggle far below the fold with no automatic way to reach it.
+  // more" again once collapsed - clear of the floating tab bar rather
+  // than scrolling to the top of the block, which left an expanded
+  // list's toggle far below the fold with no automatic way to reach it.
+  // Uses the browser's own scrollIntoView + scroll-margin-bottom (see
+  // styles.css) instead of a hand-computed scrollBy delta, which wasn't
+  // reliably landing on a real device despite matching the math in
+  // every automated test.
   function scrollToggleAboveTabbar(toggleId) {
-    var view = document.getElementById("view-home");
-    var toggle = document.getElementById(toggleId);
-    var tabbarRect = document.getElementById("bottom-tabbar").getBoundingClientRect();
-    var toggleRect = toggle.getBoundingClientRect();
-    var delta = toggleRect.bottom - (tabbarRect.top - 32);
-    view.scrollBy({ top: delta, behavior: "smooth" });
+    document.getElementById(toggleId).scrollIntoView({ behavior: "smooth", block: "end" });
   }
 
   document.getElementById("struggling-toggle").addEventListener("click", function () {

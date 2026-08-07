@@ -394,6 +394,10 @@ body {
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+  /* Tab bar footprint (14px margin + 62px height) plus a 32px gap, so
+     scrollIntoView({block:"end"}) rests this above the bar instead of
+     flush with the true bottom edge. */
+  scroll-margin-bottom: 108px;
 }
 
 .hint-toggle:active { opacity: 0.7; }

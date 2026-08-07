@@ -1194,6 +1194,14 @@ body {
   justify-content: space-around;
   padding: 0 4px;
   border-radius: 31px;
+  /* Promotes this backdrop-filter element to its own compositing layer.
+     Without it, WebKit can leave the painted bar at its old position/
+     appearance after a layout-only change to `bottom` (env(safe-area-
+     inset-bottom) settling on launch) until some other trigger - like a
+     touch - forces a repaint; the layout itself (getBoundingClientRect)
+     is already correct the whole time, only the paint lags. */
+  transform: translateZ(0);
+  will-change: transform;
 
   background: linear-gradient(155deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.02) 45%, rgba(255, 255, 255, 0.06));
   -webkit-backdrop-filter: blur(20px) saturate(160%);

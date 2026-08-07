@@ -44,7 +44,7 @@
             <span class="dropdown-item-hint">How practice, decks & mastery work</span>
           </button>
           <p class="dropdown-info">All data stays on this device. Import/export uses Anki's plain-text card format.</p>
-          <p class="app-version">v1.14.7</p>
+          <p class="app-version">v1.15.0</p>
         </div>
       </div>
     </header>
@@ -254,7 +254,7 @@
     <header class="topbar">
       <button class="icon-btn" id="btn-manage-back">✕</button>
       <h2>Manage cards</h2>
-      <span class="spacer"></span>
+      <button type="button" class="text-action-btn" id="btn-manage-select-toggle">Select</button>
     </header>
     <div class="home-stats">
       <button type="button" class="stat-card info-trigger" id="stat-card-due">
@@ -275,6 +275,11 @@
         <option value="learning">Learning</option>
         <option value="mastered">Mastered</option>
       </select>
+    </div>
+    <div class="bulk-actions-bar hidden" id="bulk-actions-bar">
+      <button type="button" class="text-action-btn" id="btn-bulk-select-all">Select all</button>
+      <span class="bulk-actions-count" id="bulk-actions-count">0 selected</span>
+      <button type="button" class="btn btn-fail" id="btn-bulk-delete" disabled>Delete</button>
     </div>
     <div id="manage-list" class="manage-list"></div>
   </section>

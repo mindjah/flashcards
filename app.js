@@ -612,6 +612,9 @@
     populateManageSectionFilter();
     document.getElementById("manage-section-filter").value = "";
     document.getElementById("manage-mastery-filter").value = "";
+    manageSelectMode = false;
+    manageSelectedIds.clear();
+    updateManageSelectUI();
     renderManageList();
     showView("manage");
   }
@@ -623,6 +626,9 @@
     document.getElementById("manage-section-filter").value = sectionId;
     document.getElementById("manage-mastery-filter").value = "";
     document.getElementById("manage-search").value = "";
+    manageSelectMode = false;
+    manageSelectedIds.clear();
+    updateManageSelectUI();
     renderManageList();
     showView("manage");
   }
@@ -1015,6 +1021,48 @@
     }
   }
 
+  // ---------- bulk select/delete ----------
+  var manageSelectMode = false;
+  var manageSelectedIds = new Set();
+  var lastManageListIds = [];
+
+  function updateManageSelectUI() {
+    document.getElementById("btn-manage-select-toggle").textContent = manageSelectMode ? "Cancel" : "Select";
+    document.getElementById("bulk-actions-bar").classList.toggle("hidden", !manageSelectMode);
+    document.getElementById("bulk-actions-count").textContent = manageSelectedIds.size + " selected";
+    document.getElementById("btn-bulk-delete").disabled = manageSelectedIds.size === 0;
+  }
+
+  document.getElementById("btn-manage-select-toggle").addEventListener("click", function () {
+    manageSelectMode = !manageSelectMode;
+    manageSelectedIds.clear();
+    updateManageSelectUI();
+    renderManageList(document.getElementById("manage-search").value);
+  });
+
+  document.getElementById("btn-bulk-select-all").addEventListener("click", function () {
+    var allSelected = lastManageListIds.length > 0 && lastManageListIds.every(function (id) { return manageSelectedIds.has(id); });
+    lastManageListIds.forEach(function (id) {
+      if (allSelected) manageSelectedIds.delete(id);
+      else manageSelectedIds.add(id);
+    });
+    updateManageSelectUI();
+    renderManageList(document.getElementById("manage-search").value);
+  });
+
+  document.getElementById("btn-bulk-delete").addEventListener("click", function () {
+    var count = manageSelectedIds.size;
+    if (count === 0) return;
+    if (!confirm("Delete " + count + " card" + (count === 1 ? "" : "s") + "?")) return;
+    cards = cards.filter(function (c) { return !manageSelectedIds.has(c.id); });
+    saveData();
+    manageSelectMode = false;
+    manageSelectedIds.clear();
+    updateManageSelectUI();
+    updateGlobalStats();
+    renderManageList(document.getElementById("manage-search").value);
+  });
+
   function renderManageList(filter) {
     var list = document.getElementById("manage-list");
     list.innerHTML = "";
@@ -1039,6 +1087,8 @@
       items = items.filter(function (c) { return masteryTier(c) === masteryFilterVal; });
     }
 
+    lastManageListIds = items.map(function (c) { return c.id; });
+
     if (items.length === 0) {
       var empty = document.createElement("div");
       empty.className = "manage-empty";
@@ -1049,7 +1099,7 @@
 
     items.forEach(function (c) {
       var row = document.createElement("div");
-      row.className = "manage-item";
+      row.className = "manage-item" + (manageSelectMode && manageSelectedIds.has(c.id) ? " selected" : "");
 
       var text = document.createElement("div");
       text.className = "manage-item-text";
@@ -1093,31 +1143,47 @@
       meta.textContent = isDue(c, now) ? "To learn" : "Due " + formatRelative(c.dueAt - now);
       text.appendChild(meta);
 
-      var actions = document.createElement("div");
-      actions.className = "manage-item-actions";
+      if (manageSelectMode) {
+        var selectBox = document.createElement("input");
+        selectBox.type = "checkbox";
+        selectBox.className = "manage-item-select";
+        selectBox.checked = manageSelectedIds.has(c.id);
+        selectBox.addEventListener("change", function () {
+          if (selectBox.checked) manageSelectedIds.add(c.id);
+          else manageSelectedIds.delete(c.id);
+          row.classList.toggle("selected", selectBox.checked);
+          updateManageSelectUI();
+        });
+        row.appendChild(text);
+        row.appendChild(selectBox);
+      } else {
+        var actions = document.createElement("div");
+        actions.className = "manage-item-actions";
 
-      var edit = document.createElement("button");
-      edit.className = "manage-item-edit";
-      edit.textContent = "Edit";
-      edit.addEventListener("click", function () {
-        openAddView(c);
-      });
+        var edit = document.createElement("button");
+        edit.className = "manage-item-edit";
+        edit.textContent = "Edit";
+        edit.addEventListener("click", function () {
+          openAddView(c);
+        });
 
-      var del = document.createElement("button");
-      del.className = "manage-item-delete";
-      del.textContent = "Delete";
-      del.addEventListener("click", function () {
-        if (!confirm('Delete "' + c.word + '"?')) return;
-        cards = cards.filter(function (x) { return x.id !== c.id; });
-        saveData();
-        renderManageList(document.getElementById("manage-search").value);
-      });
+        var del = document.createElement("button");
+        del.className = "manage-item-delete";
+        del.textContent = "Delete";
+        del.addEventListener("click", function () {
+          if (!confirm('Delete "' + c.word + '"?')) return;
+          cards = cards.filter(function (x) { return x.id !== c.id; });
+          saveData();
+          updateGlobalStats();
+          renderManageList(document.getElementById("manage-search").value);
+        });
 
-      actions.appendChild(edit);
-      actions.appendChild(del);
+        actions.appendChild(edit);
+        actions.appendChild(del);
 
-      row.appendChild(text);
-      row.appendChild(actions);
+        row.appendChild(text);
+        row.appendChild(actions);
+      }
       list.appendChild(row);
     });
   }
@@ -1148,6 +1214,9 @@
     document.getElementById("manage-section-filter").value = "";
     document.getElementById("manage-mastery-filter").value = tier;
     document.getElementById("manage-search").value = "";
+    manageSelectMode = false;
+    manageSelectedIds.clear();
+    updateManageSelectUI();
     renderManageList();
     showView("manage");
   }

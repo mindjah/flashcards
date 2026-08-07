@@ -1421,7 +1421,13 @@
   // Renders what was typed with each character colored to match or
   // mismatch the correct word at that position - built with textContent
   // per character (not innerHTML) since the typed value is user input.
+  // Stripping ¡¿!? from the correct word first (the same leniency
+  // normalizeTypedAnswer applies for the pass/fail check) keeps the two
+  // strings aligned by position - a phrase like "¿Podemos turnar?" would
+  // otherwise shift every later character by one and mismatch the whole
+  // thing just because of the leading ¿.
   function renderTypedAnswerDiff(container, typed, correct) {
+    correct = correct.replace(/[¡¿!?]/g, "");
     container.innerHTML = "";
     for (var i = 0; i < typed.length; i++) {
       var span = document.createElement("span");

@@ -431,6 +431,7 @@
 
     renderDailyCard();
     renderStrugglingList();
+    document.getElementById("empty-home-placeholder").classList.toggle("hidden", cards.length > 0);
   }
 
   // ---------- daily card ----------

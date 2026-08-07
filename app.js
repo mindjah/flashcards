@@ -406,8 +406,57 @@
     document.getElementById("mastery-learning-count").textContent = m.learning;
     document.getElementById("mastery-mastered-count").textContent = m.mastered;
 
+    renderDailyCard();
     renderStrugglingList();
   }
+
+  // ---------- daily card ----------
+  // Picked once per calendar day and cached in localStorage (not just
+  // re-rolled on every refreshHome call) so it stays the same word across
+  // a whole day's worth of visits to the home screen.
+  var DAILY_CARD_KEY = "esDailyCard";
+  var lastDailyCardId = null;
+
+  function pickDailyCard() {
+    if (cards.length === 0) return null;
+    var today = todayStr();
+    var stored = null;
+    try { stored = JSON.parse(localStorage.getItem(DAILY_CARD_KEY)); } catch (e) {}
+    if (stored && stored.date === today) {
+      var found = cards.filter(function (c) { return c.id === stored.id; })[0];
+      if (found) return found;
+    }
+    var pick = cards[Math.floor(Math.random() * cards.length)];
+    localStorage.setItem(DAILY_CARD_KEY, JSON.stringify({ date: today, id: pick.id }));
+    return pick;
+  }
+
+  function renderDailyCard() {
+    var el = document.getElementById("daily-card");
+    var card = pickDailyCard();
+    if (!card) {
+      el.classList.add("hidden");
+      lastDailyCardId = null;
+      return;
+    }
+    el.classList.remove("hidden");
+    if (card.id === lastDailyCardId) return; // already showing this card - don't reset its flip state
+    lastDailyCardId = card.id;
+    el.classList.remove("flipped");
+    document.getElementById("daily-card-word").textContent = card.word;
+    document.getElementById("daily-card-translation").textContent = card.translation;
+    var noteEl = document.getElementById("daily-card-note");
+    if (card.notes) {
+      document.getElementById("daily-card-note-text").textContent = card.notes;
+      noteEl.classList.remove("hidden");
+    } else {
+      noteEl.classList.add("hidden");
+    }
+  }
+
+  document.getElementById("daily-card-inner").addEventListener("click", function () {
+    document.getElementById("daily-card").classList.toggle("flipped");
+  });
 
   // Same open/slashed-eye glyphs used by password fields' show/hide toggle -
   // here they mark whether this row's translation popup is currently open.

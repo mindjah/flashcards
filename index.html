@@ -41,7 +41,7 @@
             <span class="dropdown-item-hint">How practice, decks & mastery work</span>
           </button>
           <p class="dropdown-info">All data stays on this device. Import/export uses Anki's plain-text card format.</p>
-          <p class="app-version">v1.13.0</p>
+          <p class="app-version">v1.13.1</p>
         </div>
       </div>
     </header>
@@ -89,14 +89,11 @@
       </div>
     </div>
 
-    <button id="btn-study" class="btn btn-primary btn-big">Practice</button>
-
     <div class="daily-card hidden" id="daily-card">
       <div class="daily-card-inner" id="daily-card-inner">
         <div class="daily-card-face daily-card-front">
-          <span class="daily-card-label">🎴 Card of the day</span>
+          <span class="daily-card-label">Card of the day</span>
           <span class="daily-card-word" id="daily-card-word"></span>
-          <span class="daily-card-hint">Tap to flip</span>
         </div>
         <div class="daily-card-face daily-card-back">
           <span class="daily-card-translation" id="daily-card-translation"></span>
@@ -107,6 +104,8 @@
         </div>
       </div>
     </div>
+
+    <button id="btn-study" class="btn btn-primary btn-big">Practice</button>
 
     <div class="struggling-block hidden" id="struggling-block">
       <div class="field-label">Keep practicing 🎯</div>
@@ -283,12 +282,9 @@
       <h2>Card decks</h2>
       <span class="spacer"></span>
     </header>
-    <form id="form-add-section" class="form section-add-form">
-      <label>New card deck
-        <input type="text" id="input-section-name" autocomplete="off" placeholder="e.g. Food, Travel">
-      </label>
-      <button type="submit" id="btn-add-section" class="btn btn-primary" disabled>Add card deck</button>
-    </form>
+    <div class="section-add-row">
+      <button type="button" id="btn-open-new-deck" class="btn btn-primary">+ Add card deck</button>
+    </div>
     <div id="sections-list" class="manage-list"></div>
   </section>
 
@@ -339,6 +335,18 @@
       </div>
     </div>
   </section>
+
+  <!-- ===== NEW CARD DECK MODAL ===== -->
+  <div class="modal-overlay hidden" id="new-deck-modal">
+    <div class="modal-sheet">
+      <h3 class="modal-title">New card deck</h3>
+      <input type="text" id="new-deck-input" autocomplete="off" placeholder="e.g. Food, Travel">
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="new-deck-cancel">Cancel</button>
+        <button type="button" class="btn btn-primary" id="new-deck-add" disabled>Add</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ===== BOTTOM TAB BAR ===== -->
   <nav class="bottom-tabbar hidden" id="bottom-tabbar">

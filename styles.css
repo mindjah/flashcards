@@ -119,6 +119,8 @@ body {
 
 .icon-btn svg { width: 18px; height: 18px; }
 
+.icon-btn:disabled { opacity: 0.4; pointer-events: none; }
+
 .icon-btn-translate {
   background: #4285f4;
   color: #fff;
@@ -877,6 +879,59 @@ body {
   font-weight: 600;
 }
 
+/* ===== MODAL ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.modal-sheet {
+  width: 100%;
+  max-width: 340px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+.modal-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.modal-sheet input {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 17px;
+  color: var(--text);
+  font-family: inherit;
+}
+
+.modal-sheet input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.modal-actions .btn { flex: 1; }
+
 /* ===== MANAGE ===== */
 .search-input {
   margin: 4px 16px 8px;
@@ -1150,9 +1205,9 @@ body {
   background: transparent;
 }
 
-.section-add-form {
+.section-add-row {
   flex: none;
-  padding-bottom: 8px;
+  padding: 8px 16px;
 }
 
 .mode-picker {

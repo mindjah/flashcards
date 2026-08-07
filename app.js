@@ -759,15 +759,59 @@
   });
 
   document.getElementById("deck-dropdown-new").addEventListener("click", function () {
-    var name = prompt("New card deck name");
-    if (name === null) return;
-    name = name.trim();
+    openNewDeckModal("add");
+  });
+
+  // ---------- new card deck modal ----------
+  // Shared by the "+ New card deck" action inside the Add/Edit card deck
+  // picker and the "+ Add card deck" button on the Card decks screen -
+  // newDeckContext says which list to refresh (and, for "add", which
+  // card's deck selection to update) once a name is confirmed.
+  var newDeckContext = null;
+
+  function openNewDeckModal(context) {
+    newDeckContext = context;
+    var input = document.getElementById("new-deck-input");
+    input.value = "";
+    document.getElementById("new-deck-add").disabled = true;
+    document.getElementById("new-deck-modal").classList.remove("hidden");
+    input.focus();
+  }
+
+  function closeNewDeckModal() {
+    document.getElementById("new-deck-modal").classList.add("hidden");
+    newDeckContext = null;
+  }
+
+  document.getElementById("new-deck-input").addEventListener("input", function () {
+    document.getElementById("new-deck-add").disabled = !this.value.trim();
+  });
+
+  document.getElementById("new-deck-input").addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !document.getElementById("new-deck-add").disabled) {
+      document.getElementById("new-deck-add").click();
+    }
+  });
+
+  document.getElementById("new-deck-cancel").addEventListener("click", closeNewDeckModal);
+
+  document.getElementById("new-deck-modal").addEventListener("click", function (e) {
+    if (e.target === this) closeNewDeckModal();
+  });
+
+  document.getElementById("new-deck-add").addEventListener("click", function () {
+    var name = document.getElementById("new-deck-input").value.trim();
     if (!name) return;
     var section = addSection(name);
-    if (section && editingSectionIds.indexOf(section.id) === -1) {
-      editingSectionIds.push(section.id);
+    if (newDeckContext === "add") {
+      if (section && editingSectionIds.indexOf(section.id) === -1) {
+        editingSectionIds.push(section.id);
+      }
+      renderAddSectionsPicker();
+    } else if (newDeckContext === "sections") {
+      renderSectionsList();
     }
-    renderAddSectionsPicker();
+    closeNewDeckModal();
   });
 
   document.addEventListener("click", function (e) {
@@ -814,6 +858,7 @@
     var word = document.getElementById("input-word").value.trim();
     var translation = document.getElementById("input-translation").value.trim();
     document.getElementById("btn-save-card").disabled = !(word && translation);
+    document.getElementById("btn-add-translate").disabled = !word;
   }
 
   document.getElementById("input-word").addEventListener("input", updateSaveCardButtonState);
@@ -1137,19 +1182,8 @@
     });
   }
 
-  document.getElementById("input-section-name").addEventListener("input", function () {
-    document.getElementById("btn-add-section").disabled = !this.value.trim();
-  });
-
-  document.getElementById("form-add-section").addEventListener("submit", function (e) {
-    e.preventDefault();
-    var input = document.getElementById("input-section-name");
-    var name = input.value.trim();
-    if (!name) return;
-    addSection(name);
-    input.value = "";
-    document.getElementById("btn-add-section").disabled = true;
-    renderSectionsList();
+  document.getElementById("btn-open-new-deck").addEventListener("click", function () {
+    openNewDeckModal("sections");
   });
 
   document.getElementById("btn-sections-back").addEventListener("click", function () {

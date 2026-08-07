@@ -30,6 +30,7 @@
         parsed.forEach(function (c) {
           if (!Array.isArray(c.sectionIds)) c.sectionIds = [];
           if (typeof c.reviewed !== "boolean") c.reviewed = c.box > 0;
+          if (c.box <= 0 && c.dueAt > Date.now()) c.dueAt = Date.now();
         });
         return { cards: parsed, sections: [], streak: defaultStreak(), lastExportAt: null, lastStudyPrefs: null };
       }
@@ -37,6 +38,12 @@
       loadedCards.forEach(function (c) {
         if (!Array.isArray(c.sectionIds)) c.sectionIds = [];
         if (typeof c.reviewed !== "boolean") c.reviewed = c.box > 0;
+        // A box-0 (New, never studied) card has no legitimate reason to
+        // have a future due date in this app's own SRS model - only
+        // graduating past box 0 earns one. Repairs imports (e.g. a
+        // generated word list) that included one anyway, which would
+        // otherwise silently never show up as due.
+        if (c.box <= 0 && c.dueAt > Date.now()) c.dueAt = Date.now();
       });
       var loadedSections = Array.isArray(parsed.sections) ? parsed.sections : [];
       loadedSections.forEach(function (s) {
@@ -1867,7 +1874,11 @@
             sectionIds: sectionIds,
             box: importedBox,
             reviewed: typeof item.reviewed === "boolean" ? item.reviewed : importedBox > 0,
-            dueAt: typeof item.dueAt === "number" ? item.dueAt : Date.now(),
+            // A box-0 card is "New" - never studied - and has no
+            // legitimate reason to carry a future due date, so any
+            // provided dueAt only applies once a card has actually
+            // graduated past box 0.
+            dueAt: importedBox > 0 && typeof item.dueAt === "number" ? item.dueAt : Date.now(),
             createdAt: typeof item.createdAt === "number" ? item.createdAt : Date.now()
           };
           cards.push(newCard);

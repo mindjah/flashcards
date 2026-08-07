@@ -28,6 +28,9 @@
 html, body {
   height: 100%;
   overscroll-behavior: none;
+  position: fixed;
+  width: 100%;
+  overflow: hidden;
 }
 
 body {

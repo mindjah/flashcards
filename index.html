@@ -5,16 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no, interactive-widget=resizes-visual">
 <title>Español Flashcards</title>
 
-<script>
-// Sets --app-height before any CSS/content loads, so #app is never sized
-// off the 100dvh fallback (unreliable in iOS standalone mode) even for a
-// single frame. app.js keeps this updated afterward (resize, rotation,
-// etc.) - this inline copy only has to win the race for the very first
-// paint, which is what a script sitting near the end of a large app.js
-// file could never do.
-document.documentElement.style.setProperty("--app-height", window.innerHeight + "px");
-</script>
-
 <meta name="theme-color" content="#12121a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -49,7 +39,7 @@ document.documentElement.style.setProperty("--app-height", window.innerHeight + 
             <span class="dropdown-item-hint">How practice, decks & mastery work</span>
           </button>
           <p class="dropdown-info">All data stays on this device. Import/export uses Anki's plain-text card format.</p>
-          <p class="app-version">v1.12.12</p>
+          <p class="app-version">v1.12.13</p>
         </div>
       </div>
     </header>

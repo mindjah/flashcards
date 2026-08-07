@@ -15,8 +15,6 @@
   --mastery-new: #d03b3b;
   --mastery-learning: #fab219;
   --mastery-mastered: #0ca30c;
-  --safe-top: env(safe-area-inset-top, 0px);
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 * {
@@ -1180,17 +1178,10 @@ body {
 }
 
 .bottom-tabbar {
-  /* position:fixed (viewport-anchored) is the reliable, documented case
-     for env(safe-area-inset-*) - position:absolute inside a JS-sized
-     #app asks WebKit to re-project the safe area into a non-viewport
-     coordinate system, which proved unreliable in standalone mode.
-     `bottom` here is just a same-as-before-JS-runs fallback; app.js sets
-     it directly via style.bottom, the same proven approach already used
-     for the type-answer bar that tracks the keyboard. */
   position: fixed;
   left: 16px;
   right: 16px;
-  bottom: 14px;
+  bottom: calc(14px + env(safe-area-inset-bottom, 0px));
   height: 62px;
   max-width: 460px;
   margin: 0 auto;

@@ -1717,82 +1717,15 @@
   // pauses that recalculation while the type-answer input is focused, so
   // the card stays put and only the floating input/Check bar tracks the
   // keyboard (see positionTypeAnswerBar below).
-  // ---------- TEMPORARY viewport debug overlay ----------
-  // Diagnosing an iOS standalone-mode launch bug (the bottom tab bar
-  // sometimes ends up above the true bottom edge, inconsistently across
-  // launches) without a way to inspect the actual device in real time.
-  // This logs every raw reading that feeds --app-height, plus the tab
-  // bar's own measured position, so the exact sequence during a bad
-  // launch can be read directly off the screen instead of guessed at.
-  // Remove once the real fix is confirmed.
-  var viewportDebugStart = Date.now();
-  var viewportDebugEl = null;
-  var viewportDebugLines = [];
-
-  function ensureViewportDebugEl() {
-    if (viewportDebugEl) return viewportDebugEl;
-    viewportDebugEl = document.createElement("pre");
-    viewportDebugEl.style.cssText =
-      "position:fixed;top:0;left:0;right:0;z-index:9999;margin:0;" +
-      "padding:4px 6px;font-family:ui-monospace,monospace;font-size:9px;" +
-      "line-height:1.3;color:#0f0;background:rgba(0,0,0,0.78);" +
-      "pointer-events:none;white-space:pre;max-height:46vh;overflow:hidden;";
-    document.body.appendChild(viewportDebugEl);
-    return viewportDebugEl;
-  }
-
-  function logViewportDebug() {
-    var bar = document.getElementById("bottom-tabbar");
-    var barRect = bar ? bar.getBoundingClientRect() : null;
-    var vv = window.visualViewport;
-    var safeBottom = getComputedStyle(document.documentElement).getPropertyValue("--safe-bottom");
-    var line =
-      "t=" + (Date.now() - viewportDebugStart) +
-      " innerH=" + window.innerHeight +
-      " vvH=" + (vv ? Math.round(vv.height) : "-") +
-      " safeB=" + safeBottom.trim() +
-      " appH=" + getComputedStyle(document.documentElement).getPropertyValue("--app-height").trim() +
-      (barRect ? " barBottom=" + Math.round(barRect.bottom) + " gapBelowBar=" + Math.round(window.innerHeight - barRect.bottom) : "");
-    viewportDebugLines.push(line);
-    if (viewportDebugLines.length > 40) viewportDebugLines.shift();
-    ensureViewportDebugEl().textContent = viewportDebugLines.join("\n");
-  }
-
-  // The tab bar is position:fixed (the reliable, documented case for
-  // env(safe-area-inset-*)), but its `bottom` is set here directly as a
-  // plain inline style instead of through CSS env()/calc() - every debug
-  // capture showed this JS-read value was consistently correct even when
-  // what actually painted wasn't, so computing it here and assigning it
-  // directly sidesteps whatever's unreliable in the CSS cascade path.
-  // Same approach already proven for the type-answer bar that tracks the
-  // keyboard (see positionTypeAnswerBar below).
-  function positionTabbar() {
-    var bar = document.getElementById("bottom-tabbar");
-    if (!bar) return;
-    var safeBottom = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--safe-bottom")) || 0;
-    bar.style.bottom = (14 + safeBottom) + "px";
-  }
-
   var appHeightFrozen = false;
   function setAppHeight() {
     if (appHeightFrozen) return;
     document.documentElement.style.setProperty("--app-height", window.innerHeight + "px");
-    positionTabbar();
-    logViewportDebug();
   }
   setAppHeight();
   window.addEventListener("resize", setAppHeight);
   window.addEventListener("orientationchange", setAppHeight);
   window.addEventListener("pageshow", setAppHeight);
-  if (window.visualViewport) window.visualViewport.addEventListener("resize", setAppHeight);
-
-  for (var i = 0; i < 10; i++) {
-    setTimeout(setAppHeight, i * 150);
-  }
-  document.addEventListener("touchend", setAppHeight, { passive: true });
-  document.addEventListener("visibilitychange", function () {
-    if (document.visibilityState === "visible") setAppHeight();
-  });
 
   // ---------- type-answer bar follows the keyboard, card stays put ----------
   // iOS pans/scrolls the whole page to bring a focused field above the

@@ -41,7 +41,7 @@
             <span class="dropdown-item-hint">How practice, decks & mastery work</span>
           </button>
           <p class="dropdown-info">All data stays on this device. Import/export uses Anki's plain-text card format.</p>
-          <p class="app-version">v1.13.1</p>
+          <p class="app-version">v1.13.2</p>
         </div>
       </div>
     </header>
@@ -170,6 +170,10 @@
           </div>
           <div class="card-face card-back">
             <span id="card-translation" class="card-translation"></span>
+            <p class="card-your-answer hidden" id="card-your-answer">
+              <span class="card-note-label">You typed:</span>
+              <span id="card-your-answer-text"></span>
+            </p>
             <p class="card-note hidden" id="card-note">
               <span class="card-note-label">📝 Note:</span>
               <span id="card-note-text"></span>

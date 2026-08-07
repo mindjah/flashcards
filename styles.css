@@ -723,6 +723,13 @@ body {
   word-break: break-word;
 }
 
+.card-your-answer {
+  margin: 0;
+  font-size: 14px;
+  color: var(--fail);
+  word-break: break-word;
+}
+
 .card-note-label {
   font-style: normal;
   font-weight: 700;

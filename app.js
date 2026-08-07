@@ -1347,6 +1347,7 @@
     var hasNote = !!session.current.notes;
     document.getElementById("card-note").classList.toggle("hidden", !hasNote);
     document.getElementById("card-note-text").textContent = hasNote ? session.current.notes : "";
+    document.getElementById("card-your-answer").classList.add("hidden");
 
     var typeBar = document.getElementById("type-answer-bar");
     typeBar.classList.toggle("hidden", !isTypeMode);
@@ -1401,15 +1402,25 @@
 
     if (session.mode === "type") {
       var typeInput = document.getElementById("type-answer-input");
+      var typedValue = typeInput.value.trim();
       var correct;
       if (forceIncorrect) {
         correct = false;
       } else {
-        correct = normalizeTypedAnswer(typeInput.value) === normalizeTypedAnswer(session.current.word);
+        correct = normalizeTypedAnswer(typedValue) === normalizeTypedAnswer(session.current.word);
       }
       session.typeCorrect = correct;
       document.getElementById("card").classList.toggle("answer-correct", correct);
       document.getElementById("card").classList.toggle("answer-incorrect", !correct);
+
+      var yourAnswerEl = document.getElementById("card-your-answer");
+      if (!correct && typedValue) {
+        document.getElementById("card-your-answer-text").textContent = typedValue;
+        yourAnswerEl.classList.remove("hidden");
+      } else {
+        yourAnswerEl.classList.add("hidden");
+      }
+
       typeInput.readOnly = true;
       typeInput.blur();
       typeInput.classList.add("hidden");
@@ -1431,6 +1442,21 @@
   document.getElementById("btn-fail").addEventListener("click", function () {
     answerCard(false);
   });
+  // Tapping either button while the type-answer input is still focused
+  // would otherwise blur it first, which snaps the floating input/Check
+  // bar back to its resting position (see the blur handler below) before
+  // the resulting click has a chance to land - moving the button out from
+  // under the tap so the first press only closes the keyboard, requiring
+  // a second tap to actually register. Blocking mousedown's default
+  // focus-shift keeps the input (and the bar) exactly where they were
+  // until revealCard() itself deliberately blurs the input.
+  document.getElementById("btn-type-check").addEventListener("mousedown", function (e) {
+    e.preventDefault();
+  });
+  document.getElementById("btn-type-idk").addEventListener("mousedown", function (e) {
+    e.preventDefault();
+  });
+
   document.getElementById("btn-type-check").addEventListener("click", function () {
     revealCard(false);
   });

@@ -362,8 +362,10 @@
       flame.className = "flame-particle";
       flame.textContent = "🔥";
 
-      var dx = (Math.random() - 0.5) * 90;
-      var dy = -(35 + Math.random() * 45);
+      var angle = Math.random() * Math.PI * 2;
+      var distance = 35 + Math.random() * 45;
+      var dx = Math.cos(angle) * distance;
+      var dy = Math.sin(angle) * distance;
       var rot = (Math.random() - 0.5) * 140;
       var scale = 0.5 + Math.random() * 0.6;
       var duration = 500 + Math.random() * 300;
@@ -528,6 +530,7 @@
   }
 
   var HINT_COLLAPSED_COUNT = 3;
+  var HINT_SHOW_MORE_THRESHOLD = 6;
   var strugglingExpanded = false;
   var recentExpanded = false;
 
@@ -539,7 +542,7 @@
     });
 
     var toggle = document.getElementById(toggleId);
-    toggle.classList.toggle("hidden", items.length <= HINT_COLLAPSED_COUNT);
+    toggle.classList.toggle("hidden", items.length <= HINT_SHOW_MORE_THRESHOLD);
     toggle.textContent = expanded ? "Show less" : "Show more";
   }
 

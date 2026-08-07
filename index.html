@@ -39,7 +39,7 @@
             <span class="dropdown-item-hint">How practice, decks & mastery work</span>
           </button>
           <p class="dropdown-info">All data stays on this device. Import/export uses Anki's plain-text card format.</p>
-          <p class="app-version">v1.11.0</p>
+          <p class="app-version">v1.11.1</p>
         </div>
       </div>
     </header>
@@ -217,7 +217,16 @@
       </label>
       <div class="field-block">
         <span class="field-label">Card decks</span>
-        <div id="add-sections-list" class="chip-list"></div>
+        <div class="deck-dropdown" id="deck-dropdown">
+          <button type="button" class="deck-dropdown-trigger" id="deck-dropdown-trigger">
+            <span id="deck-dropdown-summary">No card decks</span>
+            <span class="deck-dropdown-caret">⌄</span>
+          </button>
+          <div class="deck-dropdown-panel hidden" id="deck-dropdown-panel">
+            <div id="add-sections-list" class="deck-dropdown-list"></div>
+            <button type="button" class="deck-dropdown-new" id="deck-dropdown-new">+ New card deck</button>
+          </div>
+        </div>
       </div>
       <button type="submit" id="btn-save-card" class="btn btn-primary btn-big">Save card</button>
       <p class="save-toast hidden" id="save-toast">Saved ✓ add another</p>

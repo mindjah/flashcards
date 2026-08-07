@@ -598,40 +598,69 @@
     var list = document.getElementById("add-sections-list");
     list.innerHTML = "";
 
-    sections.forEach(function (s) {
-      var chip = document.createElement("button");
-      chip.type = "button";
-      chip.className = "chip" + (editingSectionIds.indexOf(s.id) !== -1 ? " active" : "");
-      chip.textContent = s.name;
-      chip.addEventListener("click", function () {
+    sections.slice().sort(function (a, b) { return a.name.localeCompare(b.name); }).forEach(function (s) {
+      var row = document.createElement("label");
+      row.className = "deck-dropdown-row";
+      row.style.borderColor = s.color;
+
+      var checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = editingSectionIds.indexOf(s.id) !== -1;
+      checkbox.addEventListener("change", function () {
         var idx = editingSectionIds.indexOf(s.id);
-        if (idx === -1) {
+        if (checkbox.checked && idx === -1) {
           editingSectionIds.push(s.id);
-        } else {
+        } else if (!checkbox.checked && idx !== -1) {
           editingSectionIds.splice(idx, 1);
         }
-        chip.classList.toggle("active");
+        updateDeckDropdownSummary();
       });
-      list.appendChild(chip);
+
+      var text = document.createElement("span");
+      text.textContent = s.name;
+
+      row.appendChild(checkbox);
+      row.appendChild(text);
+      list.appendChild(row);
     });
 
-    var addChip = document.createElement("button");
-    addChip.type = "button";
-    addChip.className = "chip chip-add";
-    addChip.textContent = "+ New card deck";
-    addChip.addEventListener("click", function () {
-      var name = prompt("New card deck name");
-      if (name === null) return;
-      name = name.trim();
-      if (!name) return;
-      var section = addSection(name);
-      if (section && editingSectionIds.indexOf(section.id) === -1) {
-        editingSectionIds.push(section.id);
-      }
-      renderAddSectionsPicker();
-    });
-    list.appendChild(addChip);
+    updateDeckDropdownSummary();
   }
+
+  function updateDeckDropdownSummary() {
+    var summary = document.getElementById("deck-dropdown-summary");
+    if (editingSectionIds.length === 0) {
+      summary.textContent = "No card decks";
+    } else {
+      var names = editingSectionIds
+        .map(function (id) { var s = sections.filter(function (x) { return x.id === id; })[0]; return s ? s.name : null; })
+        .filter(Boolean);
+      summary.textContent = names.join(", ");
+    }
+  }
+
+  document.getElementById("deck-dropdown-trigger").addEventListener("click", function () {
+    document.getElementById("deck-dropdown-panel").classList.toggle("hidden");
+  });
+
+  document.getElementById("deck-dropdown-new").addEventListener("click", function () {
+    var name = prompt("New card deck name");
+    if (name === null) return;
+    name = name.trim();
+    if (!name) return;
+    var section = addSection(name);
+    if (section && editingSectionIds.indexOf(section.id) === -1) {
+      editingSectionIds.push(section.id);
+    }
+    renderAddSectionsPicker();
+  });
+
+  document.addEventListener("click", function (e) {
+    var dropdown = document.getElementById("deck-dropdown");
+    if (!dropdown.contains(e.target)) {
+      document.getElementById("deck-dropdown-panel").classList.add("hidden");
+    }
+  });
 
   function openAddView(cardToEdit) {
     var wordEl = document.getElementById("input-word");
@@ -659,6 +688,7 @@
     }
 
     renderAddSectionsPicker();
+    document.getElementById("deck-dropdown-panel").classList.add("hidden");
     document.getElementById("save-toast").classList.add("hidden");
     showView("add");
     wordEl.focus();

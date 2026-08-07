@@ -907,6 +907,99 @@ body {
   font-weight: 600;
 }
 
+.deck-dropdown {
+  position: relative;
+}
+
+.deck-dropdown-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 16px;
+  color: var(--text);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.deck-dropdown-trigger:focus { outline: none; border-color: var(--accent); }
+
+.deck-dropdown-summary {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.deck-dropdown-caret {
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+.deck-dropdown-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  z-index: 10;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.deck-dropdown-list {
+  max-height: 240px;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.deck-dropdown-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 15px;
+}
+
+.deck-dropdown-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  flex-shrink: 0;
+}
+
+.deck-dropdown-new {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  border-top: 1px solid var(--border);
+  color: var(--accent);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 12px;
+  text-align: center;
+  cursor: pointer;
+}
+
 .chip-list {
   display: flex;
   flex-wrap: wrap;
@@ -933,11 +1026,6 @@ body {
   background: var(--accent-dim);
   border-color: var(--accent);
   color: var(--text);
-}
-
-.chip-add {
-  border-style: dashed;
-  color: var(--accent);
 }
 
 .chip-list-inline {

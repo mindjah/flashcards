@@ -563,7 +563,7 @@
     var toggle = document.getElementById(toggleId);
     var tabbarRect = document.getElementById("bottom-tabbar").getBoundingClientRect();
     var toggleRect = toggle.getBoundingClientRect();
-    var delta = toggleRect.bottom - (tabbarRect.top - 16);
+    var delta = toggleRect.bottom - (tabbarRect.top - 32);
     view.scrollBy({ top: delta, behavior: "smooth" });
   }
 

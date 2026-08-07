@@ -58,6 +58,15 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
+/* A .view's direct children are flex items in a column - by default
+   they'd flex-shrink to fit before overflow ever triggers scrolling,
+   squeezing things like the daily card shorter instead of the page
+   correctly scrolling past them. Every section relies on natural,
+   unsquished sizing with overflow handled by scroll instead. */
+.view > * {
+  flex-shrink: 0;
+}
+
 .hidden { display: none !important; }
 
 .topbar {

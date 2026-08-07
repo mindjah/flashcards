@@ -1265,6 +1265,8 @@ body {
   cursor: pointer;
 }
 
+.deck-dropdown-action:disabled { opacity: 0.4; pointer-events: none; }
+
 .chip-list {
   display: flex;
   flex-wrap: wrap;

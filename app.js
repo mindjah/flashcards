@@ -734,6 +734,11 @@
   // ---------- add / edit card ----------
   var editingId = null;
   var editingSectionIds = [];
+  // Checkboxes only mutate this staged copy - editingSectionIds (what the
+  // summary shows and what actually saves with the card) only picks up
+  // the change once "Apply" is tapped, so closing the panel without
+  // applying discards it.
+  var stagedSectionIds = [];
 
   function renderAddSectionsPicker() {
     var list = document.getElementById("add-sections-list");
@@ -746,15 +751,15 @@
 
       var checkbox = document.createElement("input");
       checkbox.type = "checkbox";
-      checkbox.checked = editingSectionIds.indexOf(s.id) !== -1;
+      checkbox.checked = stagedSectionIds.indexOf(s.id) !== -1;
       checkbox.addEventListener("change", function () {
-        var idx = editingSectionIds.indexOf(s.id);
+        var idx = stagedSectionIds.indexOf(s.id);
         if (checkbox.checked && idx === -1) {
-          editingSectionIds.push(s.id);
+          stagedSectionIds.push(s.id);
         } else if (!checkbox.checked && idx !== -1) {
-          editingSectionIds.splice(idx, 1);
+          stagedSectionIds.splice(idx, 1);
         }
-        updateDeckDropdownSummary();
+        updateDeckDropdownApplyState();
       });
 
       var text = document.createElement("span");
@@ -765,7 +770,11 @@
       list.appendChild(row);
     });
 
-    updateDeckDropdownSummary();
+    updateDeckDropdownApplyState();
+  }
+
+  function updateDeckDropdownApplyState() {
+    document.getElementById("deck-dropdown-apply").disabled = stagedSectionIds.length === 0;
   }
 
   function updateDeckDropdownSummary() {
@@ -781,10 +790,18 @@
   }
 
   document.getElementById("deck-dropdown-trigger").addEventListener("click", function () {
-    document.getElementById("deck-dropdown-panel").classList.toggle("hidden");
+    var panel = document.getElementById("deck-dropdown-panel");
+    var opening = panel.classList.contains("hidden");
+    if (opening) {
+      stagedSectionIds = editingSectionIds.slice();
+      renderAddSectionsPicker();
+    }
+    panel.classList.toggle("hidden");
   });
 
   document.getElementById("deck-dropdown-apply").addEventListener("click", function () {
+    editingSectionIds = stagedSectionIds.slice();
+    updateDeckDropdownSummary();
     document.getElementById("deck-dropdown-panel").classList.add("hidden");
   });
 
@@ -834,8 +851,8 @@
     if (!name) return;
     var section = addSection(name);
     if (newDeckContext === "add") {
-      if (section && editingSectionIds.indexOf(section.id) === -1) {
-        editingSectionIds.push(section.id);
+      if (section && stagedSectionIds.indexOf(section.id) === -1) {
+        stagedSectionIds.push(section.id);
       }
       renderAddSectionsPicker();
     } else if (newDeckContext === "sections") {
@@ -876,7 +893,9 @@
       editingSectionIds = [];
     }
 
+    stagedSectionIds = editingSectionIds.slice();
     renderAddSectionsPicker();
+    updateDeckDropdownSummary();
     document.getElementById("deck-dropdown-panel").classList.add("hidden");
     document.getElementById("save-toast").classList.add("hidden");
     updateSaveCardButtonState();
@@ -1285,8 +1304,12 @@
   }
 
   function updateStudyStartState() {
-    var anyChecked = studySetupCheckboxes().some(function (cb) { return cb.checked; });
-    document.getElementById("btn-study-start").disabled = !anyChecked;
+    var checked = studySetupCheckboxes().filter(function (cb) { return cb.checked; }).map(function (cb) { return cb.value; });
+    var includeUnsectioned = checked.indexOf("unsectioned") !== -1;
+    var sectionIds = checked.filter(function (v) { return v !== "unsectioned"; });
+    var filter = { ids: new Set(sectionIds), includeUnsectioned: includeUnsectioned };
+    var matchCount = cards.filter(function (c) { return matchesFilter(c, filter); }).length;
+    document.getElementById("btn-study-start").disabled = matchCount === 0;
   }
 
   document.getElementById("section-picker-list").addEventListener("change", updateStudyStartState);

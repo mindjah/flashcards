@@ -1718,9 +1718,28 @@
   // the card stays put and only the floating input/Check bar tracks the
   // keyboard (see positionTypeAnswerBar below).
   var appHeightFrozen = false;
+
+  // Right after a standalone cold launch, window.innerHeight isn't just
+  // slow to settle - it can report a momentarily *smaller* value than the
+  // correct one already shown on the very first frame, as iOS finishes
+  // its launch transition, and nothing afterward corrects it back up. For
+  // the first couple of seconds only, track the largest reading seen and
+  // never shrink below it, so that phantom dip can't get locked in; a
+  // real resize (rotation, Split View) happening in that same narrow
+  // window is rare enough to accept the trade-off. After the window
+  // closes, every reading applies normally, so legitimate later resizes
+  // (rotation, the on-screen keyboard elsewhere, Split View) still work.
+  var appHeightSettleUntil = Date.now() + 2500;
+  var appHeightSettleMax = 0;
+
   function setAppHeight() {
     if (appHeightFrozen) return;
-    document.documentElement.style.setProperty("--app-height", window.innerHeight + "px");
+    var h = window.innerHeight;
+    if (Date.now() < appHeightSettleUntil) {
+      h = Math.max(h, appHeightSettleMax);
+      appHeightSettleMax = h;
+    }
+    document.documentElement.style.setProperty("--app-height", h + "px");
   }
   setAppHeight();
   window.addEventListener("resize", setAppHeight);
@@ -1728,18 +1747,6 @@
   window.addEventListener("pageshow", setAppHeight);
   if (window.visualViewport) window.visualViewport.addEventListener("resize", setAppHeight);
 
-  // On a cold launch from the Home Screen icon (standalone mode), iOS can
-  // report a stale window.innerHeight until WebKit finishes settling the
-  // launch viewport - and that settling isn't a single flip: it can land
-  // in more than one intermediate value before reaching the true one, in
-  // response to actual touch activity rather than elapsed time alone (a
-  // one-shot recheck on the first touch caught an intermediate value and
-  // stopped listening before the real one arrived). Keeping this listener
-  // active for every touch, not just the first, converges on the true
-  // value regardless of how many steps it takes. Re-checking on resume
-  // from the background covers relaunches that don't re-run this script
-  // at all, since iOS often resumes a suspended standalone instance
-  // instead of restarting it.
   for (var i = 0; i < 10; i++) {
     setTimeout(setAppHeight, i * 150);
   }

@@ -1140,9 +1140,14 @@ body {
 }
 
 .manage-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   color: var(--text-dim);
-  padding: 40px 16px;
+  font-size: 16px;
+  padding: 24px 40px;
 }
 
 .manage-item-linkable {

@@ -229,6 +229,7 @@
     Object.keys(views).forEach(function (k) {
       views[k].classList.toggle("hidden", k !== name);
     });
+    if (name === "home") celebrateStreakOnHomeLanding();
   }
 
   // ---------- home ----------
@@ -286,8 +287,21 @@
   });
 
   // ---------- streak flame burst ----------
+  // If a burst is interrupted by navigating away mid-animation, display:none
+  // cancels it without ever firing animationend, so the JS-side removal
+  // never runs and the flame is stuck in the DOM. Clearing any leftover
+  // particles before spawning a new batch (or on every home landing, even
+  // when no new burst plays) keeps them from silently replaying and piling
+  // up every time the home screen becomes visible again.
+  function clearFlameParticles(anchorEl) {
+    Array.prototype.slice.call(anchorEl.querySelectorAll(".flame-particle")).forEach(function (el) {
+      el.remove();
+    });
+  }
+
   function spawnFlameBurst(anchorEl) {
-    var COUNT = 7;
+    clearFlameParticles(anchorEl);
+    var COUNT = 10;
     for (var i = 0; i < COUNT; i++) {
       var flame = document.createElement("span");
       flame.className = "flame-particle";
@@ -315,6 +329,15 @@
   document.getElementById("stat-card-streak").addEventListener("click", function () {
     spawnFlameBurst(this);
   });
+
+  function celebrateStreakOnHomeLanding() {
+    var streakEl = document.getElementById("stat-card-streak");
+    if (streak.lastDate === todayStr()) {
+      spawnFlameBurst(streakEl);
+    } else {
+      clearFlameParticles(streakEl);
+    }
+  }
 
   document.addEventListener("click", function (e) {
     if (!document.getElementById("stat-info-popup").classList.contains("hidden") &&

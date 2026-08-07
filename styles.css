@@ -539,6 +539,24 @@ body {
   box-shadow: 0 0 0 2px var(--fail), 0 8px 30px rgba(0,0,0,0.35);
 }
 
+@keyframes flash-outline-correct {
+  0%, 50% { box-shadow: 0 8px 30px rgba(0,0,0,0.35); }
+  25%, 100% { box-shadow: 0 0 0 3px var(--pass), 0 8px 30px rgba(0,0,0,0.35); }
+}
+
+@keyframes flash-outline-incorrect {
+  0%, 50% { box-shadow: 0 8px 30px rgba(0,0,0,0.35); }
+  25%, 100% { box-shadow: 0 0 0 3px var(--fail), 0 8px 30px rgba(0,0,0,0.35); }
+}
+
+.flashcard.answer-correct .card-face {
+  animation: flash-outline-correct 0.5s ease-in-out 0.45s forwards;
+}
+
+.flashcard.answer-incorrect .card-face {
+  animation: flash-outline-incorrect 0.5s ease-in-out 0.45s forwards;
+}
+
 .flashcard-inner {
   position: relative;
   width: 100%;

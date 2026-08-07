@@ -1058,7 +1058,7 @@
     session.revealed = false;
 
     var cardEl = document.getElementById("card");
-    cardEl.classList.remove("flipped", "swipe-pass", "swipe-fail");
+    cardEl.classList.remove("flipped", "swipe-pass", "swipe-fail", "answer-correct", "answer-incorrect");
     cardEl.style.transition = "";
     cardEl.style.transform = "";
     cardEl.style.opacity = "";
@@ -1102,6 +1102,20 @@
       session.studied + " done · " + remaining + " left";
   }
 
+  // Case-insensitive and forgiving of accent marks/ñ (NFD-decomposing a
+  // letter like "ñ" or "á" splits it into a base letter plus a separate
+  // combining mark, so stripping those marks handles every accented
+  // Spanish letter generically) and of exclamation/question marks, so
+  // typing without a Spanish keyboard still counts as correct.
+  function normalizeTypedAnswer(s) {
+    return s
+      .normalize("NFD")
+      .replace(new RegExp("[\\u0300-\\u036f]", "g"), "")
+      .replace(/[¡¿!?]/g, "")
+      .trim()
+      .toLowerCase();
+  }
+
   function revealCard(forceIncorrect) {
     if (session.revealed || !session.current) return;
     session.revealed = true;
@@ -1114,10 +1128,11 @@
       if (forceIncorrect) {
         correct = false;
       } else {
-        var typed = typeInput.value.trim().toLowerCase();
-        correct = typed === session.current.word.trim().toLowerCase();
+        correct = normalizeTypedAnswer(typeInput.value) === normalizeTypedAnswer(session.current.word);
       }
       session.typeCorrect = correct;
+      document.getElementById("card").classList.toggle("answer-correct", correct);
+      document.getElementById("card").classList.toggle("answer-incorrect", !correct);
       typeInput.readOnly = true;
       typeInput.blur();
       typeInput.classList.add("hidden");

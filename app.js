@@ -519,10 +519,6 @@
     el.style.flexBasis = total > 0 ? (count / total * 100) + "%" : "0%";
   }
 
-  document.getElementById("btn-add").addEventListener("click", function () {
-    openAddView(null);
-  });
-
   var manageReturnTo = "home";
 
   function openManageView() {
@@ -533,8 +529,6 @@
     renderManageList();
     showView("manage");
   }
-
-  document.getElementById("btn-manage").addEventListener("click", openManageView);
 
   function openManageForSection(sectionId) {
     manageReturnTo = "sections";
@@ -550,8 +544,6 @@
     renderSectionsList();
     showView("sections");
   }
-
-  document.getElementById("btn-manage-sections").addEventListener("click", openSectionsView);
 
   document.getElementById("btn-readme").addEventListener("click", function () {
     showView("readme");

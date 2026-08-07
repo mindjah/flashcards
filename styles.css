@@ -301,15 +301,6 @@ body {
   margin-top: 2px;
 }
 
-.home-actions {
-  display: flex;
-  gap: 10px;
-  padding: 0 16px;
-  margin-top: 12px;
-}
-
-.home-actions .btn { flex: 1; }
-
 .app-version {
   margin: 0;
   text-align: center;

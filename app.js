@@ -225,7 +225,7 @@
     readme: document.getElementById("view-readme")
   };
 
-  var TABBAR_VIEWS = { home: true, add: true, manage: true, sections: true };
+  var TABBAR_VIEWS = { home: true, manage: true, sections: true };
 
   function showView(name) {
     Object.keys(views).forEach(function (k) {
@@ -266,10 +266,22 @@
   tabbarButtons.forEach(function (btn) {
     btn.addEventListener("click", function () {
       var view = btn.dataset.view;
+      var alreadyActive = btn.classList.contains("active");
       if (view === "home") { refreshHome(); showView("home"); }
       else if (view === "add") { openAddView(null); }
-      else if (view === "manage") { openManageView(); }
-      else if (view === "sections") { openSectionsView(); }
+      else if (view === "manage") {
+        if (alreadyActive) {
+          document.getElementById("manage-list").scrollTo({ top: 0, behavior: "smooth" });
+        } else {
+          openManageView();
+        }
+      } else if (view === "sections") {
+        if (alreadyActive) {
+          document.getElementById("sections-list").scrollTo({ top: 0, behavior: "smooth" });
+        } else {
+          openSectionsView();
+        }
+      }
     });
   });
 
@@ -1394,6 +1406,27 @@
       .toLowerCase();
   }
 
+  // Same accent/case leniency as normalizeTypedAnswer, but per character,
+  // so a single mismatched letter can be spotted without the accent-mark
+  // stripping shifting one string's length relative to the other.
+  function normalizeChar(ch) {
+    return ch.normalize("NFD").replace(new RegExp("[\\u0300-\\u036f]", "g"), "").toLowerCase();
+  }
+
+  // Renders what was typed with each character colored to match or
+  // mismatch the correct word at that position - built with textContent
+  // per character (not innerHTML) since the typed value is user input.
+  function renderTypedAnswerDiff(container, typed, correct) {
+    container.innerHTML = "";
+    for (var i = 0; i < typed.length; i++) {
+      var span = document.createElement("span");
+      var isMatch = i < correct.length && normalizeChar(typed[i]) === normalizeChar(correct[i]);
+      span.className = isMatch ? "char-match" : "char-mismatch";
+      span.textContent = typed[i];
+      container.appendChild(span);
+    }
+  }
+
   function revealCard(forceIncorrect) {
     if (session.revealed || !session.current) return;
     session.revealed = true;
@@ -1415,7 +1448,7 @@
 
       var yourAnswerEl = document.getElementById("card-your-answer");
       if (!correct && typedValue) {
-        document.getElementById("card-your-answer-text").textContent = typedValue;
+        renderTypedAnswerDiff(document.getElementById("card-your-answer-text"), typedValue, session.current.word);
         yourAnswerEl.classList.remove("hidden");
       } else {
         yourAnswerEl.classList.add("hidden");

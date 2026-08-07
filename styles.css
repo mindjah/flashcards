@@ -726,9 +726,13 @@ body {
 .card-your-answer {
   margin: 0;
   font-size: 14px;
-  color: var(--fail);
+  color: var(--text-dim);
   word-break: break-word;
 }
+
+.char-match { color: var(--text); }
+
+.char-mismatch { color: var(--fail); font-weight: 700; }
 
 .card-note-label {
   font-style: normal;
@@ -1318,7 +1322,7 @@ body {
 }
 
 /* ---------- bottom tab bar (liquid glass) ---------- */
-#view-home, #view-add {
+#view-home {
   padding-bottom: 112px;
 }
 

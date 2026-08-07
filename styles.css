@@ -117,6 +117,16 @@ body {
   flex-shrink: 0;
 }
 
+.icon-btn-translate {
+  background: #4285f4;
+  color: #fff;
+}
+
+.icon-btn-translate svg {
+  width: 18px;
+  height: 18px;
+}
+
 .dropdown {
   position: relative;
   flex-shrink: 0;

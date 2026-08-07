@@ -126,7 +126,7 @@ body {
   flex-shrink: 0;
 }
 
-.icon-btn svg { width: 18px; height: 18px; }
+.icon-btn svg { width: 18px; height: 18px; flex-shrink: 0; display: block; }
 
 .icon-btn:disabled { opacity: 0.4; pointer-events: none; }
 
@@ -135,14 +135,14 @@ body {
   border-radius: 0;
 }
 
-.icon-btn-plain svg { width: 24px; height: 24px; }
+.icon-btn-plain svg { width: 24px; height: 24px; flex-shrink: 0; display: block; }
 
 .streak-btn {
+  position: relative;
   height: 32px;
-  padding: 0 10px;
-  border-radius: 16px;
+  padding: 0 8px;
   border: none;
-  background: var(--surface-2);
+  background: none;
   color: var(--text);
   font-family: inherit;
   font-size: 14px;
@@ -153,7 +153,7 @@ body {
   flex-shrink: 0;
 }
 
-.streak-btn:active { background: var(--surface); }
+.streak-btn:active { opacity: 0.7; }
 
 .icon-btn-translate {
   background: #4285f4;
@@ -998,7 +998,7 @@ body {
 .filter-row {
   display: flex;
   gap: 10px;
-  margin: 0 16px 8px;
+  margin: 0 16px 20px;
 }
 
 .filter-row .search-input {
@@ -1254,9 +1254,8 @@ body {
   background: transparent;
 }
 
-.section-add-row {
-  flex: none;
-  padding: 8px 16px;
+#sections-list {
+  padding-top: 20px;
 }
 
 .mode-picker {

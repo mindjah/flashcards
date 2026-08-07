@@ -44,7 +44,7 @@
             <span class="dropdown-item-hint">How practice, decks & mastery work</span>
           </button>
           <p class="dropdown-info">All data stays on this device. Import/export uses Anki's plain-text card format.</p>
-          <p class="app-version">v1.14.0</p>
+          <p class="app-version">v1.14.1</p>
         </div>
       </div>
     </header>
@@ -278,11 +278,10 @@
     <header class="topbar">
       <button class="icon-btn" id="btn-sections-back">✕</button>
       <h2>Card decks</h2>
-      <span class="spacer"></span>
+      <button type="button" class="icon-btn icon-btn-plain" id="btn-open-new-deck" title="Add card deck">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+      </button>
     </header>
-    <div class="section-add-row">
-      <button type="button" id="btn-open-new-deck" class="btn btn-primary">+ Add card deck</button>
-    </div>
     <div id="sections-list" class="manage-list"></div>
   </section>
 

@@ -837,6 +837,17 @@ body {
 
 .study-controls .btn { flex: 1; padding: 18px; font-size: 17px; }
 
+/* Keeps this reserving the same layout space whether shown or not - the
+   generic .hidden (display:none) would otherwise let .study-area (a
+   flex:1 sibling) grow to fill the gap while the card is still showing
+   its front, then shrink back once these buttons appear post-flip,
+   visibly shifting the centered card upward right as it flips. */
+#study-answer-controls.hidden {
+  display: flex !important;
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .type-answer-bar {
   position: fixed;
   left: 0;

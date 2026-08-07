@@ -414,7 +414,7 @@
   function updateGlobalStats() {
     document.getElementById("stat-due").textContent = dueCards().length;
     document.getElementById("stat-total").textContent = cards.length;
-    document.getElementById("stat-streak").textContent = "🔥 " + streak.current;
+    document.getElementById("stat-streak").textContent = streak.current;
   }
 
   function refreshHome() {

@@ -24,7 +24,7 @@
     <header class="topbar">
       <h1><span id="flag-icon" class="flag-icon">🇪🇸</span> Flashcards</h1>
       <button type="button" class="streak-btn info-trigger" id="stat-card-streak">
-        <span id="stat-streak">🔥 0</span>
+        <span class="streak-icon">🔥</span><span class="streak-num" id="stat-streak">0</span>
       </button>
       <div class="dropdown" id="settings-dropdown">
         <button class="icon-btn icon-btn-plain" id="btn-settings">
@@ -44,7 +44,7 @@
             <span class="dropdown-item-hint">How practice, decks & mastery work</span>
           </button>
           <p class="dropdown-info">All data stays on this device. Import/export uses Anki's plain-text card format.</p>
-          <p class="app-version">v1.14.2</p>
+          <p class="app-version">v1.14.3</p>
         </div>
       </div>
     </header>
@@ -189,8 +189,10 @@
       <button class="icon-btn" id="btn-empty-back">✕</button>
     </header>
     <div class="empty-state">
-      <div class="empty-icon" id="empty-icon">🎉</div>
-      <p id="empty-text">All done for now!</p>
+      <div class="empty-card">
+        <div class="empty-icon" id="empty-icon">🎉</div>
+        <p id="empty-text">All done for now!</p>
+      </div>
       <button id="btn-study-all-anyway" class="btn btn-secondary hidden">Practice all cards anyway</button>
       <button id="btn-empty-home" class="btn btn-primary">Back home</button>
     </div>

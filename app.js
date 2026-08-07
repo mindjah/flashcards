@@ -225,12 +225,55 @@
     readme: document.getElementById("view-readme")
   };
 
+  var TABBAR_VIEWS = { home: true, add: true, manage: true, sections: true };
+
   function showView(name) {
     Object.keys(views).forEach(function (k) {
       views[k].classList.toggle("hidden", k !== name);
     });
     if (name === "home") celebrateStreakOnHomeLanding();
+    updateTabbar(name);
   }
+
+  // ---------- bottom tab bar ----------
+  var tabbar = document.getElementById("bottom-tabbar");
+  var tabbarIndicator = document.getElementById("tabbar-indicator");
+  var tabbarButtons = Array.prototype.slice.call(tabbar.querySelectorAll(".tab-btn"));
+
+  function placeTabbarIndicator(animated) {
+    var active = tabbar.querySelector(".tab-btn.active");
+    if (!active) return;
+    var barRect = tabbar.getBoundingClientRect();
+    var rect = active.getBoundingClientRect();
+    var x = rect.left - barRect.left + (rect.width - tabbarIndicator.offsetWidth) / 2;
+    if (!animated) tabbarIndicator.style.transition = "none";
+    tabbarIndicator.style.transform = "translateX(" + x + "px)";
+    if (!animated) {
+      requestAnimationFrame(function () { tabbarIndicator.style.transition = ""; });
+    }
+  }
+
+  function updateTabbar(name) {
+    var show = !!TABBAR_VIEWS[name];
+    tabbar.classList.toggle("hidden", !show);
+    if (!show) return;
+    tabbarButtons.forEach(function (btn) {
+      btn.classList.toggle("active", btn.dataset.view === name);
+    });
+    placeTabbarIndicator(false);
+  }
+
+  tabbarButtons.forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var view = btn.dataset.view;
+      if (view === "home") { refreshHome(); showView("home"); }
+      else if (view === "add") { openAddView(null); }
+      else if (view === "manage") { openManageView(); }
+      else if (view === "sections") { openSectionsView(); }
+    });
+  });
+
+  window.addEventListener("resize", function () { placeTabbarIndicator(false); });
 
   // ---------- home ----------
   // Generic small info popup, positioned dynamically off whichever element
@@ -482,14 +525,16 @@
 
   var manageReturnTo = "home";
 
-  document.getElementById("btn-manage").addEventListener("click", function () {
+  function openManageView() {
     manageReturnTo = "home";
     populateManageSectionFilter();
     document.getElementById("manage-section-filter").value = "";
     document.getElementById("manage-mastery-filter").value = "";
     renderManageList();
     showView("manage");
-  });
+  }
+
+  document.getElementById("btn-manage").addEventListener("click", openManageView);
 
   function openManageForSection(sectionId) {
     manageReturnTo = "sections";
@@ -501,10 +546,12 @@
     showView("manage");
   }
 
-  document.getElementById("btn-manage-sections").addEventListener("click", function () {
+  function openSectionsView() {
     renderSectionsList();
     showView("sections");
-  });
+  }
+
+  document.getElementById("btn-manage-sections").addEventListener("click", openSectionsView);
 
   document.getElementById("btn-readme").addEventListener("click", function () {
     showView("readme");

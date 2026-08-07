@@ -39,7 +39,7 @@
             <span class="dropdown-item-hint">How practice, decks & mastery work</span>
           </button>
           <p class="dropdown-info">All data stays on this device. Import/export uses Anki's plain-text card format.</p>
-          <p class="app-version">v1.11.6</p>
+          <p class="app-version">v1.12.0</p>
         </div>
       </div>
     </header>
@@ -329,6 +329,27 @@
       </div>
     </div>
   </section>
+
+  <!-- ===== BOTTOM TAB BAR ===== -->
+  <nav class="bottom-tabbar hidden" id="bottom-tabbar">
+    <div class="tabbar-indicator" id="tabbar-indicator"></div>
+    <button type="button" class="tab-btn" id="btn-tab-home" data-view="home">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      <span class="tab-label">Home</span>
+    </button>
+    <button type="button" class="tab-btn" id="btn-tab-add" data-view="add">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+      <span class="tab-label">Add card</span>
+    </button>
+    <button type="button" class="tab-btn" id="btn-tab-manage" data-view="manage">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 14h4v-4H3v4zm0 5h4v-4H3v4zM3 9h4V5H3v4zm5 5h13v-4H8v4zm0 5h13v-4H8v4zM8 5v4h13V5H8z"/></svg>
+      <span class="tab-label">Manage</span>
+    </button>
+    <button type="button" class="tab-btn" id="btn-tab-decks" data-view="sections">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 18.54l-7.37-5.73L3 14.07l9 7 9-7-1.63-1.27-7.38 5.74zM12 16l7.36-5.73L21 9l-9-7-9 7 1.63 1.27L12 16z"/></svg>
+      <span class="tab-label">Decks</span>
+    </button>
+  </nav>
 
 </div>
 

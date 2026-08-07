@@ -44,6 +44,7 @@ body {
   height: var(--app-height, 100dvh);
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 .view {
@@ -1180,7 +1181,7 @@ body {
 }
 
 .bottom-tabbar {
-  position: fixed;
+  position: absolute;
   left: 16px;
   right: 16px;
   bottom: calc(14px + var(--safe-bottom));

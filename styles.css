@@ -1108,19 +1108,6 @@ body {
   backdrop-filter: blur(8px);
 }
 
-/* The flashcard's own glass background is a near-transparent white gradient
-   that relies on a fairly solid, uniform backdrop to read as opaque "glass"
-   (as it does over the flat --bg in Practice) - the standard modal-overlay's
-   lighter dim+blur still lets the busy list/home screen show through behind
-   it, which makes the exact same card look washed out here. Darkening and
-   blurring this overlay further, specifically for the card preview, gives
-   it the same solid backdrop the practice card gets. */
-#card-preview-modal {
-  background: rgba(0, 0, 0, 0.78);
-  -webkit-backdrop-filter: blur(3px);
-  backdrop-filter: blur(3px);
-}
-
 .modal-sheet {
   width: 100%;
   max-width: 340px;

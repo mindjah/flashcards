@@ -43,8 +43,12 @@
             <span class="dropdown-item-label">README</span>
             <span class="dropdown-item-hint">How practice, decks & mastery work</span>
           </button>
+          <button id="btn-changelog" class="dropdown-item">
+            <span class="dropdown-item-label">Change log</span>
+            <span class="dropdown-item-hint">Recent updates to the app</span>
+          </button>
           <p class="dropdown-info">All data stays on this device. Import/export uses Anki's plain-text card format.</p>
-          <p class="app-version">v1.17.0</p>
+          <p class="app-version">v1.18.0</p>
         </div>
       </div>
     </header>
@@ -318,7 +322,7 @@
         <h3>Practice &amp; "To learn"</h3>
         <p>Every card sits in a box from 0 to 5, a spaced-repetition schedule. New cards start in box 0, due immediately. <b>To learn</b> on the home screen is simply the count of cards whose due date has already passed - box 0 cards plus anything whose review interval has come back around.</p>
         <p>Tapping <b>Practice</b> → <b>Start practicing</b> studies only those due cards by default. If nothing is due, you'll see a "Nothing due right now" screen with a <b>Practice all cards anyway</b> option, which is the only way to study cards that aren't due yet.</p>
-        <p>Answering <b>Knew it</b> moves a card up one box and pushes its due date out (box intervals: 1, 3, 7, 16, 35 days). Answering <b>Didn't know</b> drops it straight back to box 0, due immediately, and requeues it a few cards later in the same session so you see it again before finishing.</p>
+        <p>Answering <b>Knew it</b> moves a card up one box and pushes its due date out (box intervals: 1, 3, 7, 16, 35 days). Answering <b>Didn't know</b> (or typing the wrong word) drops it straight back to box 0, due immediately, and requeues it in the same session: the first miss brings it back after at least 10 other cards (or at the very end if fewer than 10 remain), and missing it again moves it into a review pass at the end of the session under a "Let's review the cards you didn't know" heading, where it keeps recycling until you get it right.</p>
       </div>
 
       <div class="readme-section">
@@ -331,18 +335,29 @@
         <p>Choose <b>Flip Spanish card</b>, <b>Flip Translation card</b>, or <b>Type the Spanish word</b> in Practice setup. Your last choice, along with your deck selection, is remembered for next time.</p>
         <p>In <b>Flip Spanish card</b> and <b>Flip Translation card</b>, tap the card to flip it, then swipe right (or tap <b>Knew it</b>) or swipe left (or tap <b>Didn't know</b>) to answer.</p>
         <p>In <b>Type the Spanish word</b>, the card shows the translation - type the Spanish word into the field below it, then tap <b>Check</b> (enabled once you've typed something) to flip the card and check your answer, or tap <b>I don't know</b> to reveal it straight away without guessing. Checking ignores case, accent marks, ñ vs n, and ¡¿!? punctuation, so typing without a Spanish keyboard still counts as correct. There's no <b>Knew it</b> / <b>Didn't know</b> here: a correct typed answer counts as knew it, an incorrect one or <b>I don't know</b> counts as didn't know, then tap <b>Next</b> to continue.</p>
+        <p>Once a card is flipped, a pencil icon appears in its top-right corner - tap it to edit that card without leaving the lesson. Saving your changes (or backing out without saving) drops you right back into the same lesson, on the same card, with your progress untouched.</p>
       </div>
 
       <div class="readme-section">
         <h3>Card decks</h3>
-        <p>Decks are tags you can put on a card - a card can belong to any number of decks, or none. Each deck gets a random color as soon as you create it, so its label is easy to spot at a glance in Manage cards.</p>
-        <p>Practice setup and Manage cards both let you filter by deck, including a "No card deck" bucket for untagged cards. In Practice setup, use the small <b>Select all</b> / <b>Unselect</b> chips to quickly check or clear every deck - Start practicing stays disabled until at least one is selected. Tapping a deck from the Card decks screen jumps straight into Manage cards filtered to it.</p>
+        <p>Decks are tags you can put on a card - a card can belong to any number of decks, or none. Each deck gets a random color as soon as you create it, shown as a tinted glass background on its row and on its tag chips wherever it's listed, so it's easy to spot at a glance.</p>
+        <p>Practice setup and Manage cards both let you filter by deck, including a "No card deck" bucket for untagged cards. In Practice setup, use the small <b>Select all</b> / <b>Unselect</b> chips to quickly check or clear every deck - Start practicing stays disabled until at least one is selected. Tapping a deck from the Card decks screen jumps straight into Manage cards filtered to it. Deleting a deck removes that tag from its cards - the cards themselves stay put.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Manage cards</h3>
+        <p>Search and filter by deck or mastery, then tap any card's row to open a flip-able preview - same size and style as the practice card - to check its translation and notes without leaving the list. Use <b>Edit</b> / <b>Delete</b> on a row for one-off changes, or tap <b>Select</b> to check off several cards and delete them together.</p>
+      </div>
+
+      <div class="readme-section">
+        <h3>Card of the day</h3>
+        <p>The home screen features one card, picked at random and kept the same all day. Tap it to flip between the word and its translation/notes, just like in practice.</p>
       </div>
 
       <div class="readme-section">
         <h3>Keep practicing &amp; Recently added</h3>
         <p><b>Keep practicing</b> lists cards you've recently gotten wrong (failed back down to box 0), most recent first, up to 20. <b>Recently added</b> shows your newest cards instead, but only when nothing is currently struggling - only one of the two lists is shown at a time. Both start collapsed to 3 rows with a "Show more" toggle.</p>
-        <p>Tap a word in either list to reveal its translation and notes without leaving the home screen.</p>
+        <p>Tap a word in either list to open the same flip-able card preview as Manage cards, without leaving the home screen.</p>
       </div>
 
       <div class="readme-section">
@@ -351,6 +366,17 @@
         <p>Import reads that same format (older JSON exports still work too). Matching is by word + translation, case-insensitive: a duplicate isn't re-added, but any new deck tags on it are merged in. Missing decks mentioned in tags are created automatically. If it's been a week since your last export, the app will offer to back up on launch.</p>
       </div>
     </div>
+  </section>
+
+  <!-- ===== CHANGE LOG VIEW ===== -->
+  <section id="view-changelog" class="view hidden">
+    <header class="topbar">
+      <button class="icon-btn" id="btn-changelog-back">✕</button>
+      <h2>Change log</h2>
+      <span class="spacer"></span>
+    </header>
+
+    <div class="readme-content" id="changelog-content"></div>
   </section>
 
   <!-- Top-level (not nested in a .view) so it can show over whichever

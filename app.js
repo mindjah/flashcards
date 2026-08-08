@@ -244,7 +244,8 @@
     add: document.getElementById("view-add"),
     manage: document.getElementById("view-manage"),
     sections: document.getElementById("view-sections"),
-    readme: document.getElementById("view-readme")
+    readme: document.getElementById("view-readme"),
+    changelog: document.getElementById("view-changelog")
   };
 
   var TABBAR_VIEWS = { home: true, manage: true, sections: true };
@@ -682,6 +683,49 @@
   });
 
   document.getElementById("btn-readme-back").addEventListener("click", function () {
+    refreshHome();
+    showView("home");
+  });
+
+  // ---------- change log ----------
+  // Newest first - prepend a new entry (and drop the last one, if you want
+  // to hold the list at 10) each time a version ships with user-facing
+  // changes worth calling out.
+  var CHANGELOG = [
+    { version: "1.18.0", text: "Card decks now have a true liquid-glass look (gradient + glow, not just a flat tint). Added this Change log to Settings, and refreshed the README to match current features." },
+    { version: "1.17.0", text: "Missing a card now brings it back after at least 10 other cards; missing it a second time sets it aside for a review pass at the end of the session. You can also edit a card right from its flipped practice view, then pick up the lesson exactly where you left off." },
+    { version: "1.16.0", text: "Deck colors now fill the whole chip/row background instead of just outlining it. Tapping a card in Manage cards or on the home lists opens a flip-able preview - same size and style as practice - instead of a plain text popup." },
+    { version: "1.15.4", text: "Added a fill progress bar to Practice, un-bolded home list text, and made button text white for consistency across the app." },
+    { version: "1.15.3", text: "Lightened the app's dark background further." },
+    { version: "1.15.2", text: "Switched the base background from near-black to a dark grey." },
+    { version: "1.15.1", text: "Fixed the practice card shifting up slightly the moment the Knew it / Didn't know buttons appeared." },
+    { version: "1.15.0", text: "Added multi-select and bulk delete to Manage cards." },
+    { version: "1.14.7", text: "Fixed new cards silently never showing up as due." },
+    { version: "1.14.6", text: "Matched the empty-state placeholder styling between Manage cards and Card decks." }
+  ];
+
+  function renderChangelog() {
+    var content = document.getElementById("changelog-content");
+    content.innerHTML = "";
+    CHANGELOG.slice(0, 10).forEach(function (entry) {
+      var section = document.createElement("div");
+      section.className = "readme-section";
+      var h3 = document.createElement("h3");
+      h3.textContent = "v" + entry.version;
+      var p = document.createElement("p");
+      p.textContent = entry.text;
+      section.appendChild(h3);
+      section.appendChild(p);
+      content.appendChild(section);
+    });
+  }
+
+  document.getElementById("btn-changelog").addEventListener("click", function () {
+    renderChangelog();
+    showView("changelog");
+  });
+
+  document.getElementById("btn-changelog-back").addEventListener("click", function () {
     refreshHome();
     showView("home");
   });

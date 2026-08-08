@@ -1117,8 +1117,8 @@ body {
    it the same solid backdrop the practice card gets. */
 #card-preview-modal {
   background: rgba(0, 0, 0, 0.78);
-  -webkit-backdrop-filter: blur(24px);
-  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
 }
 
 .modal-sheet {

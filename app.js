@@ -694,7 +694,6 @@
   // to hold the list at 10) each time a version ships with user-facing
   // changes worth calling out.
   var CHANGELOG = [
-    { version: "1.20.1", text: "Restyled the new Practice tab to match the other tab bar buttons exactly (plain icon + label) instead of a filled yellow pill." },
     { version: "1.20.0", text: "Moved Practice off the home screen and into the tab bar as its own filled button, right next to Home - Card of the day now expands to fill the freed space. Also darkened the backdrop behind the card preview modal (Manage cards / home lists) so it reads as solid glass instead of looking washed out." },
     { version: "1.19.4", text: "Send request now opens Gemini via a new tab again - iOS always routes an external link tapped from a home-screen app through its own in-app browser sheet no matter how it's opened, so this at least leaves the app's own window untouched underneath. Use that sheet's Safari icon to fully open Gemini in the real browser." },
     { version: "1.19.3", text: "Attempted fix for Send request opening Gemini inside the app's own window instead of the real browser (superseded by 1.19.4 - iOS intercepts this regardless of navigation method)." },

@@ -1267,10 +1267,11 @@ body {
 }
 
 .manage-toolbar-row .btn {
-  width: 118px;
-  padding: 8px 16px;
+  width: 132px;
+  padding: 8px 12px;
   font-size: 14px;
   text-align: center;
+  white-space: nowrap;
 }
 
 .bulk-actions-bar {
@@ -1290,10 +1291,11 @@ body {
 
 .bulk-actions-bar .btn {
   flex-shrink: 0;
-  width: 118px;
-  padding: 8px 16px;
+  width: 132px;
+  padding: 8px 12px;
   font-size: 14px;
   text-align: center;
+  white-space: nowrap;
 }
 
 .manage-item-select {
@@ -1345,6 +1347,16 @@ body {
   margin-top: 4px;
 }
 
+/* Card decks' Rename/Delete buttons still use this wrapper directly (no
+   swipe there) - keep it defined even though Manage cards' rows moved to
+   the swipe layout below. */
+.manage-item-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
 .manage-item-swipe {
   position: relative;
   overflow: hidden;
@@ -1355,15 +1367,21 @@ body {
    actions panel bleed through if it just sat "behind" it at the same
    position - instead both sit side by side in a flex row wider than the
    visible wrapper, with the actions panel fully outside the clipped area
-   at rest, only entering view as the whole row slides left. */
+   at rest, only entering view as the whole row slides left. Both the inner
+   flex row and the row itself get an explicit width (not just the default
+   block/flex auto-fill) so there's no ambiguity in how a percentage width
+   resolves against a flex container sized by its own (overflowing)
+   children - some engines don't fill that in the same way. */
 .manage-item-swipe-inner {
   display: flex;
+  width: 100%;
   touch-action: pan-y;
 }
 
 .manage-item-swipe-inner > .manage-item {
-  flex-shrink: 0;
+  flex: 1 0 auto;
   width: 100%;
+  min-width: 0;
 }
 
 .manage-item-swipe-actions {

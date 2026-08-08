@@ -1357,10 +1357,19 @@ body {
   flex-shrink: 0;
 }
 
+/* #manage-list is a column flex container, and per spec giving a flex item
+   overflow:hidden (needed here to clip the swipe actions panel) removes
+   its automatic min-content-size floor - without flex-shrink:0, that let
+   #manage-list's flex-shrink crush every row down to fit the viewport
+   once there were enough cards to overflow, instead of actually
+   overflowing and letting the list scroll as intended. This is why
+   Select mode (plain unwrapped rows, no overflow:hidden) never showed
+   the bug, and why it got worse with more cards. */
 .manage-item-swipe {
   position: relative;
   overflow: hidden;
   border-radius: 14px;
+  flex-shrink: 0;
 }
 
 .manage-item-swipe > .manage-item {

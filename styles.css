@@ -738,7 +738,7 @@ body {
 
 .study-progress-bar {
   height: 6px;
-  margin: 0 16px 8px;
+  margin: 12px 16px 8px;
   border-radius: 3px;
   overflow: hidden;
   background: var(--border);
@@ -987,13 +987,22 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 12px;
-  padding: 40px 32px;
+  width: 100%;
+  max-width: 280px;
+  aspect-ratio: 1;
+  padding: 32px;
   border-radius: 24px;
   background: var(--glass-bg);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
   backdrop-filter: blur(20px) saturate(160%);
   box-shadow: var(--glass-highlight), 0 8px 30px rgba(0, 0, 0, 0.35);
+}
+
+.empty-state .btn {
+  width: 100%;
+  max-width: 280px;
 }
 
 .empty-icon { font-size: 56px; }
@@ -1020,6 +1029,26 @@ body {
   font-size: 16px;
   margin: 0;
 }
+
+/* ===== NOTES ===== */
+.notes-textarea {
+  flex: 1;
+  margin: 0 16px 16px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  box-shadow: var(--glass-highlight);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1.5;
+  resize: none;
+}
+
+.notes-textarea:focus { outline: none; border-color: var(--accent); }
 
 /* ===== FORM ===== */
 .form {
@@ -1229,6 +1258,18 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.manage-toolbar-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 16px 16px;
+}
+
+.manage-toolbar-row .btn {
+  padding: 8px 16px;
+  font-size: 14px;
 }
 
 .bulk-actions-bar {

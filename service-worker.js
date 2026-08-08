@@ -1,4 +1,4 @@
-var CACHE_NAME = "espanol-cards-v57";
+var CACHE_NAME = "espanol-cards-v58";
 var ASSETS = [
   "./",
   "./index.html",

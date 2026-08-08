@@ -48,7 +48,7 @@
             <span class="dropdown-item-hint">Recent updates to the app</span>
           </button>
           <p class="dropdown-info">All data stays on this device. Import/export uses Anki's plain-text card format.</p>
-          <p class="app-version">v1.20.1</p>
+          <p class="app-version">v1.21.0</p>
         </div>
       </div>
     </header>
@@ -200,9 +200,6 @@
 
   <!-- ===== EMPTY / DONE VIEW ===== -->
   <section id="view-empty" class="view hidden">
-    <header class="topbar">
-      <button class="icon-btn" id="btn-empty-back">✕</button>
-    </header>
     <div class="empty-state">
       <div class="empty-card">
         <div class="empty-icon" id="empty-icon">🎉</div>
@@ -271,6 +268,7 @@
           </svg>
           <span>Ask Gemini to create a deck</span>
         </button>
+        <button type="button" class="btn btn-fail hidden" id="btn-delete-card">Delete card</button>
       </div>
     </form>
   </section>
@@ -314,7 +312,7 @@
     <header class="topbar">
       <button class="icon-btn" id="btn-manage-back">✕</button>
       <h2>Manage cards</h2>
-      <button type="button" class="text-action-btn" id="btn-manage-select-toggle">Select</button>
+      <span class="spacer"></span>
     </header>
     <div class="home-stats">
       <button type="button" class="stat-card info-trigger" id="stat-card-due">
@@ -335,6 +333,10 @@
         <option value="learning">Learning</option>
         <option value="mastered">Mastered</option>
       </select>
+    </div>
+    <div class="manage-toolbar-row">
+      <button type="button" class="text-action-btn" id="btn-manage-select-toggle">Select</button>
+      <button type="button" class="btn btn-secondary" id="btn-manage-add-card">+ Add card</button>
     </div>
     <div class="bulk-actions-bar hidden" id="bulk-actions-bar">
       <button type="button" class="text-action-btn" id="btn-bulk-select-all">Select all</button>
@@ -393,8 +395,8 @@
       </div>
 
       <div class="readme-section">
-        <h3>Manage cards</h3>
-        <p>Search and filter by deck or mastery, then tap any card's row to open a flip-able preview - same size and style as the practice card - to check its translation and notes without leaving the list. Use <b>Edit</b> / <b>Delete</b> on a row for one-off changes, or tap <b>Select</b> to check off several cards and delete them together.</p>
+        <h3>Manage cards (Cards tab)</h3>
+        <p>Search and filter by deck or mastery, then tap any card's row to open a flip-able preview - same size and style as the practice card - to check its translation and notes without leaving the list. Use <b>Edit</b> / <b>Delete</b> on a row for one-off changes, tap <b>Select</b> to check off several cards and delete them together, or tap <b>+ Add card</b> (below the filters) to add a new one - this is now the only way into Add card, which no longer has its own tab. Editing a card also has its own <b>Delete card</b> button.</p>
       </div>
 
       <div class="readme-section">
@@ -409,9 +411,14 @@
       </div>
 
       <div class="readme-section">
+        <h3>Notes</h3>
+        <p>The Notes tab is a single freeform notepad - anything typed there saves automatically and travels with Export/Import alongside your cards and streak, so it survives moving to a new device.</p>
+      </div>
+
+      <div class="readme-section">
         <h3>Export / Import</h3>
-        <p>Export saves a plain-text file in Anki's tab-separated note format (word, translation, notes, deck tags, box, due date, reviewed), so it opens directly in Anki too. Deck memberships are stored as <code>deck::Name</code> tags - a card in several decks gets several tags. Your streak is saved in a couple of header comment lines.</p>
-        <p>Import reads that same format (older JSON exports still work too). Matching is by word + translation, case-insensitive: a duplicate isn't re-added, but any new deck tags on it are merged in. Missing decks mentioned in tags are created automatically. If it's been a week since your last export, the app will offer to back up on launch. A streak saved in the file is only adopted if your current streak is 0, so importing cards never overwrites a streak you're already building on this device.</p>
+        <p>Export saves a plain-text file in Anki's tab-separated note format (word, translation, notes, deck tags, box, due date, reviewed), so it opens directly in Anki too. Deck memberships are stored as <code>deck::Name</code> tags - a card in several decks gets several tags. Your streak and notepad are saved in header comment lines.</p>
+        <p>Import reads that same format (older JSON exports still work too). Matching is by word + translation, case-insensitive: a duplicate isn't re-added, but any new deck tags on it are merged in. Missing decks mentioned in tags are created automatically. If it's been a week since your last export, the app will offer to back up on launch. A streak saved in the file is only adopted if your current streak is 0, and an imported notepad only if yours is currently empty - so importing cards never overwrites progress you're already building on this device.</p>
       </div>
     </div>
   </section>
@@ -425,6 +432,17 @@
     </header>
 
     <div class="readme-content" id="changelog-content"></div>
+  </section>
+
+  <!-- ===== NOTES VIEW ===== -->
+  <section id="view-notes" class="view hidden">
+    <header class="topbar">
+      <button class="icon-btn" id="btn-notes-back">✕</button>
+      <h2>Notes</h2>
+      <span class="spacer"></span>
+    </header>
+
+    <textarea id="notes-textarea" class="notes-textarea" placeholder="Write anything..."></textarea>
   </section>
 
   <!-- Top-level (not nested in a .view) so it can show over whichever
@@ -473,21 +491,21 @@
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
       <span class="tab-label">Home</span>
     </button>
+    <button type="button" class="tab-btn" id="btn-tab-manage" data-view="manage">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 18.54l-7.37-5.73L3 14.07l9 7 9-7-1.63-1.27-7.38 5.74zM12 16l7.36-5.73L21 9l-9-7-9 7 1.63 1.27L12 16z"/></svg>
+      <span class="tab-label">Cards</span>
+    </button>
     <button type="button" class="tab-btn" id="btn-tab-practice" data-view="practice">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
       <span class="tab-label">Practice</span>
     </button>
-    <button type="button" class="tab-btn" id="btn-tab-add" data-view="add">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
-      <span class="tab-label">Add card</span>
-    </button>
-    <button type="button" class="tab-btn" id="btn-tab-manage" data-view="manage">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 14h4v-4H3v4zm0 5h4v-4H3v4zM3 9h4V5H3v4zm5 5h13v-4H8v4zm0 5h13v-4H8v4zM8 5v4h13V5H8z"/></svg>
-      <span class="tab-label">Manage</span>
-    </button>
     <button type="button" class="tab-btn" id="btn-tab-decks" data-view="sections">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 18.54l-7.37-5.73L3 14.07l9 7 9-7-1.63-1.27-7.38 5.74zM12 16l7.36-5.73L21 9l-9-7-9 7 1.63 1.27L12 16z"/></svg>
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 14h4v-4H3v4zm0 5h4v-4H3v4zM3 9h4V5H3v4zm5 5h13v-4H8v4zm0 5h13v-4H8v4zM8 5v4h13V5H8z"/></svg>
       <span class="tab-label">Decks</span>
+    </button>
+    <button type="button" class="tab-btn" id="btn-tab-notes" data-view="notes">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-1-5V3.5L18.5 9H15z"/></svg>
+      <span class="tab-label">Notes</span>
     </button>
   </nav>
 

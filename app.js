@@ -38,7 +38,7 @@
   function loadData() {
     try {
       var raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return { cards: [], sections: [], streak: defaultStreak(), lastExportAt: null, lastStudyPrefs: null };
+      if (!raw) return { cards: [], sections: [], streak: defaultStreak(), lastExportAt: null, lastStudyPrefs: null, notepad: "" };
       var parsed = JSON.parse(raw);
       // migrate from the old format where the key held a bare cards array
       if (Array.isArray(parsed)) {
@@ -47,7 +47,7 @@
           if (typeof c.reviewed !== "boolean") c.reviewed = c.box > 0;
           if (c.box <= 0 && c.dueAt > Date.now()) c.dueAt = Date.now();
         });
-        return { cards: parsed, sections: [], streak: defaultStreak(), lastExportAt: null, lastStudyPrefs: null };
+        return { cards: parsed, sections: [], streak: defaultStreak(), lastExportAt: null, lastStudyPrefs: null, notepad: "" };
       }
       var loadedCards = Array.isArray(parsed.cards) ? parsed.cards : [];
       loadedCards.forEach(function (c) {
@@ -70,11 +70,12 @@
         sections: loadedSections,
         streak: loadedStreak,
         lastExportAt: typeof parsed.lastExportAt === "number" ? parsed.lastExportAt : null,
-        lastStudyPrefs: parsed.lastStudyPrefs && typeof parsed.lastStudyPrefs === "object" ? parsed.lastStudyPrefs : null
+        lastStudyPrefs: parsed.lastStudyPrefs && typeof parsed.lastStudyPrefs === "object" ? parsed.lastStudyPrefs : null,
+        notepad: typeof parsed.notepad === "string" ? parsed.notepad : ""
       };
     } catch (e) {
       console.error("Failed to load data", e);
-      return { cards: [], sections: [], streak: defaultStreak(), lastExportAt: null, lastStudyPrefs: null };
+      return { cards: [], sections: [], streak: defaultStreak(), lastExportAt: null, lastStudyPrefs: null, notepad: "" };
     }
   }
 
@@ -84,7 +85,8 @@
       sections: sections,
       streak: streak,
       lastExportAt: lastExportAt,
-      lastStudyPrefs: lastStudyPrefs
+      lastStudyPrefs: lastStudyPrefs,
+      notepad: notepadText
     }));
   }
 
@@ -94,6 +96,7 @@
   var streak = initialData.streak;
   var lastExportAt = initialData.lastExportAt;
   var lastStudyPrefs = initialData.lastStudyPrefs;
+  var notepadText = initialData.notepad;
 
   function uid() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
@@ -246,10 +249,11 @@
     sections: document.getElementById("view-sections"),
     readme: document.getElementById("view-readme"),
     changelog: document.getElementById("view-changelog"),
-    gemini: document.getElementById("view-gemini")
+    gemini: document.getElementById("view-gemini"),
+    notes: document.getElementById("view-notes")
   };
 
-  var TABBAR_VIEWS = { home: true, manage: true, sections: true };
+  var TABBAR_VIEWS = { home: true, manage: true, sections: true, notes: true };
 
   function showView(name) {
     Object.keys(views).forEach(function (k) {
@@ -293,7 +297,6 @@
       var alreadyActive = btn.classList.contains("active");
       if (view === "home") { refreshHome(); showView("home"); }
       else if (view === "practice") { renderStudySetup(); showView("studySetup"); }
-      else if (view === "add") { openAddView(null); }
       else if (view === "manage") {
         if (alreadyActive) {
           document.getElementById("manage-list").scrollTo({ top: 0, behavior: "smooth" });
@@ -306,7 +309,7 @@
         } else {
           openSectionsView();
         }
-      }
+      } else if (view === "notes") { openNotesView(); }
     });
   });
 
@@ -694,6 +697,7 @@
   // to hold the list at 10) each time a version ships with user-facing
   // changes worth calling out.
   var CHANGELOG = [
+    { version: "1.21.0", text: "Reworked the tab bar: swapped the Cards/Decks icons, renamed Manage to Cards, moved Practice to the center, and added a new Notes tab (a freeform notepad that exports/imports alongside your cards). Add card no longer has its own tab - use \"+ Add card\" in Manage cards instead, which also gained a Delete card option when editing. Added spacing above the Practice progress bar, and the finished-session screen is now a square card with a matching-width Back home button and no close button." },
     { version: "1.20.0", text: "Moved Practice off the home screen and into the tab bar as its own filled button, right next to Home - Card of the day now expands to fill the freed space. Also darkened the backdrop behind the card preview modal (Manage cards / home lists) so it reads as solid glass instead of looking washed out." },
     { version: "1.19.4", text: "Send request now opens Gemini via a new tab again - iOS always routes an external link tapped from a home-screen app through its own in-app browser sheet no matter how it's opened, so this at least leaves the app's own window untouched underneath. Use that sheet's Safari icon to fully open Gemini in the real browser." },
     { version: "1.19.3", text: "Attempted fix for Send request opening Gemini inside the app's own window instead of the real browser (superseded by 1.19.4 - iOS intercepts this regardless of navigation method)." },
@@ -727,6 +731,22 @@
   });
 
   document.getElementById("btn-changelog-back").addEventListener("click", function () {
+    refreshHome();
+    showView("home");
+  });
+
+  // ---------- notes ----------
+  function openNotesView() {
+    document.getElementById("notes-textarea").value = notepadText;
+    showView("notes");
+  }
+
+  document.getElementById("notes-textarea").addEventListener("input", function () {
+    notepadText = this.value;
+    saveData();
+  });
+
+  document.getElementById("btn-notes-back").addEventListener("click", function () {
     refreshHome();
     showView("home");
   });
@@ -1001,10 +1021,24 @@
     updateDeckDropdownSummary();
     document.getElementById("deck-dropdown-panel").classList.add("hidden");
     document.getElementById("save-toast").classList.add("hidden");
+    document.getElementById("btn-delete-card").classList.toggle("hidden", !cardToEdit);
     updateSaveCardButtonState();
     showView("add");
     wordEl.focus();
   }
+
+  document.getElementById("btn-delete-card").addEventListener("click", function () {
+    if (!editingId) return;
+    var target = cards.find(function (c) { return c.id === editingId; });
+    if (!target || !confirm('Delete "' + target.word + '"?')) return;
+    cards = cards.filter(function (c) { return c.id !== editingId; });
+    saveData();
+    updateGlobalStats();
+    editingId = null;
+    addReturnTo = "manage";
+    renderManageList(document.getElementById("manage-search").value);
+    showView("manage");
+  });
 
   function updateSaveCardButtonState() {
     var word = document.getElementById("input-word").value.trim();
@@ -1030,8 +1064,11 @@
         showView("manage");
       }
     } else {
-      refreshHome();
-      showView("home");
+      // Add card is now only reachable from Manage cards' "+ Add card"
+      // button (no longer a persistent tab), so leaving without saving
+      // always lands back there.
+      renderManageList(document.getElementById("manage-search").value);
+      showView("manage");
     }
   });
 
@@ -1256,6 +1293,10 @@
     manageSelectedIds.clear();
     updateManageSelectUI();
     renderManageList(document.getElementById("manage-search").value);
+  });
+
+  document.getElementById("btn-manage-add-card").addEventListener("click", function () {
+    openAddView(null);
   });
 
   document.getElementById("btn-bulk-select-all").addEventListener("click", function () {
@@ -2014,11 +2055,6 @@
     showView("home");
   });
 
-  document.getElementById("btn-empty-back").addEventListener("click", function () {
-    refreshHome();
-    showView("home");
-  });
-
   document.getElementById("btn-study-all-anyway").addEventListener("click", function () {
     startStudy(true);
   });
@@ -2056,7 +2092,8 @@
       "#notetype:Basic",
       "#tags column:4",
       "#streak-current:" + streak.current,
-      "#streak-last-date:" + (streak.lastDate || "")
+      "#streak-last-date:" + (streak.lastDate || ""),
+      "#notepad:" + encodeURIComponent(notepadText || "")
     ];
 
     cards.forEach(function (c) {
@@ -2097,6 +2134,7 @@
   function parseAnkiTsv(text) {
     var items = [];
     var importedStreak = null;
+    var importedNotepad = null;
 
     text.split(/\r?\n/).forEach(function (line) {
       if (!line) return;
@@ -2107,6 +2145,8 @@
         } else if (line.indexOf("#streak-last-date:") === 0) {
           importedStreak = importedStreak || {};
           importedStreak.lastDate = line.slice("#streak-last-date:".length).trim() || null;
+        } else if (line.indexOf("#notepad:") === 0) {
+          try { importedNotepad = decodeURIComponent(line.slice("#notepad:".length)); } catch (e) {}
         }
         return;
       }
@@ -2142,7 +2182,7 @@
       items.push(item);
     });
 
-    return { items: items, streak: importedStreak };
+    return { items: items, streak: importedStreak, notepad: importedNotepad };
   }
 
   // still accepted for backwards compatibility with files exported before this format changed
@@ -2184,6 +2224,13 @@
         // that's already actively being built up on this device.
         if (parsed.streak && streak.current === 0) {
           streak = { current: parsed.streak.current || 0, lastDate: parsed.streak.lastDate || null };
+        }
+
+        // Same caution as the streak above - only adopt an imported notepad
+        // when there's nothing written locally yet, so it can't clobber
+        // notes already in progress on this device.
+        if (parsed.notepad && !notepadText) {
+          notepadText = parsed.notepad;
         }
 
         var existingByKey = {};

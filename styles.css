@@ -838,25 +838,26 @@ body {
   gap: 14px;
 }
 
-/* In Practice, .card-face's backdrop-filter blurs a flat, solid --bg behind
-   it, so there's no clutter for the glass to reveal. Sitting over the
-   lighter modal-overlay here instead, the same card lets the busy list/home
-   screen show through and looks washed out. A fully opaque backing behind
-   the glass gradient "fixed" that but blocked backdrop-filter entirely,
-   losing the shimmer - a translucent --surface-2 tint keeps enough of the
+/* In Practice/Card of the day, .card-face's backdrop-filter blurs a flat,
+   solid --bg behind it, so there's no clutter for the glass to reveal.
+   Sitting over the lighter modal-overlay here instead, the same card lets
+   the busy list/home screen show through and looks washed out. A fully
+   opaque backing behind the glass gradient "fixed" that but blocked
+   backdrop-filter entirely, losing the shimmer - a translucent --bg tint
+   (same dark tone Practice/Card of the day sit on) keeps enough of the
    blur/saturate glass effect alive while still hiding the clutter, and the
    gradient stops are boosted a bit so the diagonal sheen actually shows
    up against it. */
 #card-preview-flashcard .card-face {
   background:
     linear-gradient(155deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.03) 45%, rgba(255, 255, 255, 0.1)),
-    rgba(52, 52, 64, 0.82);
+    rgba(38, 38, 46, 0.88);
 }
 
 #card-preview-flashcard .card-back {
   background:
     linear-gradient(155deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05) 45%, rgba(255, 255, 255, 0.12)),
-    rgba(52, 52, 64, 0.82);
+    rgba(38, 38, 46, 0.88);
 }
 
 .card-edit-btn {
@@ -1127,6 +1128,26 @@ body {
   background: rgba(0, 0, 0, 0.4);
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
+}
+
+#card-preview-modal {
+  flex-direction: column;
+  gap: 14px;
+}
+
+.card-preview-label {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.card-preview-hint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-dim);
 }
 
 .modal-sheet {

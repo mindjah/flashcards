@@ -838,6 +838,25 @@ body {
   gap: 14px;
 }
 
+/* In Practice, .card-face's backdrop-filter blurs a flat, solid --bg behind
+   it, which is what actually makes the glass read as opaque - not the
+   background gradient itself, which is almost fully transparent. Sitting
+   over the lighter modal-overlay here instead, the same card lets the busy
+   list/home screen show through and looks washed out. Layering an opaque
+   --surface-2 underneath the same glass gradient, just for this card,
+   fixes that without needing to darken the overlay itself. */
+#card-preview-flashcard .card-face {
+  background:
+    linear-gradient(155deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.02) 45%, rgba(255, 255, 255, 0.06)),
+    var(--surface-2);
+}
+
+#card-preview-flashcard .card-back {
+  background:
+    linear-gradient(155deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04) 45%, rgba(255, 255, 255, 0.08)),
+    var(--surface-2);
+}
+
 .card-edit-btn {
   position: absolute;
   top: 14px;

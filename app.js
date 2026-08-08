@@ -292,6 +292,7 @@
       var view = btn.dataset.view;
       var alreadyActive = btn.classList.contains("active");
       if (view === "home") { refreshHome(); showView("home"); }
+      else if (view === "practice") { renderStudySetup(); showView("studySetup"); }
       else if (view === "add") { openAddView(null); }
       else if (view === "manage") {
         if (alreadyActive) {
@@ -693,6 +694,7 @@
   // to hold the list at 10) each time a version ships with user-facing
   // changes worth calling out.
   var CHANGELOG = [
+    { version: "1.20.0", text: "Moved Practice off the home screen and into the tab bar as its own filled button, right next to Home - Card of the day now expands to fill the freed space. Also darkened the backdrop behind the card preview modal (Manage cards / home lists) so it reads as solid glass instead of looking washed out." },
     { version: "1.19.4", text: "Send request now opens Gemini via a new tab again - iOS always routes an external link tapped from a home-screen app through its own in-app browser sheet no matter how it's opened, so this at least leaves the app's own window untouched underneath. Use that sheet's Safari icon to fully open Gemini in the real browser." },
     { version: "1.19.3", text: "Attempted fix for Send request opening Gemini inside the app's own window instead of the real browser (superseded by 1.19.4 - iOS intercepts this regardless of navigation method)." },
     { version: "1.19.2", text: "Ask Gemini's requested notes now include pronunciation and an example sentence for each word, not just a translation. Trimmed the Ask Gemini screen's instructions to just the download-and-import step." },
@@ -701,8 +703,7 @@
     { version: "1.18.0", text: "Card decks now have a true liquid-glass look (gradient + glow, not just a flat tint). Added this Change log to Settings, and refreshed the README to match current features." },
     { version: "1.17.0", text: "Missing a card now brings it back after at least 10 other cards; missing it a second time sets it aside for a review pass at the end of the session. You can also edit a card right from its flipped practice view, then pick up the lesson exactly where you left off." },
     { version: "1.16.0", text: "Deck colors now fill the whole chip/row background instead of just outlining it. Tapping a card in Manage cards or on the home lists opens a flip-able preview - same size and style as practice - instead of a plain text popup." },
-    { version: "1.15.4", text: "Added a fill progress bar to Practice, un-bolded home list text, and made button text white for consistency across the app." },
-    { version: "1.15.3", text: "Lightened the app's dark background further." }
+    { version: "1.15.4", text: "Added a fill progress bar to Practice, un-bolded home list text, and made button text white for consistency across the app." }
   ];
 
   function renderChangelog() {
@@ -1638,11 +1639,6 @@
     saveData();
 
     startStudy(false, currentSectionFilter, currentStudyMode);
-  });
-
-  document.getElementById("btn-study").addEventListener("click", function () {
-    renderStudySetup();
-    showView("studySetup");
   });
 
   // ---------- study session ----------

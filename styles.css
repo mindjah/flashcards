@@ -476,7 +476,7 @@ body {
 /* ===== DAILY CARD ===== */
 .daily-card {
   margin: 16px 16px 0;
-  height: 236px;
+  height: 320px;
   perspective: 1200px;
 }
 
@@ -1108,6 +1108,19 @@ body {
   backdrop-filter: blur(8px);
 }
 
+/* The flashcard's own glass background is a near-transparent white gradient
+   that relies on a fairly solid, uniform backdrop to read as opaque "glass"
+   (as it does over the flat --bg in Practice) - the standard modal-overlay's
+   lighter dim+blur still lets the busy list/home screen show through behind
+   it, which makes the exact same card look washed out here. Darkening and
+   blurring this overlay further, specifically for the card preview, gives
+   it the same solid backdrop the practice card gets. */
+#card-preview-modal {
+  background: rgba(0, 0, 0, 0.78);
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+}
+
 .modal-sheet {
   width: 100%;
   max-width: 340px;
@@ -1670,6 +1683,21 @@ body {
 
 .tab-btn.active {
   transform: translateY(-1px);
+}
+
+/* Practice lives in the tab bar but isn't a persistent view like the
+   others (tapping it drops into Practice setup, which hides the bar the
+   same way Add card does) - styling it as an always-on filled pill keeps
+   it visually distinct as an action button rather than a plain nav tab. */
+.tab-btn-practice {
+  margin: 6px 2px;
+  border-radius: 25px;
+  color: var(--text);
+  background: rgba(var(--accent-rgb), 0.16);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.25),
+    inset 0 0 0 1px rgba(var(--accent-rgb), 0.35),
+    0 0 14px rgba(var(--accent-rgb), 0.22);
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1509,6 +1509,9 @@
     var remaining = session.queue.length + 1;
     document.getElementById("study-progress").textContent =
       session.studied + " done · " + remaining + " left";
+    var total = session.studied + remaining;
+    var pct = total > 0 ? (session.studied / total * 100) : 0;
+    document.getElementById("study-progress-fill").style.width = pct + "%";
   }
 
   // Case-insensitive and forgiving of accent marks/ñ (NFD-decomposing a

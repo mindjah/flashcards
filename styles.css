@@ -118,7 +118,7 @@ body {
   flex-shrink: 0;
   background: none;
   border: none;
-  color: var(--accent);
+  color: var(--text);
   font-family: inherit;
   font-weight: 600;
   font-size: 14px;
@@ -275,7 +275,7 @@ body {
 .install-banner-action {
   flex-shrink: 0;
   background: rgba(var(--accent-rgb), 0.16);
-  color: var(--accent);
+  color: var(--text);
   box-shadow:
     inset 0 1px 1px rgba(255, 255, 255, 0.2),
     inset 0 0 0 1px rgba(var(--accent-rgb), 0.35),
@@ -423,7 +423,7 @@ body {
 .struggling-item:active { background: var(--surface-2); }
 
 .struggling-item-word {
-  font-weight: 700;
+  font-weight: 400;
   font-size: 15px;
   flex-shrink: 0;
 }
@@ -460,7 +460,7 @@ body {
   border: none;
   padding: 4px;
   text-align: center;
-  color: var(--accent);
+  color: var(--text);
   font-family: inherit;
   font-size: 13px;
   font-weight: 600;
@@ -649,7 +649,7 @@ body {
 
 .btn-primary {
   background: rgba(var(--accent-rgb), 0.16);
-  color: var(--accent);
+  color: var(--text);
   box-shadow:
     inset 0 1px 1px rgba(255, 255, 255, 0.2),
     inset 0 0 0 1px rgba(var(--accent-rgb), 0.35),
@@ -675,7 +675,7 @@ body {
 
 .btn-pass {
   background: rgba(var(--pass-rgb), 0.16);
-  color: var(--pass);
+  color: var(--text);
   box-shadow:
     inset 0 1px 1px rgba(255, 255, 255, 0.2),
     inset 0 0 0 1px rgba(var(--pass-rgb), 0.35),
@@ -684,7 +684,7 @@ body {
 
 .btn-fail {
   background: rgba(var(--fail-rgb), 0.16);
-  color: var(--fail);
+  color: var(--text);
   box-shadow:
     inset 0 1px 1px rgba(255, 255, 255, 0.2),
     inset 0 0 0 1px rgba(var(--fail-rgb), 0.35),
@@ -709,6 +709,27 @@ body {
   color: var(--text-dim);
   font-size: 14px;
   font-weight: 600;
+}
+
+.study-progress-bar {
+  height: 6px;
+  margin: 0 16px 8px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+.study-progress-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 3px;
+  background: rgba(var(--pass-rgb), 0.16);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.2),
+    inset 0 0 0 1px rgba(var(--pass-rgb), 0.35),
+    0 0 14px rgba(var(--pass-rgb), 0.2);
+  transition: width 0.3s ease;
 }
 
 .flashcard {
@@ -1193,7 +1214,7 @@ body {
 
 .manage-item-delete {
   background: rgba(var(--fail-rgb), 0.16);
-  color: var(--fail);
+  color: var(--text);
   box-shadow:
     inset 0 1px 1px rgba(255, 255, 255, 0.16),
     inset 0 0 0 1px rgba(var(--fail-rgb), 0.3);
@@ -1332,7 +1353,7 @@ body {
 .deck-dropdown-action {
   background: none;
   border: none;
-  color: var(--accent);
+  color: var(--text);
   font-family: inherit;
   font-weight: 600;
   font-size: 14px;
@@ -1375,7 +1396,7 @@ body {
     inset 0 0 0 1px rgba(var(--accent-rgb), 0.35),
     0 0 14px rgba(var(--accent-rgb), 0.2);
   border-color: var(--accent);
-  color: var(--accent);
+  color: var(--text);
 }
 
 .chip-list-inline {
@@ -1578,7 +1599,6 @@ body {
 }
 
 .tab-btn.active {
-  color: var(--accent);
   transform: translateY(-1px);
 }
 

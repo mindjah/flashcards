@@ -44,7 +44,7 @@
             <span class="dropdown-item-hint">How practice, decks & mastery work</span>
           </button>
           <p class="dropdown-info">All data stays on this device. Import/export uses Anki's plain-text card format.</p>
-          <p class="app-version">v1.16.0</p>
+          <p class="app-version">v1.17.0</p>
         </div>
       </div>
     </header>
@@ -154,6 +154,8 @@
       <div class="study-progress-fill" id="study-progress-fill"></div>
     </div>
 
+    <p class="study-review-label hidden" id="study-review-label">Let's review the cards you didn't know</p>
+
     <div class="study-area">
       <div id="card" class="flashcard">
         <div class="flashcard-inner">
@@ -161,6 +163,9 @@
             <span id="card-word" class="card-word"></span>
           </div>
           <div class="card-face card-back">
+            <button type="button" class="icon-btn card-edit-btn" id="btn-study-edit-card" title="Edit card">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+            </button>
             <span id="card-translation" class="card-translation"></span>
             <p class="card-your-answer hidden" id="card-your-answer">
               <span class="card-note-label">You typed:</span>

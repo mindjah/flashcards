@@ -787,6 +787,11 @@
   // ---------- add / edit card ----------
   var editingId = null;
   var editingSectionIds = [];
+  // Where to land after saving/cancelling an edit - "manage" (the default,
+  // reached via Manage cards' Edit button) or "study", set when editing was
+  // opened from the study card's edit icon so the session resumes exactly
+  // where it left off instead of dropping into Manage cards.
+  var addReturnTo = "manage";
   // Checkboxes only mutate this staged copy - editingSectionIds (what the
   // summary shows and what actually saves with the card) only picks up
   // the change once "Apply" is tapped, so closing the panel without
@@ -973,8 +978,12 @@
   document.getElementById("btn-add-back").addEventListener("click", function () {
     if (editingId) {
       editingId = null;
-      renderManageList(document.getElementById("manage-search").value);
-      showView("manage");
+      if (addReturnTo === "study") {
+        resumeStudyAfterEdit();
+      } else {
+        renderManageList(document.getElementById("manage-search").value);
+        showView("manage");
+      }
     } else {
       refreshHome();
       showView("home");
@@ -1003,8 +1012,12 @@
         saveData();
       }
       editingId = null;
-      renderManageList(document.getElementById("manage-search").value);
-      showView("manage");
+      if (addReturnTo === "study") {
+        resumeStudyAfterEdit();
+      } else {
+        renderManageList(document.getElementById("manage-search").value);
+        showView("manage");
+      }
       return;
     }
 
@@ -1467,7 +1480,13 @@
   });
 
   // ---------- study session ----------
-  var session = { queue: [], current: null, revealed: false, studied: 0, passed: 0, failed: 0, allMode: false, mode: "normal" };
+  // Cards that fail once come back after at least 10 other cards (or at the
+  // very end if fewer than 10 remain); a second miss moves them into
+  // reviewQueue instead, a separate bucket only drained once the main queue
+  // is empty, shown under the "Let's review..." label so they're clearly
+  // set apart as repeat misses rather than mixed back into the regular flow.
+  var STUDY_REQUEUE_GAP = 10;
+  var session = { queue: [], reviewQueue: [], failCounts: {}, inReview: false, current: null, revealed: false, studied: 0, passed: 0, failed: 0, allMode: false, mode: "normal" };
 
   function startStudy(allMode, sectionFilter, mode) {
     if (sectionFilter !== undefined) currentSectionFilter = sectionFilter;
@@ -1481,6 +1500,9 @@
       return;
     }
     session.queue = shuffle(source.slice());
+    session.reviewQueue = [];
+    session.failCounts = {};
+    session.inReview = false;
     session.studied = 0;
     session.passed = 0;
     session.failed = 0;
@@ -1498,11 +1520,31 @@
     return arr;
   }
 
+  // Pulled out of nextCard() so resumeStudyAfterEdit() can refresh the face
+  // text (word/translation/note may have just changed) without resetting
+  // the flip/reveal state the way loading a new card would.
+  function updateStudyCardContent() {
+    var reversed = session.mode === "reversed" || session.mode === "type";
+    document.getElementById("card-word").textContent = reversed ? session.current.translation : session.current.word;
+    document.getElementById("card-translation").textContent = reversed ? session.current.word : session.current.translation;
+
+    var hasNote = !!session.current.notes;
+    document.getElementById("card-note").classList.toggle("hidden", !hasNote);
+    document.getElementById("card-note-text").textContent = hasNote ? session.current.notes : "";
+  }
+
   function nextCard() {
     if (session.queue.length === 0) {
-      finishStudy();
-      return;
+      if (session.reviewQueue.length === 0) {
+        finishStudy();
+        return;
+      }
+      session.queue = session.reviewQueue;
+      session.reviewQueue = [];
+      session.inReview = true;
     }
+    document.getElementById("study-review-label").classList.toggle("hidden", !session.inReview);
+
     session.current = session.queue.shift();
     session.revealed = false;
 
@@ -1511,18 +1553,12 @@
     cardEl.style.transition = "";
     cardEl.style.transform = "";
     cardEl.style.opacity = "";
-    var isTypeMode = session.mode === "type";
-    var reversed = session.mode === "reversed" || isTypeMode;
     var cardWordEl = document.getElementById("card-word");
     cardWordEl.style.transform = "";
-    cardWordEl.textContent = reversed ? session.current.translation : session.current.word;
-    document.getElementById("card-translation").textContent = reversed ? session.current.word : session.current.translation;
-
-    var hasNote = !!session.current.notes;
-    document.getElementById("card-note").classList.toggle("hidden", !hasNote);
-    document.getElementById("card-note-text").textContent = hasNote ? session.current.notes : "";
+    updateStudyCardContent();
     document.getElementById("card-your-answer").classList.add("hidden");
 
+    var isTypeMode = session.mode === "type";
     var typeBar = document.getElementById("type-answer-bar");
     typeBar.classList.toggle("hidden", !isTypeMode);
     typeBar.style.bottom = "";
@@ -1549,7 +1585,7 @@
   }
 
   function updateProgress() {
-    var remaining = session.queue.length + 1;
+    var remaining = session.queue.length + session.reviewQueue.length + 1;
     document.getElementById("study-progress").textContent =
       session.studied + " done · " + remaining + " left";
     var total = session.studied + remaining;
@@ -1679,6 +1715,26 @@
     if (session.current) openGoogleTranslate(session.current.word);
   });
 
+  // Editing mutates the same card object the session queue already holds,
+  // so resuming just needs to redraw the (possibly changed) text - the
+  // flip/reveal state and the rest of the session were never touched since
+  // #view-study was only hidden, not torn down, while the add view was up.
+  document.getElementById("btn-study-edit-card").addEventListener("click", function (e) {
+    e.stopPropagation();
+    if (!session.current) return;
+    addReturnTo = "study";
+    openAddView(session.current);
+  });
+  document.getElementById("btn-study-edit-card").addEventListener("touchstart", function (e) {
+    e.stopPropagation();
+  }, { passive: true });
+
+  function resumeStudyAfterEdit() {
+    addReturnTo = "manage";
+    if (session.current) updateStudyCardContent();
+    showView("study");
+  }
+
   // ---------- swipe to answer ----------
   var SWIPE_THRESHOLD = 90;
   var swipe = null;
@@ -1737,9 +1793,18 @@
       session.failed++;
       c.box = 0;
       c.dueAt = Date.now();
-      // requeue later in this session so it comes up again before finishing
-      var insertAt = Math.min(session.queue.length, 2 + Math.floor(Math.random() * 3));
-      session.queue.splice(insertAt, 0, c);
+      var fails = (session.failCounts[c.id] || 0) + 1;
+      session.failCounts[c.id] = fails;
+      if (fails === 1) {
+        // First miss: come back after at least 10 other cards (or at the
+        // end of the queue if fewer than 10 remain).
+        var insertAt = Math.min(session.queue.length, STUDY_REQUEUE_GAP);
+        session.queue.splice(insertAt, 0, c);
+      } else {
+        // A repeat miss - set it aside for the review pass at the end
+        // instead of mixing it back into the regular queue.
+        session.reviewQueue.push(c);
+      }
     }
     saveData();
     nextCard();

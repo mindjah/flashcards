@@ -732,6 +732,14 @@ body {
   transition: width 0.3s ease;
 }
 
+.study-review-label {
+  margin: 0 16px 8px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
 .flashcard {
   width: 100%;
   max-width: 420px;
@@ -803,6 +811,12 @@ body {
   background: linear-gradient(155deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04) 45%, rgba(255, 255, 255, 0.08));
   flex-direction: column;
   gap: 14px;
+}
+
+.card-edit-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
 }
 
 .card-word {

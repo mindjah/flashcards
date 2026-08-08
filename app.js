@@ -693,6 +693,7 @@
   // to hold the list at 10) each time a version ships with user-facing
   // changes worth calling out.
   var CHANGELOG = [
+    { version: "1.19.2", text: "Ask Gemini's requested notes now include pronunciation and an example sentence for each word, not just a translation. Trimmed the Ask Gemini screen's instructions to just the download-and-import step." },
     { version: "1.19.1", text: "Fixed Ask Gemini not actually prefilling the prompt - Gemini's web app has no URL prefill, so Send request now copies the prompt to your clipboard instead (paste it into Gemini yourself). The prompt now also asks Gemini to generate an actual downloadable .txt file rather than just chat text, so there's no more manual copy-paste-into-a-file step. Also moved Save card above the Gemini button in Add card, with more spacing after Card decks." },
     { version: "1.19.0", text: "Added \"Ask Gemini to create a deck\" in Add card - fill in a theme, word count, language and deck name and it opens Gemini with a ready-made prompt to generate an importable word list. Importing a file now only adopts its saved streak if your current streak is 0, so it can't overwrite one you're already building." },
     { version: "1.18.0", text: "Card decks now have a true liquid-glass look (gradient + glow, not just a flat tint). Added this Change log to Settings, and refreshed the README to match current features." },
@@ -701,8 +702,7 @@
     { version: "1.15.4", text: "Added a fill progress bar to Practice, un-bolded home list text, and made button text white for consistency across the app." },
     { version: "1.15.3", text: "Lightened the app's dark background further." },
     { version: "1.15.2", text: "Switched the base background from near-black to a dark grey." },
-    { version: "1.15.1", text: "Fixed the practice card shifting up slightly the moment the Knew it / Didn't know buttons appeared." },
-    { version: "1.15.0", text: "Added multi-select and bulk delete to Manage cards." }
+    { version: "1.15.1", text: "Fixed the practice card shifting up slightly the moment the Knew it / Didn't know buttons appeared." }
   ];
 
   function renderChangelog() {
@@ -1152,10 +1152,10 @@
     var deckTag = tagForSection(deckName.trim());
     return "Create a downloadable .txt file containing " + count + " Spanish vocabulary flashcards about the theme \"" + theme.trim() + "\". " +
       "For each one, include the Spanish word or phrase, its translation into " + language.trim() + ", " +
-      "and a short example sentence or usage note in " + language.trim() + ". " +
+      "and a note containing both how the word is pronounced and one example sentence showing how it's used, in " + language.trim() + ". " +
       "Inside the file, put ONLY the raw data, one flashcard per line, as " + count + " lines total, with these fields " +
       "separated by a single TAB character (not spaces or commas): " +
-      "Spanish word or phrase [TAB] translation in " + language.trim() + " [TAB] example sentence or note [TAB] " + deckTag + ". " +
+      "Spanish word or phrase [TAB] translation in " + language.trim() + " [TAB] pronunciation and example sentence note [TAB] " + deckTag + ". " +
       "Do not include a header row, numbering, bullets, quotation marks, or markdown formatting in the file, and don't add any commentary before or after the list. " +
       "Please generate this as an actual downloadable .txt file I can save to my device, not just text in the chat reply.";
   }

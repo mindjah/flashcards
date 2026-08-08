@@ -48,7 +48,7 @@
             <span class="dropdown-item-hint">Recent updates to the app</span>
           </button>
           <p class="dropdown-info">All data stays on this device. Import/export uses Anki's plain-text card format.</p>
-          <p class="app-version">v1.18.0</p>
+          <p class="app-version">v1.19.0</p>
         </div>
       </div>
     </header>
@@ -257,8 +257,54 @@
           </div>
         </div>
       </div>
+      <button type="button" class="btn btn-gemini btn-big" id="btn-ask-gemini">
+        <svg viewBox="0 0 24 24" class="gemini-logo">
+          <defs>
+            <linearGradient id="gemini-gradient" x1="2" y1="12" x2="22" y2="12" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#4285f4"/>
+              <stop offset="0.5" stop-color="#9b72cb"/>
+              <stop offset="1" stop-color="#d96570"/>
+            </linearGradient>
+          </defs>
+          <path fill="url(#gemini-gradient)" d="M12 2c0 5.52 4.48 10 10 10-5.52 0-10 4.48-10 10 0-5.52-4.48-10-10-10 5.52 0 10-4.48 10-10z"/>
+        </svg>
+        <span>Ask Gemini to create a deck</span>
+      </button>
       <button type="submit" id="btn-save-card" class="btn btn-primary btn-big" disabled>Save card</button>
       <p class="save-toast hidden" id="save-toast">Saved ✓ add another</p>
+    </form>
+  </section>
+
+  <!-- ===== ASK GEMINI VIEW ===== -->
+  <section id="view-gemini" class="view hidden">
+    <header class="topbar">
+      <button class="icon-btn" id="btn-gemini-back">✕</button>
+      <h2>Ask Gemini</h2>
+      <span class="spacer"></span>
+    </header>
+
+    <form id="form-gemini" class="form">
+      <label>What theme?
+        <input type="text" id="gemini-theme" autocomplete="off" placeholder="e.g. cafe, gym, health..." required>
+      </label>
+      <label>How many words?
+        <input type="text" id="gemini-count" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="e.g. 20" required>
+      </label>
+      <label>To what language to translate?
+        <input type="text" id="gemini-language" autocomplete="off" placeholder="e.g. English" required>
+      </label>
+      <label>How to name the deck?
+        <input type="text" id="gemini-deck-name" autocomplete="off" placeholder="e.g. Cafe words" required>
+      </label>
+
+      <p class="gemini-instructions">After Gemini creates your list, copy its reply, paste it into a plain text file (.txt) using any notes or text editor app, save it, then come back here and use <b>Settings → Import</b> to load that file straight into this deck.</p>
+
+      <label class="gemini-checkbox-row">
+        <input type="checkbox" id="gemini-understand-checkbox">
+        <span>I understand how to import the file after it is created by the AI</span>
+      </label>
+
+      <button type="button" id="btn-gemini-send" class="btn btn-primary btn-big" disabled>Send request</button>
     </form>
   </section>
 
@@ -342,6 +388,7 @@
         <h3>Card decks</h3>
         <p>Decks are tags you can put on a card - a card can belong to any number of decks, or none. Each deck gets a random color as soon as you create it, shown as a tinted glass background on its row and on its tag chips wherever it's listed, so it's easy to spot at a glance.</p>
         <p>Practice setup and Manage cards both let you filter by deck, including a "No card deck" bucket for untagged cards. In Practice setup, use the small <b>Select all</b> / <b>Unselect</b> chips to quickly check or clear every deck - Start practicing stays disabled until at least one is selected. Tapping a deck from the Card decks screen jumps straight into Manage cards filtered to it. Deleting a deck removes that tag from its cards - the cards themselves stay put.</p>
+        <p>In Add card, <b>Ask Gemini to create a deck</b> opens a small form (theme, word count, translation language, deck name) and, once you've checked the box confirming you know how to import the result, opens Gemini's web app in a new tab with a prompt already filled in asking it to generate a matching tab-separated word list. Paste Gemini's reply into a .txt file and bring it in with Import.</p>
       </div>
 
       <div class="readme-section">
@@ -363,7 +410,7 @@
       <div class="readme-section">
         <h3>Export / Import</h3>
         <p>Export saves a plain-text file in Anki's tab-separated note format (word, translation, notes, deck tags, box, due date, reviewed), so it opens directly in Anki too. Deck memberships are stored as <code>deck::Name</code> tags - a card in several decks gets several tags. Your streak is saved in a couple of header comment lines.</p>
-        <p>Import reads that same format (older JSON exports still work too). Matching is by word + translation, case-insensitive: a duplicate isn't re-added, but any new deck tags on it are merged in. Missing decks mentioned in tags are created automatically. If it's been a week since your last export, the app will offer to back up on launch.</p>
+        <p>Import reads that same format (older JSON exports still work too). Matching is by word + translation, case-insensitive: a duplicate isn't re-added, but any new deck tags on it are merged in. Missing decks mentioned in tags are created automatically. If it's been a week since your last export, the app will offer to back up on launch. A streak saved in the file is only adopted if your current streak is 0, so importing cards never overwrites a streak you're already building on this device.</p>
       </div>
     </div>
   </section>

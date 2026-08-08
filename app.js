@@ -245,7 +245,8 @@
     manage: document.getElementById("view-manage"),
     sections: document.getElementById("view-sections"),
     readme: document.getElementById("view-readme"),
-    changelog: document.getElementById("view-changelog")
+    changelog: document.getElementById("view-changelog"),
+    gemini: document.getElementById("view-gemini")
   };
 
   var TABBAR_VIEWS = { home: true, manage: true, sections: true };
@@ -692,6 +693,7 @@
   // to hold the list at 10) each time a version ships with user-facing
   // changes worth calling out.
   var CHANGELOG = [
+    { version: "1.19.0", text: "Added \"Ask Gemini to create a deck\" in Add card - fill in a theme, word count, language and deck name and it opens Gemini with a ready-made prompt to generate an importable word list. Importing a file now only adopts its saved streak if your current streak is 0, so it can't overwrite one you're already building." },
     { version: "1.18.0", text: "Card decks now have a true liquid-glass look (gradient + glow, not just a flat tint). Added this Change log to Settings, and refreshed the README to match current features." },
     { version: "1.17.0", text: "Missing a card now brings it back after at least 10 other cards; missing it a second time sets it aside for a review pass at the end of the session. You can also edit a card right from its flipped practice view, then pick up the lesson exactly where you left off." },
     { version: "1.16.0", text: "Deck colors now fill the whole chip/row background instead of just outlining it. Tapping a card in Manage cards or on the home lists opens a flip-able preview - same size and style as practice - instead of a plain text popup." },
@@ -700,8 +702,7 @@
     { version: "1.15.2", text: "Switched the base background from near-black to a dark grey." },
     { version: "1.15.1", text: "Fixed the practice card shifting up slightly the moment the Knew it / Didn't know buttons appeared." },
     { version: "1.15.0", text: "Added multi-select and bulk delete to Manage cards." },
-    { version: "1.14.7", text: "Fixed new cards silently never showing up as due." },
-    { version: "1.14.6", text: "Matched the empty-state placeholder styling between Manage cards and Card decks." }
+    { version: "1.14.7", text: "Fixed new cards silently never showing up as due." }
   ];
 
   function renderChangelog() {
@@ -1087,6 +1088,91 @@
     var toast = document.getElementById("save-toast");
     toast.classList.remove("hidden");
     setTimeout(function () { toast.classList.add("hidden"); }, 1200);
+  });
+
+  // ---------- ask Gemini to create a deck ----------
+  // Opens Gemini's web app with a prefilled prompt (same trusted-gesture <a>
+  // click as openGoogleTranslate) asking it to generate an Anki-style
+  // tab-separated word list this app's own importer already understands -
+  // the user still has to paste Gemini's reply into a .txt file themselves
+  // and run Import, hence the checkbox making sure that's understood upfront.
+  function geminiFormFields() {
+    return {
+      theme: document.getElementById("gemini-theme"),
+      count: document.getElementById("gemini-count"),
+      language: document.getElementById("gemini-language"),
+      deckName: document.getElementById("gemini-deck-name"),
+      checkbox: document.getElementById("gemini-understand-checkbox"),
+      send: document.getElementById("btn-gemini-send")
+    };
+  }
+
+  function updateGeminiSendState() {
+    var f = geminiFormFields();
+    var count = parseInt(f.count.value, 10);
+    var ready = !!f.theme.value.trim() &&
+      !!f.language.value.trim() &&
+      !!f.deckName.value.trim() &&
+      !isNaN(count) && count > 0 &&
+      f.checkbox.checked;
+    f.send.disabled = !ready;
+  }
+
+  function openAskGeminiView() {
+    var f = geminiFormFields();
+    f.theme.value = "";
+    f.count.value = "";
+    f.language.value = "";
+    f.deckName.value = "";
+    f.checkbox.checked = false;
+    updateGeminiSendState();
+    showView("gemini");
+    f.theme.focus();
+  }
+
+  document.getElementById("btn-ask-gemini").addEventListener("click", openAskGeminiView);
+
+  document.getElementById("btn-gemini-back").addEventListener("click", function () {
+    showView("add");
+  });
+
+  document.getElementById("gemini-count").addEventListener("input", function () {
+    var digitsOnly = this.value.replace(/\D/g, "");
+    if (digitsOnly !== this.value) this.value = digitsOnly;
+    updateGeminiSendState();
+  });
+
+  ["gemini-theme", "gemini-language", "gemini-deck-name"].forEach(function (id) {
+    document.getElementById(id).addEventListener("input", updateGeminiSendState);
+  });
+
+  document.getElementById("gemini-understand-checkbox").addEventListener("change", updateGeminiSendState);
+
+  function buildGeminiPrompt(theme, count, language, deckName) {
+    var deckTag = tagForSection(deckName.trim());
+    return "Create " + count + " Spanish vocabulary flashcards about the theme \"" + theme.trim() + "\". " +
+      "For each one, give the Spanish word or phrase, its translation into " + language.trim() + ", " +
+      "and a short example sentence or usage note in " + language.trim() + ". " +
+      "Output ONLY the raw data, one flashcard per line, as " + count + " lines total, with these fields " +
+      "separated by a single TAB character (not spaces or commas): " +
+      "Spanish word or phrase [TAB] translation in " + language.trim() + " [TAB] example sentence or note [TAB] " + deckTag + ". " +
+      "Do not include a header row, numbering, bullets, quotation marks, markdown formatting, or any commentary before or after the list - " +
+      "just the plain tab-separated lines, ready to paste into a .txt file.";
+  }
+
+  document.getElementById("btn-gemini-send").addEventListener("click", function () {
+    var f = geminiFormFields();
+    if (f.send.disabled) return;
+    var prompt = buildGeminiPrompt(f.theme.value, f.count.value, f.language.value, f.deckName.value);
+    var geminiUrl = "https://gemini.google.com/app?q=" + encodeURIComponent(prompt);
+
+    var a = document.createElement("a");
+    a.href = geminiUrl;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   });
 
   // ---------- manage ----------
@@ -2062,7 +2148,10 @@
           : parseAnkiTsv(text);
         var incoming = parsed.items;
 
-        if (parsed.streak) {
+        // Only adopt an imported streak on a fresh start - otherwise importing
+        // someone else's export (or a re-import) would clobber a streak
+        // that's already actively being built up on this device.
+        if (parsed.streak && streak.current === 0) {
           streak = { current: parsed.streak.current || 0, lastDate: parsed.streak.lastDate || null };
         }
 

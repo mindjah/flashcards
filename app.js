@@ -693,7 +693,8 @@
   // to hold the list at 10) each time a version ships with user-facing
   // changes worth calling out.
   var CHANGELOG = [
-    { version: "1.19.3", text: "Fixed Send request opening Gemini inside the app's own window instead of the real browser - it now navigates the whole app to Gemini, which iOS hands off to Safari when running as a home-screen app." },
+    { version: "1.19.4", text: "Send request now opens Gemini via a new tab again - iOS always routes an external link tapped from a home-screen app through its own in-app browser sheet no matter how it's opened, so this at least leaves the app's own window untouched underneath. Use that sheet's Safari icon to fully open Gemini in the real browser." },
+    { version: "1.19.3", text: "Attempted fix for Send request opening Gemini inside the app's own window instead of the real browser (superseded by 1.19.4 - iOS intercepts this regardless of navigation method)." },
     { version: "1.19.2", text: "Ask Gemini's requested notes now include pronunciation and an example sentence for each word, not just a translation. Trimmed the Ask Gemini screen's instructions to just the download-and-import step." },
     { version: "1.19.1", text: "Fixed Ask Gemini not actually prefilling the prompt - Gemini's web app has no URL prefill, so Send request now copies the prompt to your clipboard instead (paste it into Gemini yourself). The prompt now also asks Gemini to generate an actual downloadable .txt file rather than just chat text, so there's no more manual copy-paste-into-a-file step. Also moved Save card above the Gemini button in Add card, with more spacing after Card decks." },
     { version: "1.19.0", text: "Added \"Ask Gemini to create a deck\" in Add card - fill in a theme, word count, language and deck name and it opens Gemini with a ready-made prompt to generate an importable word list. Importing a file now only adopts its saved streak if your current streak is 0, so it can't overwrite one you're already building." },
@@ -701,8 +702,7 @@
     { version: "1.17.0", text: "Missing a card now brings it back after at least 10 other cards; missing it a second time sets it aside for a review pass at the end of the session. You can also edit a card right from its flipped practice view, then pick up the lesson exactly where you left off." },
     { version: "1.16.0", text: "Deck colors now fill the whole chip/row background instead of just outlining it. Tapping a card in Manage cards or on the home lists opens a flip-able preview - same size and style as practice - instead of a plain text popup." },
     { version: "1.15.4", text: "Added a fill progress bar to Practice, un-bolded home list text, and made button text white for consistency across the app." },
-    { version: "1.15.3", text: "Lightened the app's dark background further." },
-    { version: "1.15.2", text: "Switched the base background from near-black to a dark grey." }
+    { version: "1.15.3", text: "Lightened the app's dark background further." }
   ];
 
   function renderChangelog() {
@@ -1194,13 +1194,21 @@
     toast.classList.remove("hidden");
     setTimeout(function () { toast.classList.add("hidden"); }, 2500);
 
-    // A target="_blank" click here opens gemini.google.com inside the
-    // standalone PWA's own WKWebView (an in-app browser tab), not the real
-    // Safari app - unlike translate.google.com it isn't handled as a
-    // Universal Link on this click type. A same-window top-level navigation
-    // to an external domain is what iOS actually hands off to Safari when
-    // running as a home-screen app, so that's what forces the real browser.
-    window.location.href = "https://gemini.google.com/app";
+    // iOS forces any external link tapped from a standalone home-screen web
+    // app through its own in-app Safari View Controller sheet (Done button +
+    // a Safari icon that fully opens the real browser) - that's true no
+    // matter how the navigation is triggered here, and there's no JS-only
+    // way around it short of Universal Links, which Gemini isn't registered
+    // for. Given the sheet is unavoidable either way, target="_blank" at
+    // least keeps this app's own window untouched underneath it, so tapping
+    // Done returns to the form exactly as it was instead of a blank page.
+    var a = document.createElement("a");
+    a.href = "https://gemini.google.com/app";
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   });
 
   // ---------- manage ----------

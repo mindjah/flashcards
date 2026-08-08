@@ -697,10 +697,10 @@
   // to hold the list at 10) each time a version ships with user-facing
   // changes worth calling out.
   var CHANGELOG = [
+    { version: "1.22.0", text: "Practice's progress bar and \"done\" count now only advance on correct answers, not every attempt. Manage cards rows now swipe left to reveal Edit/Delete instead of showing them inline, Select all toggles to Unselect all, and + Add card / Delete now share a matching width. Delete card moved to Edit card's top-right corner (plain red text) and Ask Gemini is hidden there, showing only when adding a new card. Notes got breathing room and a flat background, and the tab bar's icons/labels are bigger and white instead of muted grey." },
     { version: "1.21.0", text: "Reworked the tab bar: swapped the Cards/Decks icons, renamed Manage to Cards, moved Practice to the center, and added a new Notes tab (a freeform notepad that exports/imports alongside your cards). Add card no longer has its own tab - use \"+ Add card\" in Manage cards instead, which also gained a Delete card option when editing. Added spacing above the Practice progress bar, and the finished-session screen is now a square card with a matching-width Back home button and no close button." },
     { version: "1.20.0", text: "Moved Practice off the home screen and into the tab bar as its own filled button, right next to Home - Card of the day now expands to fill the freed space. Also darkened the backdrop behind the card preview modal (Manage cards / home lists) so it reads as solid glass instead of looking washed out." },
     { version: "1.19.4", text: "Send request now opens Gemini via a new tab again - iOS always routes an external link tapped from a home-screen app through its own in-app browser sheet no matter how it's opened, so this at least leaves the app's own window untouched underneath. Use that sheet's Safari icon to fully open Gemini in the real browser." },
-    { version: "1.19.3", text: "Attempted fix for Send request opening Gemini inside the app's own window instead of the real browser (superseded by 1.19.4 - iOS intercepts this regardless of navigation method)." },
     { version: "1.19.2", text: "Ask Gemini's requested notes now include pronunciation and an example sentence for each word, not just a translation. Trimmed the Ask Gemini screen's instructions to just the download-and-import step." },
     { version: "1.19.1", text: "Fixed Ask Gemini not actually prefilling the prompt - Gemini's web app has no URL prefill, so Send request now copies the prompt to your clipboard instead (paste it into Gemini yourself). The prompt now also asks Gemini to generate an actual downloadable .txt file rather than just chat text, so there's no more manual copy-paste-into-a-file step. Also moved Save card above the Gemini button in Add card, with more spacing after Card decks." },
     { version: "1.19.0", text: "Added \"Ask Gemini to create a deck\" in Add card - fill in a theme, word count, language and deck name and it opens Gemini with a ready-made prompt to generate an importable word list. Importing a file now only adopts its saved streak if your current streak is 0, so it can't overwrite one you're already building." },
@@ -1022,6 +1022,7 @@
     document.getElementById("deck-dropdown-panel").classList.add("hidden");
     document.getElementById("save-toast").classList.add("hidden");
     document.getElementById("btn-delete-card").classList.toggle("hidden", !cardToEdit);
+    document.getElementById("btn-ask-gemini").classList.toggle("hidden", !!cardToEdit);
     updateSaveCardButtonState();
     showView("add");
     wordEl.focus();
@@ -1286,6 +1287,8 @@
     document.getElementById("bulk-actions-bar").classList.toggle("hidden", !manageSelectMode);
     document.getElementById("bulk-actions-count").textContent = manageSelectedIds.size + " selected";
     document.getElementById("btn-bulk-delete").disabled = manageSelectedIds.size === 0;
+    var allSelected = lastManageListIds.length > 0 && lastManageListIds.every(function (id) { return manageSelectedIds.has(id); });
+    document.getElementById("btn-bulk-select-all").textContent = allSelected ? "Unselect all" : "Select all";
   }
 
   document.getElementById("btn-manage-select-toggle").addEventListener("click", function () {
@@ -1325,6 +1328,7 @@
   function renderManageList(filter) {
     var list = document.getElementById("manage-list");
     list.innerHTML = "";
+    openManageSwipeRow = null;
 
     var sectionFilterVal = document.getElementById("manage-section-filter").value;
     var masteryFilterVal = document.getElementById("manage-mastery-filter").value;
@@ -1401,6 +1405,8 @@
       meta.textContent = isDue(c, now) ? "To learn" : "Due " + formatRelative(c.dueAt - now);
       text.appendChild(meta);
 
+      var elementToAppend = row;
+
       if (manageSelectMode) {
         var selectBox = document.createElement("input");
         selectBox.type = "checkbox";
@@ -1415,8 +1421,14 @@
         row.appendChild(text);
         row.appendChild(selectBox);
       } else {
-        var actions = document.createElement("div");
-        actions.className = "manage-item-actions";
+        var swipeWrap = document.createElement("div");
+        swipeWrap.className = "manage-item-swipe";
+
+        var swipeInner = document.createElement("div");
+        swipeInner.className = "manage-item-swipe-inner";
+
+        var actionsPanel = document.createElement("div");
+        actionsPanel.className = "manage-item-swipe-actions";
 
         var edit = document.createElement("button");
         edit.className = "manage-item-edit";
@@ -1436,19 +1448,80 @@
           renderManageList(document.getElementById("manage-search").value);
         });
 
-        actions.appendChild(edit);
-        actions.appendChild(del);
+        actionsPanel.appendChild(edit);
+        actionsPanel.appendChild(del);
 
         row.appendChild(text);
-        row.appendChild(actions);
         row.classList.add("manage-item-linkable");
-        row.addEventListener("click", function (e) {
-          if (e.target.closest(".manage-item-actions")) return;
+        row.addEventListener("click", function () {
+          if (swipeInner._suppressClick) { swipeInner._suppressClick = false; return; }
+          if (openManageSwipeRow === swipeInner) { closeManageSwipeRow(); return; }
           openCardPreview(c);
         });
+
+        swipeInner.appendChild(row);
+        swipeInner.appendChild(actionsPanel);
+        attachManageSwipe(swipeInner);
+        swipeWrap.appendChild(swipeInner);
+        elementToAppend = swipeWrap;
       }
-      list.appendChild(row);
+      list.appendChild(elementToAppend);
     });
+  }
+
+  // ---------- swipe-to-reveal (Manage cards rows) ----------
+  // Same "let a real drag pass a threshold before treating it as a swipe"
+  // approach as the practice card's swipe-to-answer, so a normal vertical
+  // scroll of the list is never hijacked into an accidental reveal.
+  var MANAGE_SWIPE_WIDTH = 152;
+  var openManageSwipeRow = null;
+
+  function closeManageSwipeRow() {
+    if (openManageSwipeRow) {
+      openManageSwipeRow.style.transition = "transform 0.25s ease";
+      openManageSwipeRow.style.transform = "";
+      openManageSwipeRow = null;
+    }
+  }
+
+  function attachManageSwipe(rowEl) {
+    var startX = 0, startY = 0, dx = 0, dragging = false, isSwipe = false, baseOffset = 0;
+
+    rowEl.addEventListener("touchstart", function (e) {
+      if (openManageSwipeRow && openManageSwipeRow !== rowEl) closeManageSwipeRow();
+      var t = e.touches[0];
+      startX = t.clientX; startY = t.clientY; dx = 0; dragging = true; isSwipe = false;
+      baseOffset = openManageSwipeRow === rowEl ? -MANAGE_SWIPE_WIDTH : 0;
+      rowEl.style.transition = "none";
+    }, { passive: true });
+
+    rowEl.addEventListener("touchmove", function (e) {
+      if (!dragging) return;
+      var t = e.touches[0];
+      dx = t.clientX - startX;
+      var dy = t.clientY - startY;
+      if (!isSwipe && Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)) isSwipe = true;
+      if (isSwipe) {
+        e.preventDefault();
+        var next = Math.min(0, Math.max(-MANAGE_SWIPE_WIDTH, baseOffset + dx));
+        rowEl.style.transform = "translateX(" + next + "px)";
+      }
+    }, { passive: false });
+
+    rowEl.addEventListener("touchend", function () {
+      dragging = false;
+      rowEl.style.transition = "transform 0.25s ease";
+      if (!isSwipe) return;
+      rowEl._suppressClick = true;
+      var finalOffset = Math.min(0, Math.max(-MANAGE_SWIPE_WIDTH, baseOffset + dx));
+      if (finalOffset < -MANAGE_SWIPE_WIDTH / 2) {
+        rowEl.style.transform = "translateX(-" + MANAGE_SWIPE_WIDTH + "px)";
+        openManageSwipeRow = rowEl;
+      } else {
+        rowEl.style.transform = "";
+        if (openManageSwipeRow === rowEl) openManageSwipeRow = null;
+      }
+    }, { passive: true });
   }
 
   function formatRelative(ms) {
@@ -1787,11 +1860,16 @@
   }
 
   function updateProgress() {
+    // "Done" only counts correct answers - a wrong answer keeps its card
+    // circulating (requeued or moved to the review bucket) rather than
+    // leaving the pool, so remaining (still-circulating cards, including
+    // the one on screen) and passed always add back up to the session
+    // total on their own, with no separate counter needed.
     var remaining = session.queue.length + session.reviewQueue.length + 1;
     document.getElementById("study-progress").textContent =
-      session.studied + " done · " + remaining + " left";
-    var total = session.studied + remaining;
-    var pct = total > 0 ? (session.studied / total * 100) : 0;
+      session.passed + " done · " + remaining + " left";
+    var total = session.passed + remaining;
+    var pct = total > 0 ? (session.passed / total * 100) : 0;
     document.getElementById("study-progress-fill").style.width = pct + "%";
   }
 

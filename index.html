@@ -48,7 +48,7 @@
             <span class="dropdown-item-hint">Recent updates to the app</span>
           </button>
           <p class="dropdown-info">All data stays on this device. Import/export uses Anki's plain-text card format.</p>
-          <p class="app-version">v1.21.0</p>
+          <p class="app-version">v1.22.0</p>
         </div>
       </div>
     </header>
@@ -215,7 +215,7 @@
     <header class="topbar">
       <button class="icon-btn" id="btn-add-back">✕</button>
       <h2 id="add-view-title">Add card</h2>
-      <span class="spacer"></span>
+      <button type="button" class="text-action-btn text-action-btn-danger hidden" id="btn-delete-card">Delete</button>
     </header>
 
     <form id="form-add" class="form">
@@ -268,7 +268,6 @@
           </svg>
           <span>Ask Gemini to create a deck</span>
         </button>
-        <button type="button" class="btn btn-fail hidden" id="btn-delete-card">Delete card</button>
       </div>
     </form>
   </section>
@@ -336,7 +335,7 @@
     </div>
     <div class="manage-toolbar-row">
       <button type="button" class="text-action-btn" id="btn-manage-select-toggle">Select</button>
-      <button type="button" class="btn btn-secondary" id="btn-manage-add-card">+ Add card</button>
+      <button type="button" class="btn btn-primary" id="btn-manage-add-card">+ Add card</button>
     </div>
     <div class="bulk-actions-bar hidden" id="bulk-actions-bar">
       <button type="button" class="text-action-btn" id="btn-bulk-select-all">Select all</button>
@@ -372,6 +371,7 @@
         <p>Every card sits in a box from 0 to 5, a spaced-repetition schedule. New cards start in box 0, due immediately. <b>To learn</b> on the home screen is simply the count of cards whose due date has already passed - box 0 cards plus anything whose review interval has come back around.</p>
         <p>Tapping <b>Practice</b> → <b>Start practicing</b> studies only those due cards by default. If nothing is due, you'll see a "Nothing due right now" screen with a <b>Practice all cards anyway</b> option, which is the only way to study cards that aren't due yet.</p>
         <p>Answering <b>Knew it</b> moves a card up one box and pushes its due date out (box intervals: 1, 3, 7, 16, 35 days). Answering <b>Didn't know</b> (or typing the wrong word) drops it straight back to box 0, due immediately, and requeues it in the same session: the first miss brings it back after at least 10 other cards (or at the very end if fewer than 10 remain), and missing it again moves it into a review pass at the end of the session under a "Let's review the cards you didn't know" heading, where it keeps recycling until you get it right.</p>
+        <p>The "done" count and progress bar only advance on a correct answer - a card you missed stays counted as remaining (however many times it recycles) until you actually get it right, so the bar always reflects real progress rather than raw attempts.</p>
       </div>
 
       <div class="readme-section">
@@ -391,12 +391,12 @@
         <h3>Card decks</h3>
         <p>Decks are tags you can put on a card - a card can belong to any number of decks, or none. Each deck gets a random color as soon as you create it, shown as a tinted glass background on its row and on its tag chips wherever it's listed, so it's easy to spot at a glance.</p>
         <p>Practice setup and Manage cards both let you filter by deck, including a "No card deck" bucket for untagged cards. In Practice setup, use the small <b>Select all</b> / <b>Unselect</b> chips to quickly check or clear every deck - Start practicing stays disabled until at least one is selected. Tapping a deck from the Card decks screen jumps straight into Manage cards filtered to it. Deleting a deck removes that tag from its cards - the cards themselves stay put.</p>
-        <p>In Add card, <b>Ask Gemini to create a deck</b> opens a small form (theme, word count, translation language, deck name) and, once you've checked the box confirming you know how to import the result, copies a matching request to your clipboard and opens Gemini's web app in a new tab - paste the request into Gemini's message box and send it there. The request asks Gemini to generate an actual downloadable .txt file already in this app's import format, so once Gemini replies you just download that file and bring it in with Import.</p>
+        <p>In Add card, <b>Ask Gemini to create a deck</b> opens a small form (theme, word count, translation language, deck name) and, once you've checked the box confirming you know how to import the result, copies a matching request to your clipboard and opens Gemini's web app in a new tab - paste the request into Gemini's message box and send it there. The request asks Gemini to generate an actual downloadable .txt file already in this app's import format, so once Gemini replies you just download that file and bring it in with Import. This button only appears when adding a brand-new card, not while editing an existing one.</p>
       </div>
 
       <div class="readme-section">
         <h3>Manage cards (Cards tab)</h3>
-        <p>Search and filter by deck or mastery, then tap any card's row to open a flip-able preview - same size and style as the practice card - to check its translation and notes without leaving the list. Use <b>Edit</b> / <b>Delete</b> on a row for one-off changes, tap <b>Select</b> to check off several cards and delete them together, or tap <b>+ Add card</b> (below the filters) to add a new one - this is now the only way into Add card, which no longer has its own tab. Editing a card also has its own <b>Delete card</b> button.</p>
+        <p>Search and filter by deck or mastery, then tap any card's row to open a flip-able preview - same size and style as the practice card - to check its translation and notes without leaving the list. Swipe a row left to reveal <b>Edit</b> / <b>Delete</b> for that card. Tap <b>Select</b> to check off several cards and delete them together - <b>Select all</b> toggles to <b>Unselect all</b> once everything's checked - or tap <b>+ Add card</b> (below the filters) to add a new one; this is now the only way into Add card, which no longer has its own tab. Editing a card shows a <b>Delete</b> option in its own top-right corner instead.</p>
       </div>
 
       <div class="readme-section">

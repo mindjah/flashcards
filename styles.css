@@ -839,22 +839,24 @@ body {
 }
 
 /* In Practice, .card-face's backdrop-filter blurs a flat, solid --bg behind
-   it, which is what actually makes the glass read as opaque - not the
-   background gradient itself, which is almost fully transparent. Sitting
-   over the lighter modal-overlay here instead, the same card lets the busy
-   list/home screen show through and looks washed out. Layering an opaque
-   --surface-2 underneath the same glass gradient, just for this card,
-   fixes that without needing to darken the overlay itself. */
+   it, so there's no clutter for the glass to reveal. Sitting over the
+   lighter modal-overlay here instead, the same card lets the busy list/home
+   screen show through and looks washed out. A fully opaque backing behind
+   the glass gradient "fixed" that but blocked backdrop-filter entirely,
+   losing the shimmer - a translucent --surface-2 tint keeps enough of the
+   blur/saturate glass effect alive while still hiding the clutter, and the
+   gradient stops are boosted a bit so the diagonal sheen actually shows
+   up against it. */
 #card-preview-flashcard .card-face {
   background:
-    linear-gradient(155deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.02) 45%, rgba(255, 255, 255, 0.06)),
-    var(--surface-2);
+    linear-gradient(155deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.03) 45%, rgba(255, 255, 255, 0.1)),
+    rgba(52, 52, 64, 0.82);
 }
 
 #card-preview-flashcard .card-back {
   background:
-    linear-gradient(155deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04) 45%, rgba(255, 255, 255, 0.08)),
-    var(--surface-2);
+    linear-gradient(155deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05) 45%, rgba(255, 255, 255, 0.12)),
+    rgba(52, 52, 64, 0.82);
 }
 
 .card-edit-btn {

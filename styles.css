@@ -1363,37 +1363,38 @@ body {
   border-radius: 14px;
 }
 
-/* The row itself (.manage-item) is translucent glass, which would let the
-   actions panel bleed through if it just sat "behind" it at the same
-   position - instead both sit side by side in a flex row wider than the
-   visible wrapper, with the actions panel fully outside the clipped area
-   at rest, only entering view as the whole row slides left. Both the inner
-   flex row and the row itself get an explicit width (not just the default
-   block/flex auto-fill) so there's no ambiguity in how a percentage width
-   resolves against a flex container sized by its own (overflowing)
-   children - some engines don't fill that in the same way. */
-.manage-item-swipe-inner {
-  display: flex;
-  width: 100%;
+.manage-item-swipe > .manage-item {
+  position: relative;
   touch-action: pan-y;
 }
 
-.manage-item-swipe-inner > .manage-item {
-  flex: 1 0 auto;
-  width: 100%;
-  min-width: 0;
+/* The row (.manage-item) is translucent glass, so simply stacking the
+   actions panel "behind" it at rest let it bleed through - visibility
+   (not opacity/z-order, which glass transparency can undermine) is what
+   actually guarantees nothing is painted there until a swipe reveals it,
+   toggled in JS alongside the drag. Plain absolute positioning here too,
+   deliberately not a flex row sized by overflowing children - that
+   depends on how a percentage width resolves against a flex container
+   whose own size is determined by its own overflowing content, which
+   isn't handled consistently across engines. */
+.manage-item-swipe-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 152px;
+  display: flex;
+  visibility: hidden;
 }
 
-.manage-item-swipe-actions {
-  flex-shrink: 0;
-  display: flex;
-  width: 152px;
+.manage-item-swipe-actions.visible {
+  visibility: visible;
 }
 
 .manage-item-swipe-actions .manage-item-edit,
 .manage-item-swipe-actions .manage-item-delete {
   width: 76px;
-  height: auto;
+  height: 100%;
   border-radius: 0;
   border: none;
 }

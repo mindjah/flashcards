@@ -1424,9 +1424,6 @@
         var swipeWrap = document.createElement("div");
         swipeWrap.className = "manage-item-swipe";
 
-        var swipeInner = document.createElement("div");
-        swipeInner.className = "manage-item-swipe-inner";
-
         var actionsPanel = document.createElement("div");
         actionsPanel.className = "manage-item-swipe-actions";
 
@@ -1454,15 +1451,14 @@
         row.appendChild(text);
         row.classList.add("manage-item-linkable");
         row.addEventListener("click", function () {
-          if (swipeInner._suppressClick) { swipeInner._suppressClick = false; return; }
-          if (openManageSwipeRow === swipeInner) { closeManageSwipeRow(); return; }
+          if (row._suppressClick) { row._suppressClick = false; return; }
+          if (openManageSwipeRow === row) { closeManageSwipeRow(); return; }
           openCardPreview(c);
         });
 
-        swipeInner.appendChild(row);
-        swipeInner.appendChild(actionsPanel);
-        attachManageSwipe(swipeInner);
-        swipeWrap.appendChild(swipeInner);
+        swipeWrap.appendChild(actionsPanel);
+        swipeWrap.appendChild(row);
+        attachManageSwipe(row, actionsPanel);
         elementToAppend = swipeWrap;
       }
       list.appendChild(elementToAppend);
@@ -1480,12 +1476,22 @@
     if (openManageSwipeRow) {
       openManageSwipeRow.style.transition = "transform 0.25s ease";
       openManageSwipeRow.style.transform = "";
+      if (openManageSwipeRow._swipeActions) openManageSwipeRow._swipeActions.classList.remove("visible");
       openManageSwipeRow = null;
     }
   }
 
-  function attachManageSwipe(rowEl) {
+  // Plain absolute positioning, not a flex row sized by overflowing
+  // children - that overflow-based layout depended on how a browser
+  // resolves a percentage width against a flex container whose own size
+  // is determined by its (deliberately overflowing) children, which isn't
+  // handled consistently everywhere. Bleed-through of the actions panel
+  // through the row's translucent glass is instead prevented with an
+  // explicit visibility toggle - not opacity, not z-order, so nothing
+  // about the row's own transparency can ever let it show through.
+  function attachManageSwipe(rowEl, actionsEl) {
     var startX = 0, startY = 0, dx = 0, dragging = false, isSwipe = false, baseOffset = 0;
+    rowEl._swipeActions = actionsEl;
 
     rowEl.addEventListener("touchstart", function (e) {
       if (openManageSwipeRow && openManageSwipeRow !== rowEl) closeManageSwipeRow();
@@ -1500,7 +1506,10 @@
       var t = e.touches[0];
       dx = t.clientX - startX;
       var dy = t.clientY - startY;
-      if (!isSwipe && Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)) isSwipe = true;
+      if (!isSwipe && Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)) {
+        isSwipe = true;
+        actionsEl.classList.add("visible");
+      }
       if (isSwipe) {
         e.preventDefault();
         var next = Math.min(0, Math.max(-MANAGE_SWIPE_WIDTH, baseOffset + dx));
@@ -1519,6 +1528,7 @@
         openManageSwipeRow = rowEl;
       } else {
         rowEl.style.transform = "";
+        actionsEl.classList.remove("visible");
         if (openManageSwipeRow === rowEl) openManageSwipeRow = null;
       }
     }, { passive: true });

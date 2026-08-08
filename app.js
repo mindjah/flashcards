@@ -15,6 +15,21 @@
     return SECTION_COLORS[Math.floor(Math.random() * SECTION_COLORS.length)];
   }
 
+  // Liquid-glass deck tinting needs each deck's own color as an rgba()
+  // triplet (for the translucent background/glow), not just a flat hex
+  // border color - deckTintStyle feeds a per-element --tint-rgb custom
+  // property that the .deck-tinted CSS class reads.
+  function hexToRgbTriplet(hex) {
+    var m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    if (!m) return "255, 255, 255";
+    return parseInt(m[1], 16) + ", " + parseInt(m[2], 16) + ", " + parseInt(m[3], 16);
+  }
+
+  function applyDeckTint(el, hex) {
+    el.classList.add("deck-tinted");
+    el.style.setProperty("--tint-rgb", hexToRgbTriplet(hex));
+  }
+
   // ---------- storage ----------
   function defaultStreak() {
     return { current: 0, lastDate: null };
@@ -414,6 +429,36 @@
   document.getElementById("view-home").addEventListener("scroll", hideInfoPopup);
   document.getElementById("view-manage").addEventListener("scroll", hideInfoPopup);
 
+  // ---------- card preview modal (flip-able, same size/style as Practice) ----------
+  var cardPreviewModal = document.getElementById("card-preview-modal");
+  var cardPreviewFlashcard = document.getElementById("card-preview-flashcard");
+
+  function openCardPreview(c) {
+    cardPreviewFlashcard.classList.remove("flipped");
+    document.getElementById("card-preview-word").textContent = c.word;
+    document.getElementById("card-preview-translation").textContent = c.translation;
+    var noteEl = document.getElementById("card-preview-note");
+    if (c.notes) {
+      document.getElementById("card-preview-note-text").textContent = c.notes;
+      noteEl.classList.remove("hidden");
+    } else {
+      noteEl.classList.add("hidden");
+    }
+    cardPreviewModal.classList.remove("hidden");
+  }
+
+  function closeCardPreview() {
+    cardPreviewModal.classList.add("hidden");
+  }
+
+  cardPreviewFlashcard.addEventListener("click", function () {
+    cardPreviewFlashcard.classList.toggle("flipped");
+  });
+
+  cardPreviewModal.addEventListener("click", function (e) {
+    if (e.target === this) closeCardPreview();
+  });
+
   // "To learn"/"Total cards" (now shown on the Manage screen) and the
   // streak (now a compact header button) are global counts unrelated to
   // Manage's own search/filters, so they're refreshed from both here and
@@ -521,13 +566,7 @@
     item.appendChild(right);
 
     item.addEventListener("click", function () {
-      var text = "Translation: " + c.translation + (c.notes ? "\n📝 Note: " + c.notes : "");
-      showInfoPopup(item, text);
-      if (infoPopupAnchor === item) {
-        if (activeRevealIcon && activeRevealIcon !== revealIcon) setRevealIcon(activeRevealIcon, false);
-        setRevealIcon(revealIcon, true);
-        activeRevealIcon = revealIcon;
-      }
+      openCardPreview(c);
     });
 
     return item;
@@ -761,7 +800,7 @@
     sections.slice().sort(function (a, b) { return a.name.localeCompare(b.name); }).forEach(function (s) {
       var row = document.createElement("label");
       row.className = "deck-dropdown-row";
-      row.style.borderColor = s.color;
+      applyDeckTint(row, s.color);
 
       var checkbox = document.createElement("input");
       checkbox.type = "checkbox";
@@ -1130,8 +1169,7 @@
           var chip = document.createElement("span");
           chip.className = "chip chip-tag";
           chip.textContent = s.name;
-          chip.style.borderColor = s.color;
-          chip.style.color = "#fff";
+          applyDeckTint(chip, s.color);
           sectionsRow.appendChild(chip);
         });
         text.appendChild(sectionsRow);
@@ -1183,6 +1221,11 @@
 
         row.appendChild(text);
         row.appendChild(actions);
+        row.classList.add("manage-item-linkable");
+        row.addEventListener("click", function (e) {
+          if (e.target.closest(".manage-item-actions")) return;
+          openCardPreview(c);
+        });
       }
       list.appendChild(row);
     });
@@ -1256,7 +1299,7 @@
 
       var row = document.createElement("div");
       row.className = "manage-item manage-item-linkable";
-      row.style.borderColor = s.color;
+      applyDeckTint(row, s.color);
       row.addEventListener("click", function (e) {
         if (e.target.closest(".manage-item-actions")) return;
         openManageForSection(s.id);

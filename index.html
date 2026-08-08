@@ -44,7 +44,7 @@
             <span class="dropdown-item-hint">How practice, decks & mastery work</span>
           </button>
           <p class="dropdown-info">All data stays on this device. Import/export uses Anki's plain-text card format.</p>
-          <p class="app-version">v1.15.4</p>
+          <p class="app-version">v1.16.0</p>
         </div>
       </div>
     </header>
@@ -353,6 +353,24 @@
        would otherwise hide this along with it. -->
   <div class="stat-info-popup hidden" id="stat-info-popup">
     <p id="stat-info-text"></p>
+  </div>
+
+  <!-- ===== CARD PREVIEW MODAL ===== -->
+  <div class="modal-overlay hidden" id="card-preview-modal">
+    <div class="flashcard" id="card-preview-flashcard">
+      <div class="flashcard-inner">
+        <div class="card-face card-front">
+          <span id="card-preview-word" class="card-word"></span>
+        </div>
+        <div class="card-face card-back">
+          <span id="card-preview-translation" class="card-translation"></span>
+          <p class="card-note hidden" id="card-preview-note">
+            <span class="card-note-label">📝 Note:</span>
+            <span id="card-preview-note-text"></span>
+          </p>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- ===== NEW CARD DECK MODAL ===== -->

@@ -259,7 +259,7 @@
     Object.keys(views).forEach(function (k) {
       views[k].classList.toggle("hidden", k !== name);
     });
-    if (name === "home") celebrateStreakOnHomeLanding();
+    if (name === "home") { celebrateStreakOnHomeLanding(); pulsePracticeIcon(); }
     updateTabbar(name);
   }
 
@@ -424,6 +424,23 @@
     }
   }
 
+  // Draws the eye to Practice on every home landing - capped to once per
+  // 12s so rapid back-and-forth navigation (e.g. editing a card, backing
+  // out) doesn't replay it on every single arrival.
+  var PRACTICE_PULSE_COOLDOWN_MS = 12000;
+  var lastPracticePulseAt = 0;
+
+  function pulsePracticeIcon() {
+    if (Date.now() - lastPracticePulseAt < PRACTICE_PULSE_COOLDOWN_MS) return;
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    lastPracticePulseAt = Date.now();
+    var icon = document.getElementById("tab-practice-icon");
+    icon.classList.remove("pulsing");
+    void icon.offsetWidth; // force reflow so the animation restarts if triggered again after removal
+    icon.classList.add("pulsing");
+    setTimeout(function () { icon.classList.remove("pulsing"); }, 2000);
+  }
+
   document.addEventListener("click", function (e) {
     if (!document.getElementById("stat-info-popup").classList.contains("hidden") &&
         !e.target.closest("#stat-info-popup") &&
@@ -473,6 +490,8 @@
     document.getElementById("stat-due").textContent = dueCards().length;
     document.getElementById("stat-total").textContent = cards.length;
     document.getElementById("stat-streak").textContent = streak.current;
+    document.querySelector("#stat-card-streak .streak-icon")
+      .classList.toggle("streak-inactive", streak.lastDate !== todayStr());
   }
 
   function refreshHome() {
@@ -697,6 +716,7 @@
   // to hold the list at 10) each time a version ships with user-facing
   // changes worth calling out.
   var CHANGELOG = [
+    { version: "1.23.0", text: "The Practice tab icon now grows, glows yellow, and shakes for 2 seconds every time you land on the home screen, capped to once every 12 seconds. The streak flame also turns grey when you haven't practiced yet today, returning to full color once you have." },
     { version: "1.22.1", text: "Fixed a bug from the swipe-to-reveal change that deleted CSS Card decks still needed, making its rows resize/reflow badly. Also fixed Manage cards rows going invisible on some devices (visible only in Select mode) by making the swipe layout's widths explicit rather than relying on implicit flex sizing, and fixed + Add card wrapping onto two lines." },
     { version: "1.21.0", text: "Reworked the tab bar: swapped the Cards/Decks icons, renamed Manage to Cards, moved Practice to the center, and added a new Notes tab (a freeform notepad that exports/imports alongside your cards). Add card no longer has its own tab - use \"+ Add card\" in Manage cards instead, which also gained a Delete card option when editing. Added spacing above the Practice progress bar, and the finished-session screen is now a square card with a matching-width Back home button and no close button." },
     { version: "1.20.0", text: "Moved Practice off the home screen and into the tab bar as its own filled button, right next to Home - Card of the day now expands to fill the freed space. Also darkened the backdrop behind the card preview modal (Manage cards / home lists) so it reads as solid glass instead of looking washed out." },

@@ -172,7 +172,9 @@ body {
 
 .streak-btn:active { opacity: 0.7; }
 
-.streak-icon { font-size: 22px; }
+.streak-icon { font-size: 22px; transition: filter 0.3s ease, opacity 0.3s ease; }
+
+.streak-icon.streak-inactive { filter: grayscale(1); opacity: 0.45; }
 
 .streak-num { font-size: 15px; font-weight: 700; }
 
@@ -1828,6 +1830,31 @@ body {
 }
 
 .tab-btn svg { width: 24px; height: 24px; display: block; }
+
+@keyframes practice-icon-pulse {
+  0% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 0 rgba(241, 191, 0, 0)); }
+  8% { transform: scale(2) rotate(-14deg); filter: drop-shadow(0 0 8px rgba(241, 191, 0, 0.9)); }
+  16% { transform: scale(2) rotate(14deg); }
+  24% { transform: scale(2) rotate(-12deg); }
+  32% { transform: scale(2) rotate(12deg); }
+  40% { transform: scale(2) rotate(-9deg); }
+  48% { transform: scale(2) rotate(9deg); }
+  56% { transform: scale(2) rotate(-6deg); }
+  64% { transform: scale(2) rotate(6deg); }
+  72% { transform: scale(2) rotate(-3deg); }
+  80% { transform: scale(2) rotate(3deg); filter: drop-shadow(0 0 8px rgba(241, 191, 0, 0.9)); }
+  92% { transform: scale(1.2) rotate(0deg); filter: drop-shadow(0 0 4px rgba(241, 191, 0, 0.5)); }
+  100% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 0 rgba(241, 191, 0, 0)); }
+}
+
+#tab-practice-icon.pulsing {
+  transform-origin: center;
+  animation: practice-icon-pulse 2s ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #tab-practice-icon.pulsing { animation: none; }
+}
 
 .tab-btn .tab-label {
   font-size: 11px;

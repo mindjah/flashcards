@@ -673,6 +673,13 @@ body {
   font-size: 18px;
 }
 
+.add-card-actions {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
 .btn-gemini {
   display: flex;
   align-items: center;

@@ -716,6 +716,7 @@
   // to hold the list at 10) each time a version ships with user-facing
   // changes worth calling out.
   var CHANGELOG = [
+    { version: "1.24.2", text: "Match the words: a solved pair's tile now leaves an empty gap where it was instead of the remaining tiles growing to fill the space." },
     { version: "1.24.1", text: "Match the words: word tiles now fill the full height of the card with bigger gaps and bigger text, growing as pairs are solved. A matched pair now fades and shrinks away instead of sitting there highlighted green for the rest of the round." },
     { version: "1.24.0", text: "Added a new practice mode, Match the words - match 5 Spanish words to their translations at a time, in a two-column flip card; a wrong guess flashes red and repeats later like a normal miss, a clean first-try match won't come back this lesson. Card decks' Rename/Delete now swipe open the same way Manage cards does, with the card count moved to the row's right edge. The Practice mode picker is now a swipeable carousel instead of a wrapping grid, so new modes just add another card to swipe to." },
     { version: "1.23.0", text: "The Practice tab icon now grows, glows yellow, and shakes for 2 seconds every time you land on the home screen, capped to once every 12 seconds. The streak flame also turns grey when you haven't practiced yet today, returning to full color once you have." },
@@ -2256,13 +2257,12 @@
       el.classList.add("correct");
       pair.matched = true;
       matchSelected = null;
+      // Left in the flex layout (not display:none) so its slot stays
+      // reserved as empty space instead of the remaining tiles growing to
+      // fill the gap.
       setTimeout(function () {
         leftEl.classList.add("vanish");
         el.classList.add("vanish");
-        setTimeout(function () {
-          leftEl.style.display = "none";
-          el.style.display = "none";
-        }, MATCH_VANISH_MS);
       }, MATCH_FLASH_MS);
       if (matchBoards[face].every(function (p) { return p.matched; })) {
         setTimeout(function () { advanceMatchBatch(face); }, MATCH_FLASH_MS + MATCH_VANISH_MS + 50);

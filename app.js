@@ -1210,7 +1210,7 @@
     var deckTag = tagForSection(deckName.trim());
     return "Create a downloadable .txt file containing " + count + " Spanish vocabulary flashcards about the theme \"" + theme.trim() + "\". " +
       "For each one, include the Spanish word or phrase, its translation into " + language.trim() + ", " +
-      "and a note containing both how the word is pronounced and one example sentence showing how it's used, in " + language.trim() + ". " +
+      "and a note containing both how the word is pronounced and one example sentence in Spanish showing how it's used, and in brackets its translation in " + language.trim() + ". " +
       "Inside the file, put ONLY the raw data, one flashcard per line, as " + count + " lines total, with these fields " +
       "separated by a single TAB character (not spaces or commas): " +
       "Spanish word or phrase [TAB] translation in " + language.trim() + " [TAB] pronunciation and example sentence note [TAB] " + deckTag + ". " +

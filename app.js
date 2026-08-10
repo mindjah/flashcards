@@ -716,6 +716,7 @@
   // to hold the list at 10) each time a version ships with user-facing
   // changes worth calling out.
   var CHANGELOG = [
+    { version: "1.24.0", text: "Added a new practice mode, Match the words - match 5 Spanish words to their translations at a time, in a two-column flip card; a wrong guess flashes red and repeats later like a normal miss, a clean first-try match won't come back this lesson. Card decks' Rename/Delete now swipe open the same way Manage cards does, with the card count moved to the row's right edge. The Practice mode picker is now a swipeable carousel instead of a wrapping grid, so new modes just add another card to swipe to." },
     { version: "1.23.0", text: "The Practice tab icon now grows, glows yellow, and shakes for 2 seconds every time you land on the home screen, capped to once every 12 seconds. The streak flame also turns grey when you haven't practiced yet today, returning to full color once you have." },
     { version: "1.22.1", text: "Fixed a bug from the swipe-to-reveal change that deleted CSS Card decks still needed, making its rows resize/reflow badly. Also fixed Manage cards rows going invisible on some devices (visible only in Select mode) by making the swipe layout's widths explicit rather than relying on implicit flex sizing, and fixed + Add card wrapping onto two lines." },
     { version: "1.21.0", text: "Reworked the tab bar: swapped the Cards/Decks icons, renamed Manage to Cards, moved Practice to the center, and added a new Notes tab (a freeform notepad that exports/imports alongside your cards). Add card no longer has its own tab - use \"+ Add card\" in Manage cards instead, which also gained a Delete card option when editing. Added spacing above the Practice progress bar, and the finished-session screen is now a square card with a matching-width Back home button and no close button." },
@@ -1623,8 +1624,9 @@
       var row = document.createElement("div");
       row.className = "manage-item manage-item-linkable";
       applyDeckTint(row, s.color);
-      row.addEventListener("click", function (e) {
-        if (e.target.closest(".manage-item-actions")) return;
+      row.addEventListener("click", function () {
+        if (row._suppressClick) { row._suppressClick = false; return; }
+        if (openManageSwipeRow === row) { closeManageSwipeRow(); return; }
         openManageForSection(s.id);
       });
 
@@ -1634,16 +1636,17 @@
       var name = document.createElement("div");
       name.className = "manage-item-word";
       name.textContent = s.name;
+      text.appendChild(name);
 
       var meta = document.createElement("div");
-      meta.className = "manage-item-meta";
+      meta.className = "manage-item-count";
       meta.textContent = count + " card" + (count === 1 ? "" : "s");
 
-      text.appendChild(name);
-      text.appendChild(meta);
+      var swipeWrap = document.createElement("div");
+      swipeWrap.className = "manage-item-swipe";
 
-      var actions = document.createElement("div");
-      actions.className = "manage-item-actions";
+      var actionsPanel = document.createElement("div");
+      actionsPanel.className = "manage-item-swipe-actions";
 
       var rename = document.createElement("button");
       rename.className = "manage-item-edit";
@@ -1666,12 +1669,16 @@
         renderSectionsList();
       });
 
-      actions.appendChild(rename);
-      actions.appendChild(del);
+      actionsPanel.appendChild(rename);
+      actionsPanel.appendChild(del);
 
       row.appendChild(text);
-      row.appendChild(actions);
-      list.appendChild(row);
+      row.appendChild(meta);
+
+      swipeWrap.appendChild(actionsPanel);
+      swipeWrap.appendChild(row);
+      attachManageSwipe(row, actionsPanel);
+      list.appendChild(swipeWrap);
     });
   }
 
@@ -1813,8 +1820,13 @@
     session.failed = 0;
     session.allMode = !!allMode;
     session.mode = currentStudyMode;
+    document.getElementById("view-study").classList.toggle("match-mode", session.mode === "match");
     showView("study");
-    nextCard();
+    if (session.mode === "match") {
+      startMatchSession();
+    } else {
+      nextCard();
+    }
   }
 
   function shuffle(arr) {
@@ -1982,7 +1994,7 @@
   }
 
   document.getElementById("card").addEventListener("click", function () {
-    if (session.mode === "type") return;
+    if (session.mode === "type" || session.mode === "match") return;
     revealCard();
   });
 
@@ -2088,9 +2100,11 @@
     }
   }, { passive: true });
 
-  function answerCard(passed) {
-    var c = session.current;
-    if (!c) return;
+  // Shared by answerCard() (one card at a time) and Match the words'
+  // advanceMatchBatch() (up to 5 resolved at once, after the whole board is
+  // cleared) - same box/dueAt/requeue bookkeeping either way, just without
+  // the single-card mode's immediate nextCard() advance.
+  function resolveStudyCard(c, passed) {
     session.studied++;
     recordStudyActivity();
     c.reviewed = true;
@@ -2116,8 +2130,172 @@
         session.reviewQueue.push(c);
       }
     }
+  }
+
+  function answerCard(passed) {
+    var c = session.current;
+    if (!c) return;
+    resolveStudyCard(c, passed);
     saveData();
     nextCard();
+  }
+
+  // ---------- Match the words ----------
+  // Deals two boards at once, one per flashcard face - the inactive face is
+  // pre-populated with the *next* batch before the flip happens, so the
+  // flip reveals an already-ready board instead of a flash of stale/empty
+  // content. Which face is "live" is derived from the card's own .flipped
+  // class (front = not flipped) rather than tracked separately, so it can
+  // never drift out of sync with what's actually on screen.
+  var MATCH_BATCH_SIZE = 5;
+  var matchBoards = { front: [], back: [] };
+  var matchSelected = null;
+
+  function drawMatchCards(n) {
+    var out = [];
+    while (out.length < n) {
+      if (session.queue.length === 0) {
+        if (session.reviewQueue.length === 0) break;
+        session.queue = session.reviewQueue;
+        session.reviewQueue = [];
+        session.inReview = true;
+      }
+      out.push(session.queue.shift());
+    }
+    document.getElementById("study-review-label").classList.toggle("hidden", !session.inReview);
+    return out;
+  }
+
+  function toMatchPair(card) {
+    return { card: card, wrongAttempts: 0, matched: false };
+  }
+
+  function startMatchSession() {
+    matchBoards.front = drawMatchCards(MATCH_BATCH_SIZE).map(toMatchPair);
+    matchBoards.back = [];
+    matchSelected = null;
+
+    var cardEl = document.getElementById("card");
+    cardEl.classList.remove("flipped", "swipe-pass", "swipe-fail", "answer-correct", "answer-incorrect");
+    cardEl.style.transition = "";
+    cardEl.style.transform = "";
+    cardEl.style.opacity = "";
+
+    if (matchBoards.front.length === 0) {
+      finishStudy();
+      return;
+    }
+
+    renderMatchFace("front", matchBoards.front);
+    clearMatchFace("back");
+
+    var tapHintEl = document.getElementById("tap-hint");
+    tapHintEl.classList.remove("hidden");
+    tapHintEl.textContent = "Tap the words to match them.";
+
+    document.getElementById("study-answer-controls").classList.add("hidden");
+    document.getElementById("type-answer-bar").classList.add("hidden");
+
+    updateMatchProgress();
+  }
+
+  function clearMatchFace(face) {
+    document.getElementById("match-col-es-" + face).innerHTML = "";
+    document.getElementById("match-col-tr-" + face).innerHTML = "";
+  }
+
+  function renderMatchFace(face, pairs) {
+    var leftCol = document.getElementById("match-col-es-" + face);
+    var rightCol = document.getElementById("match-col-tr-" + face);
+    leftCol.innerHTML = "";
+    rightCol.innerHTML = "";
+
+    pairs.forEach(function (pair) {
+      var leftItem = document.createElement("button");
+      leftItem.type = "button";
+      leftItem.className = "match-item";
+      leftItem.textContent = pair.card.word;
+      leftItem.addEventListener("click", function () { onMatchTap(face, pair, leftItem, "left"); });
+      leftCol.appendChild(leftItem);
+    });
+
+    shuffle(pairs.slice()).forEach(function (pair) {
+      var rightItem = document.createElement("button");
+      rightItem.type = "button";
+      rightItem.className = "match-item";
+      rightItem.textContent = pair.card.translation;
+      rightItem.addEventListener("click", function () { onMatchTap(face, pair, rightItem, "right"); });
+      rightCol.appendChild(rightItem);
+    });
+  }
+
+  function onMatchTap(face, pair, el, side) {
+    var cardEl = document.getElementById("card");
+    var isBack = cardEl.classList.contains("flipped");
+    if ((face === "back") !== isBack) return;
+    if (pair.matched) return;
+    if (matchSelected && matchSelected.busy) return;
+
+    if (side === "left") {
+      if (matchSelected && matchSelected.el) matchSelected.el.classList.remove("selected");
+      matchSelected = { pair: pair, el: el, face: face };
+      el.classList.add("selected");
+      return;
+    }
+
+    if (!matchSelected || matchSelected.face !== face) return;
+    var leftPair = matchSelected.pair;
+    var leftEl = matchSelected.el;
+
+    if (leftPair === pair) {
+      leftEl.classList.remove("selected");
+      leftEl.classList.add("matched");
+      el.classList.add("matched");
+      pair.matched = true;
+      matchSelected = null;
+      if (matchBoards[face].every(function (p) { return p.matched; })) {
+        setTimeout(function () { advanceMatchBatch(face); }, 450);
+      }
+    } else {
+      matchSelected.busy = true;
+      leftPair.wrongAttempts++;
+      leftEl.classList.add("wrong");
+      el.classList.add("wrong");
+      setTimeout(function () {
+        leftEl.classList.remove("selected", "wrong");
+        el.classList.remove("wrong");
+        matchSelected = null;
+      }, 450);
+    }
+  }
+
+  function advanceMatchBatch(face) {
+    matchBoards[face].forEach(function (pair) {
+      resolveStudyCard(pair.card, pair.wrongAttempts === 0);
+    });
+    saveData();
+
+    var otherFace = face === "front" ? "back" : "front";
+    var nextCards = drawMatchCards(MATCH_BATCH_SIZE);
+    if (nextCards.length === 0) {
+      finishStudy();
+      return;
+    }
+    matchBoards[otherFace] = nextCards.map(toMatchPair);
+    renderMatchFace(otherFace, matchBoards[otherFace]);
+    document.getElementById("card").classList.toggle("flipped", face === "front");
+    updateMatchProgress();
+  }
+
+  function updateMatchProgress() {
+    var pendingBoards = matchBoards.front.filter(function (p) { return !p.matched; }).length +
+      matchBoards.back.filter(function (p) { return !p.matched; }).length;
+    var remaining = session.queue.length + session.reviewQueue.length + pendingBoards;
+    document.getElementById("study-progress").textContent =
+      session.passed + " done · " + remaining + " left";
+    var total = session.passed + remaining;
+    var pct = total > 0 ? (session.passed / total * 100) : 0;
+    document.getElementById("study-progress-fill").style.width = pct + "%";
   }
 
   function finishStudy() {

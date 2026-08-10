@@ -914,6 +914,90 @@ body {
   min-height: 20px;
 }
 
+/* ===== MATCH THE WORDS ===== */
+#view-study.match-mode .card-word,
+#view-study.match-mode .card-translation,
+#view-study.match-mode .card-note,
+#view-study.match-mode .card-your-answer,
+#view-study.match-mode .card-edit-btn {
+  display: none;
+}
+
+#view-study.match-mode #study-answer-controls,
+#view-study.match-mode #type-answer-bar,
+#view-study.match-mode #btn-study-translate {
+  display: none !important;
+}
+
+.match-board {
+  display: none;
+  width: 100%;
+  height: 100%;
+  gap: 10px;
+}
+
+#view-study.match-mode .match-board {
+  display: flex;
+}
+
+.match-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+}
+
+.match-item {
+  width: 100%;
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  box-shadow: var(--glass-highlight);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  text-align: center;
+  word-break: break-word;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.match-item.selected {
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.2),
+    inset 0 0 0 1px rgba(var(--accent-rgb), 0.6),
+    0 0 14px rgba(var(--accent-rgb), 0.25);
+}
+
+.match-item.correct,
+.match-item.matched {
+  background: rgba(var(--pass-rgb), 0.16);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.18),
+    inset 0 0 0 1px rgba(var(--pass-rgb), 0.4);
+}
+
+.match-item.wrong {
+  background: rgba(var(--fail-rgb), 0.16);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.18),
+    inset 0 0 0 1px rgba(var(--fail-rgb), 0.4);
+}
+
+.match-item.matched,
+.match-item.correct {
+  pointer-events: none;
+}
+
+.flashcard:not(.flipped) .card-back .match-item,
+.flashcard.flipped .card-front .match-item {
+  pointer-events: none;
+}
+
 .study-controls {
   display: flex;
   gap: 12px;
@@ -1349,14 +1433,11 @@ body {
   margin-top: 4px;
 }
 
-/* Card decks' Rename/Delete buttons still use this wrapper directly (no
-   swipe there) - keep it defined even though Manage cards' rows moved to
-   the swipe layout below. */
-.manage-item-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+.manage-item-count {
   flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dim);
 }
 
 /* #manage-list is a column flex container, and per spec giving a flex item
@@ -1659,10 +1740,23 @@ body {
   padding: 12px 16px 24px;
 }
 
+/* A horizontally-scrolling carousel rather than a wrapping grid, so a 4th
+   (and any future) mode doesn't just add a lopsided second row - buttons
+   are sized so part of the next one is deliberately left peeking off the
+   edge, signaling there's more to swipe to rather than looking like the
+   full set. */
 .mode-picker .chip-list {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
   gap: 10px;
+  padding-bottom: 2px;
+}
+
+.mode-picker .chip-list::-webkit-scrollbar {
+  display: none;
 }
 
 .mode-picker .chip {
@@ -1670,6 +1764,7 @@ body {
   align-items: center;
   justify-content: center;
   text-align: center;
+  flex: 0 0 136px;
   aspect-ratio: 1;
   height: auto;
   padding: 10px;
@@ -1678,6 +1773,7 @@ body {
   line-height: 1.25;
   white-space: normal;
   border-radius: 20px;
+  scroll-snap-align: start;
 }
 
 .section-picker-block {

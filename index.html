@@ -48,7 +48,7 @@
             <span class="dropdown-item-hint">Recent updates to the app</span>
           </button>
           <p class="dropdown-info">All data stays on this device. Import/export uses Anki's plain-text card format.</p>
-          <p class="app-version">v1.23.0</p>
+          <p class="app-version">v1.24.0</p>
         </div>
       </div>
     </header>
@@ -124,6 +124,7 @@
         <button type="button" class="chip" data-mode="normal">Flip Spanish card</button>
         <button type="button" class="chip" data-mode="reversed">Flip Translation card</button>
         <button type="button" class="chip" data-mode="type">Type the Spanish word</button>
+        <button type="button" class="chip" data-mode="match">Match the words</button>
       </div>
     </div>
 
@@ -163,6 +164,10 @@
         <div class="flashcard-inner">
           <div class="card-face card-front">
             <span id="card-word" class="card-word"></span>
+            <div class="match-board" id="match-board-front">
+              <div class="match-col" id="match-col-es-front"></div>
+              <div class="match-col" id="match-col-tr-front"></div>
+            </div>
           </div>
           <div class="card-face card-back">
             <button type="button" class="icon-btn card-edit-btn" id="btn-study-edit-card" title="Edit card">
@@ -177,6 +182,10 @@
               <span class="card-note-label">📝 Note:</span>
               <span id="card-note-text"></span>
             </p>
+            <div class="match-board" id="match-board-back">
+              <div class="match-col" id="match-col-es-back"></div>
+              <div class="match-col" id="match-col-tr-back"></div>
+            </div>
           </div>
         </div>
       </div>

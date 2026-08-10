@@ -929,11 +929,15 @@ body {
   display: none !important;
 }
 
+#view-study.match-mode .card-face {
+  padding: 16px;
+}
+
 .match-board {
   display: none;
   width: 100%;
   height: 100%;
-  gap: 10px;
+  gap: 8px;
 }
 
 #view-study.match-mode .match-board {
@@ -943,27 +947,38 @@ body {
 .match-col {
   flex: 1;
   min-width: 0;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 8px;
+  gap: 14px;
 }
 
 .match-item {
   width: 100%;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: var(--glass-bg);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
   backdrop-filter: blur(20px) saturate(160%);
   box-shadow: var(--glass-highlight);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 10px 8px;
-  font-size: 14px;
+  padding: 8px 10px;
+  font-size: 17px;
   font-weight: 600;
   color: var(--text);
   text-align: center;
   word-break: break-word;
-  transition: background 0.15s ease, box-shadow 0.15s ease;
+  transition: background 0.15s ease, box-shadow 0.15s ease, opacity 0.3s ease, transform 0.3s ease;
+}
+
+.match-item.vanish {
+  opacity: 0;
+  transform: scale(0.85);
+  pointer-events: none;
 }
 
 .match-item.selected {
@@ -973,12 +988,12 @@ body {
     0 0 14px rgba(var(--accent-rgb), 0.25);
 }
 
-.match-item.correct,
-.match-item.matched {
+.match-item.correct {
   background: rgba(var(--pass-rgb), 0.16);
   box-shadow:
     inset 0 1px 1px rgba(255, 255, 255, 0.18),
     inset 0 0 0 1px rgba(var(--pass-rgb), 0.4);
+  pointer-events: none;
 }
 
 .match-item.wrong {
@@ -986,11 +1001,6 @@ body {
   box-shadow:
     inset 0 1px 1px rgba(255, 255, 255, 0.18),
     inset 0 0 0 1px rgba(var(--fail-rgb), 0.4);
-}
-
-.match-item.matched,
-.match-item.correct {
-  pointer-events: none;
 }
 
 .flashcard:not(.flipped) .card-back .match-item,

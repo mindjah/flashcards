@@ -48,7 +48,7 @@
             <span class="dropdown-item-hint">Recent updates to the app</span>
           </button>
           <p class="dropdown-info">All data stays on this device. Import/export uses Anki's plain-text card format.</p>
-          <p class="app-version">v1.24.2</p>
+          <p class="app-version">v1.25.0</p>
         </div>
       </div>
     </header>
@@ -421,12 +421,12 @@
 
       <div class="readme-section">
         <h3>Notes</h3>
-        <p>The Notes tab is a single freeform notepad - anything typed there saves automatically and travels with Export/Import alongside your cards and streak, so it survives moving to a new device.</p>
+        <p>The Notes tab holds any number of freeform notes, shown as a grid of cards. Tap + to add one, tap a note to open and edit it - it saves automatically - and use Delete in its top-right corner to remove it. Notes travel with Export/Import alongside your cards and streak, so they survive moving to a new device.</p>
       </div>
 
       <div class="readme-section">
         <h3>Export / Import</h3>
-        <p>Export saves a plain-text file in Anki's tab-separated note format (word, translation, notes, deck tags, box, due date, reviewed), so it opens directly in Anki too. Deck memberships are stored as <code>deck::Name</code> tags - a card in several decks gets several tags. Your streak and notepad are saved in header comment lines.</p>
+        <p>Export saves a plain-text file in Anki's tab-separated note format (word, translation, notes, deck tags, box, due date, reviewed), so it opens directly in Anki too. Deck memberships are stored as <code>deck::Name</code> tags - a card in several decks gets several tags. Your streak and notes are saved in header comment lines.</p>
         <p>Import reads that same format (older JSON exports still work too). Matching is by word + translation, case-insensitive: a duplicate isn't re-added, but any new deck tags on it are merged in. Missing decks mentioned in tags are created automatically. If it's been a week since your last export, the app will offer to back up on launch. A streak saved in the file is only adopted if your current streak is 0, and an imported notepad only if yours is currently empty - so importing cards never overwrites progress you're already building on this device.</p>
       </div>
     </div>
@@ -443,12 +443,26 @@
     <div class="readme-content" id="changelog-content"></div>
   </section>
 
-  <!-- ===== NOTES VIEW ===== -->
+  <!-- ===== NOTES LIST VIEW ===== -->
+  <section id="view-notes-list" class="view hidden">
+    <header class="topbar">
+      <button class="icon-btn" id="btn-notes-list-back">✕</button>
+      <h2>Notes</h2>
+      <button type="button" class="icon-btn icon-btn-plain" id="btn-notes-add" title="Add note">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+      </button>
+    </header>
+
+    <div id="notes-grid" class="notes-grid"></div>
+    <div class="manage-empty hidden" id="notes-empty">No notes yet. Tap + to add one.</div>
+  </section>
+
+  <!-- ===== NOTE EDITOR VIEW ===== -->
   <section id="view-notes" class="view hidden">
     <header class="topbar">
       <button class="icon-btn" id="btn-notes-back">✕</button>
-      <h2>Notes</h2>
-      <span class="spacer"></span>
+      <h2>Note</h2>
+      <button type="button" class="text-action-btn text-action-btn-danger" id="btn-note-delete">Delete</button>
     </header>
 
     <textarea id="notes-textarea" class="notes-textarea" placeholder="Write anything..."></textarea>

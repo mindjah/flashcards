@@ -35,10 +35,30 @@
     return { current: 0, lastDate: null };
   }
 
+  // A single free-text note, as shown in the Notes tab's grid of cards.
+  function normalizeNotesList(rawNotes, legacyNotepad) {
+    if (Array.isArray(rawNotes)) {
+      return rawNotes
+        .filter(function (n) { return n && typeof n.text === "string"; })
+        .map(function (n) {
+          return {
+            id: typeof n.id === "string" ? n.id : uid(),
+            text: n.text,
+            updatedAt: typeof n.updatedAt === "number" ? n.updatedAt : Date.now()
+          };
+        });
+    }
+    // Pre-multi-note format: a single freeform string becomes one note.
+    if (typeof legacyNotepad === "string" && legacyNotepad) {
+      return [{ id: uid(), text: legacyNotepad, updatedAt: Date.now() }];
+    }
+    return [];
+  }
+
   function loadData() {
     try {
       var raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return { cards: [], sections: [], streak: defaultStreak(), lastExportAt: null, lastStudyPrefs: null, notepad: "" };
+      if (!raw) return { cards: [], sections: [], streak: defaultStreak(), lastExportAt: null, lastStudyPrefs: null, notes: [] };
       var parsed = JSON.parse(raw);
       // migrate from the old format where the key held a bare cards array
       if (Array.isArray(parsed)) {
@@ -47,7 +67,7 @@
           if (typeof c.reviewed !== "boolean") c.reviewed = c.box > 0;
           if (c.box <= 0 && c.dueAt > Date.now()) c.dueAt = Date.now();
         });
-        return { cards: parsed, sections: [], streak: defaultStreak(), lastExportAt: null, lastStudyPrefs: null, notepad: "" };
+        return { cards: parsed, sections: [], streak: defaultStreak(), lastExportAt: null, lastStudyPrefs: null, notes: [] };
       }
       var loadedCards = Array.isArray(parsed.cards) ? parsed.cards : [];
       loadedCards.forEach(function (c) {
@@ -71,11 +91,11 @@
         streak: loadedStreak,
         lastExportAt: typeof parsed.lastExportAt === "number" ? parsed.lastExportAt : null,
         lastStudyPrefs: parsed.lastStudyPrefs && typeof parsed.lastStudyPrefs === "object" ? parsed.lastStudyPrefs : null,
-        notepad: typeof parsed.notepad === "string" ? parsed.notepad : ""
+        notes: normalizeNotesList(parsed.notes, parsed.notepad)
       };
     } catch (e) {
       console.error("Failed to load data", e);
-      return { cards: [], sections: [], streak: defaultStreak(), lastExportAt: null, lastStudyPrefs: null, notepad: "" };
+      return { cards: [], sections: [], streak: defaultStreak(), lastExportAt: null, lastStudyPrefs: null, notes: [] };
     }
   }
 
@@ -86,7 +106,7 @@
       streak: streak,
       lastExportAt: lastExportAt,
       lastStudyPrefs: lastStudyPrefs,
-      notepad: notepadText
+      notes: notesList
     }));
   }
 
@@ -96,7 +116,8 @@
   var streak = initialData.streak;
   var lastExportAt = initialData.lastExportAt;
   var lastStudyPrefs = initialData.lastStudyPrefs;
-  var notepadText = initialData.notepad;
+  var notesList = initialData.notes;
+  var currentEditingNote = null;
 
   function uid() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
@@ -250,7 +271,8 @@
     readme: document.getElementById("view-readme"),
     changelog: document.getElementById("view-changelog"),
     gemini: document.getElementById("view-gemini"),
-    notes: document.getElementById("view-notes")
+    notes: document.getElementById("view-notes-list"),
+    noteEditor: document.getElementById("view-notes")
   };
 
   var TABBAR_VIEWS = { home: true, manage: true, sections: true, notes: true };
@@ -716,6 +738,7 @@
   // to hold the list at 10) each time a version ships with user-facing
   // changes worth calling out.
   var CHANGELOG = [
+    { version: "1.25.0", text: "Notes is now a grid of card-style notes instead of one big notepad - tap + to add one, tap a note to open and edit it full-screen, and use Delete in its top-right corner to remove it; a blank note is discarded automatically. Match the words no longer affects a card's due date, box, or reviewed status - it's just a quick warm-up and never counts as \"learnt\" (or missed) the way the other practice modes do." },
     { version: "1.24.2", text: "Match the words: a solved pair's tile now leaves an empty gap where it was instead of the remaining tiles growing to fill the space." },
     { version: "1.24.1", text: "Match the words: word tiles now fill the full height of the card with bigger gaps and bigger text, growing as pairs are solved. A matched pair now fades and shrinks away instead of sitting there highlighted green for the rest of the round." },
     { version: "1.24.0", text: "Added a new practice mode, Match the words - match 5 Spanish words to their translations at a time, in a two-column flip card; a wrong guess flashes red and repeats later like a normal miss, a clean first-try match won't come back this lesson. Card decks' Rename/Delete now swipe open the same way Manage cards does, with the card count moved to the row's right edge. The Practice mode picker is now a swipeable carousel instead of a wrapping grid, so new modes just add another card to swipe to." },
@@ -759,17 +782,80 @@
   });
 
   // ---------- notes ----------
+  function renderNotesList() {
+    var grid = document.getElementById("notes-grid");
+    grid.innerHTML = "";
+    document.getElementById("notes-empty").classList.toggle("hidden", notesList.length > 0);
+
+    notesList.slice().sort(function (a, b) { return b.updatedAt - a.updatedAt; }).forEach(function (note) {
+      var card = document.createElement("button");
+      card.type = "button";
+      card.className = "note-card";
+
+      var preview = document.createElement("div");
+      var text = (note.text || "").trim();
+      preview.className = "note-card-preview" + (text ? "" : " note-card-empty");
+      preview.textContent = text || "Empty note";
+      card.appendChild(preview);
+
+      card.addEventListener("click", function () { openNoteEditor(note); });
+      grid.appendChild(card);
+    });
+  }
+
   function openNotesView() {
-    document.getElementById("notes-textarea").value = notepadText;
+    renderNotesList();
     showView("notes");
   }
 
+  function openNoteEditor(note) {
+    currentEditingNote = note;
+    document.getElementById("notes-textarea").value = note.text || "";
+    showView("noteEditor");
+  }
+
+  document.getElementById("btn-notes-add").addEventListener("click", function () {
+    var note = { id: uid(), text: "", updatedAt: Date.now() };
+    notesList.push(note);
+    openNoteEditor(note);
+  });
+
   document.getElementById("notes-textarea").addEventListener("input", function () {
-    notepadText = this.value;
+    if (!currentEditingNote) return;
+    currentEditingNote.text = this.value;
+    currentEditingNote.updatedAt = Date.now();
     saveData();
   });
 
-  document.getElementById("btn-notes-back").addEventListener("click", function () {
+  // A new (or emptied-out) note left blank on the way out is discarded
+  // rather than left cluttering the grid as an "Empty note" card.
+  function finishEditingNote() {
+    if (currentEditingNote) {
+      if (!(currentEditingNote.text || "").trim()) {
+        var idx = notesList.indexOf(currentEditingNote);
+        if (idx !== -1) notesList.splice(idx, 1);
+      }
+      saveData();
+      currentEditingNote = null;
+    }
+    renderNotesList();
+    showView("notes");
+  }
+
+  document.getElementById("btn-notes-back").addEventListener("click", finishEditingNote);
+
+  document.getElementById("btn-note-delete").addEventListener("click", function () {
+    if (!currentEditingNote) return;
+    if (!confirm("Delete this note?")) return;
+    var idx = notesList.indexOf(currentEditingNote);
+    if (idx !== -1) notesList.splice(idx, 1);
+    currentEditingNote = null;
+    saveData();
+    renderNotesList();
+    showView("notes");
+  });
+
+  document.getElementById("btn-notes-list-back").addEventListener("click", function () {
     refreshHome();
     showView("home");
   });
@@ -2109,16 +2195,26 @@
   function resolveStudyCard(c, passed) {
     session.studied++;
     recordStudyActivity();
-    c.reviewed = true;
+
+    // Match the words is a lightweight warm-up, not a real recall test -
+    // it draws from the same due cards but must never touch their box/
+    // dueAt/reviewed state, so it can't mark a word "learnt" (or "missed")
+    // in the spaced-repetition schedule the other modes maintain.
+    var affectsSchedule = session.mode !== "match";
+    if (affectsSchedule) c.reviewed = true;
 
     if (passed) {
       session.passed++;
-      c.box = Math.min(c.box + 1, MAX_BOX);
-      c.dueAt = Date.now() + BOX_INTERVALS_DAYS[c.box] * 86400000;
+      if (affectsSchedule) {
+        c.box = Math.min(c.box + 1, MAX_BOX);
+        c.dueAt = Date.now() + BOX_INTERVALS_DAYS[c.box] * 86400000;
+      }
     } else {
       session.failed++;
-      c.box = 0;
-      c.dueAt = Date.now();
+      if (affectsSchedule) {
+        c.box = 0;
+        c.dueAt = Date.now();
+      }
       var fails = (session.failCounts[c.id] || 0) + 1;
       session.failCounts[c.id] = fails;
       if (fails === 1) {
@@ -2390,7 +2486,7 @@
       "#tags column:4",
       "#streak-current:" + streak.current,
       "#streak-last-date:" + (streak.lastDate || ""),
-      "#notepad:" + encodeURIComponent(notepadText || "")
+      "#notes:" + encodeURIComponent(JSON.stringify(notesList))
     ];
 
     cards.forEach(function (c) {
@@ -2431,7 +2527,7 @@
   function parseAnkiTsv(text) {
     var items = [];
     var importedStreak = null;
-    var importedNotepad = null;
+    var importedNotes = null;
 
     text.split(/\r?\n/).forEach(function (line) {
       if (!line) return;
@@ -2442,8 +2538,17 @@
         } else if (line.indexOf("#streak-last-date:") === 0) {
           importedStreak = importedStreak || {};
           importedStreak.lastDate = line.slice("#streak-last-date:".length).trim() || null;
+        } else if (line.indexOf("#notes:") === 0) {
+          try {
+            var decodedNotes = JSON.parse(decodeURIComponent(line.slice("#notes:".length)));
+            importedNotes = normalizeNotesList(decodedNotes, null);
+          } catch (e) {}
         } else if (line.indexOf("#notepad:") === 0) {
-          try { importedNotepad = decodeURIComponent(line.slice("#notepad:".length)); } catch (e) {}
+          // Pre-multi-note export format - a single freeform string.
+          try {
+            var decodedNotepad = decodeURIComponent(line.slice("#notepad:".length));
+            importedNotes = normalizeNotesList(null, decodedNotepad);
+          } catch (e) {}
         }
         return;
       }
@@ -2479,7 +2584,7 @@
       items.push(item);
     });
 
-    return { items: items, streak: importedStreak, notepad: importedNotepad };
+    return { items: items, streak: importedStreak, notes: importedNotes };
   }
 
   // still accepted for backwards compatibility with files exported before this format changed
@@ -2523,11 +2628,11 @@
           streak = { current: parsed.streak.current || 0, lastDate: parsed.streak.lastDate || null };
         }
 
-        // Same caution as the streak above - only adopt an imported notepad
-        // when there's nothing written locally yet, so it can't clobber
+        // Same caution as the streak above - only adopt imported notes
+        // when there are none written locally yet, so it can't clobber
         // notes already in progress on this device.
-        if (parsed.notepad && !notepadText) {
-          notepadText = parsed.notepad;
+        if (parsed.notes && parsed.notes.length && !notesList.length) {
+          notesList = parsed.notes;
         }
 
         var existingByKey = {};

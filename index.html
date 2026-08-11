@@ -48,7 +48,7 @@
             <span class="dropdown-item-hint">Recent updates to the app</span>
           </button>
           <p class="dropdown-info">All data stays on this device. Import/export uses Anki's plain-text card format.</p>
-          <p class="app-version">v1.25.2</p>
+          <p class="app-version">v1.26.0</p>
         </div>
       </div>
     </header>
@@ -121,10 +121,43 @@
     <div class="field-block mode-picker">
       <span class="field-label">Practice mode</span>
       <div class="chip-list" id="mode-picker">
-        <button type="button" class="chip" data-mode="normal">Flip Spanish card</button>
-        <button type="button" class="chip" data-mode="reversed">Flip Translation card</button>
-        <button type="button" class="chip" data-mode="type">Type the Spanish word</button>
-        <button type="button" class="chip" data-mode="match">Match the words</button>
+        <button type="button" class="chip" data-mode="normal">
+          <svg class="chip-icon" viewBox="0 0 24 24" fill="currentColor">
+            <rect x="7" y="2" width="14" height="18" rx="3" opacity="0.35"/>
+            <rect x="3" y="6" width="14" height="18" rx="3"/>
+          </svg>
+          <span>Flip Spanish card</span>
+        </button>
+        <button type="button" class="chip" data-mode="reversed">
+          <svg class="chip-icon" viewBox="0 0 24 24" fill="currentColor">
+            <rect x="3" y="2" width="14" height="18" rx="3" opacity="0.35"/>
+            <rect x="7" y="6" width="14" height="18" rx="3"/>
+          </svg>
+          <span>Flip Translation card</span>
+        </button>
+        <button type="button" class="chip" data-mode="type">
+          <svg class="chip-icon" viewBox="0 0 24 24" fill="currentColor">
+            <mask id="mode-icon-keyboard-mask">
+              <rect x="0" y="0" width="24" height="24" fill="white"/>
+              <rect x="4" y="8" width="2.6" height="2.6" fill="black"/>
+              <rect x="8" y="8" width="2.6" height="2.6" fill="black"/>
+              <rect x="12" y="8" width="2.6" height="2.6" fill="black"/>
+              <rect x="16" y="8" width="2.6" height="2.6" fill="black"/>
+              <rect x="7" y="13" width="10" height="2.6" fill="black"/>
+            </mask>
+            <rect x="2" y="5" width="20" height="14" rx="2" mask="url(#mode-icon-keyboard-mask)"/>
+          </svg>
+          <span>Type the Spanish word</span>
+        </button>
+        <button type="button" class="chip" data-mode="match">
+          <svg class="chip-icon" viewBox="0 0 24 24" fill="currentColor">
+            <rect x="3" y="7" width="13" height="2.4"/>
+            <polygon points="16,4.5 16,11.5 21,8"/>
+            <rect x="8" y="14.5" width="13" height="2.4"/>
+            <polygon points="8,12 8,19 3,15.5"/>
+          </svg>
+          <span>Match the words</span>
+        </button>
       </div>
       <div class="mode-picker-track" id="mode-picker-track">
         <div class="mode-picker-thumb" id="mode-picker-thumb"></div>

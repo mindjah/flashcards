@@ -1774,8 +1774,14 @@ body {
   color: var(--text);
 }
 
-.chip-list-inline {
-  margin-top: 4px;
+/* Floated (not just positioned) so the word/translation text - the
+   normal block content that follows it in the markup - reflows around
+   it instead of running underneath, wrapping onto another line before
+   it would otherwise overlap. */
+.manage-item-decks {
+  float: right;
+  max-width: 60%;
+  margin: 0 0 4px 8px;
 }
 
 .chip-tag {
@@ -1792,7 +1798,7 @@ body {
 }
 
 .mode-picker {
-  padding: 12px 16px 24px;
+  padding: 12px 16px 14px;
 }
 
 /* A horizontally-scrolling carousel rather than a wrapping grid, so a 4th
@@ -1807,10 +1813,11 @@ body {
   -webkit-overflow-scrolling: touch;
   scroll-snap-type: x proximity;
   gap: 10px;
-  /* Room above/below so the active chip's 10% scale-up (~7px each side)
-     never gets clipped by this scroll container or collides with the
-     "Practice mode" label above / position bar below. */
-  padding: 10px 0;
+  /* Room on every side so the active chip's 10% scale-up (~7px each side)
+     never gets clipped by this scroll container - including the first/
+     last chip against the container's own left/right edge - or collides
+     with the "Practice mode" label above / position bar below. */
+  padding: 10px 8px;
 }
 
 .mode-picker .chip-list::-webkit-scrollbar {
@@ -1819,14 +1826,16 @@ body {
 
 .mode-picker .chip {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
+  gap: 8px;
   flex: 0 0 136px;
   aspect-ratio: 1;
   height: auto;
   padding: 10px;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 700;
   line-height: 1.25;
   white-space: normal;
@@ -1839,13 +1848,19 @@ body {
   transform: scale(1.1);
 }
 
+.mode-picker .chip-icon {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+}
+
 /* A continuous scroll-position bar rather than one-dot-per-item, so it
    keeps making sense regardless of how many modes there are. */
 .mode-picker-track {
   position: relative;
-  width: 28%;
+  width: 20%;
   height: 4px;
-  margin: 2px auto 0;
+  margin: 12px auto 0;
   border-radius: 2px;
   background: var(--border);
   overflow: hidden;

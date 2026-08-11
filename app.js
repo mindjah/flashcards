@@ -738,6 +738,7 @@
   // to hold the list at 10) each time a version ships with user-facing
   // changes worth calling out.
   var CHANGELOG = [
+    { version: "1.26.0", text: "Practice mode cards now have their own Material-style icon above the label, fixed so the selected card's 10% scale-up never gets clipped by the screen edge, and the position bar underneath is now a smaller, lower, centered bar. In Manage cards, deck tags moved to the card's upper-right corner - a long word now wraps to a new line rather than running under the tag." },
     { version: "1.25.2", text: "The selected practice mode card now grows 10% with a smooth animation, and the position bar under the mode carousel is now a small centered bar instead of spanning the full width." },
     { version: "1.25.1", text: "Practice setup now scrolls its mode carousel to whichever mode you last used when the screen opens, with a position bar underneath tracking the scroll instead of dots. Card decks in the deck picker now show a small colored bookmark on the right matching each deck's own color." },
     { version: "1.25.0", text: "Notes is now a grid of card-style notes instead of one big notepad - tap + to add one, tap a note to open and edit it full-screen, and use Delete in its top-right corner to remove it; a blank note is discarded automatically. Match the words no longer affects a card's due date, box, or reviewed status - it's just a quick warm-up and never counts as \"learnt\" (or missed) the way the other practice modes do." },
@@ -1478,6 +1479,23 @@
       var text = document.createElement("div");
       text.className = "manage-item-text";
 
+      // Floated and placed before the word/translation in the markup, so
+      // a long word's text wraps around it (onto a second line) instead
+      // of running underneath it in the card's upper-right corner.
+      var deckRefs = sectionRefs(c);
+      if (deckRefs.length > 0) {
+        var sectionsRow = document.createElement("div");
+        sectionsRow.className = "chip-list manage-item-decks";
+        deckRefs.forEach(function (s) {
+          var chip = document.createElement("span");
+          chip.className = "chip chip-tag";
+          chip.textContent = s.name;
+          applyDeckTint(chip, s.color);
+          sectionsRow.appendChild(chip);
+        });
+        text.appendChild(sectionsRow);
+      }
+
       var word = document.createElement("div");
       word.className = "manage-item-word";
       word.textContent = c.word;
@@ -1494,20 +1512,6 @@
         notes.className = "manage-item-meta";
         notes.textContent = c.notes;
         text.appendChild(notes);
-      }
-
-      var deckRefs = sectionRefs(c);
-      if (deckRefs.length > 0) {
-        var sectionsRow = document.createElement("div");
-        sectionsRow.className = "chip-list chip-list-inline";
-        deckRefs.forEach(function (s) {
-          var chip = document.createElement("span");
-          chip.className = "chip chip-tag";
-          chip.textContent = s.name;
-          applyDeckTint(chip, s.color);
-          sectionsRow.appendChild(chip);
-        });
-        text.appendChild(sectionsRow);
       }
 
       var meta = document.createElement("div");

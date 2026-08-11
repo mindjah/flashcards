@@ -738,6 +738,8 @@
   // to hold the list at 10) each time a version ships with user-facing
   // changes worth calling out.
   var CHANGELOG = [
+    { version: "1.25.2", text: "The selected practice mode card now grows 10% with a smooth animation, and the position bar under the mode carousel is now a small centered bar instead of spanning the full width." },
+    { version: "1.25.1", text: "Practice setup now scrolls its mode carousel to whichever mode you last used when the screen opens, with a position bar underneath tracking the scroll instead of dots. Card decks in the deck picker now show a small colored bookmark on the right matching each deck's own color." },
     { version: "1.25.0", text: "Notes is now a grid of card-style notes instead of one big notepad - tap + to add one, tap a note to open and edit it full-screen, and use Delete in its top-right corner to remove it; a blank note is discarded automatically. Match the words no longer affects a card's due date, box, or reviewed status - it's just a quick warm-up and never counts as \"learnt\" (or missed) the way the other practice modes do." },
     { version: "1.24.2", text: "Match the words: a solved pair's tile now leaves an empty gap where it was instead of the remaining tiles growing to fill the space." },
     { version: "1.24.1", text: "Match the words: word tiles now fill the full height of the card with bigger gaps and bigger text, growing as pairs are solved. A matched pair now fades and shrinks away instead of sitting there highlighted green for the rest of the round." },
@@ -1790,6 +1792,28 @@
     });
   }
 
+  // Keeps the position bar under the mode carousel in sync with however
+  // far the user has scrolled it - a continuous bar rather than one dot
+  // per mode, so it doesn't need to change shape as modes are added.
+  function updateModePickerTrack() {
+    var track = document.getElementById("mode-picker");
+    var thumb = document.getElementById("mode-picker-thumb");
+    var scrollWidth = track.scrollWidth;
+    var clientWidth = track.clientWidth;
+    if (scrollWidth <= clientWidth) {
+      thumb.style.width = "100%";
+      thumb.style.left = "0%";
+      return;
+    }
+    var widthPct = (clientWidth / scrollWidth) * 100;
+    var maxScroll = scrollWidth - clientWidth;
+    var leftPct = (track.scrollLeft / maxScroll) * (100 - widthPct);
+    thumb.style.width = widthPct + "%";
+    thumb.style.left = leftPct + "%";
+  }
+
+  document.getElementById("mode-picker").addEventListener("scroll", updateModePickerTrack);
+
   document.querySelectorAll("#mode-picker .chip").forEach(function (btn) {
     btn.addEventListener("click", function () {
       currentStudyMode = btn.dataset.mode;
@@ -1800,6 +1824,15 @@
   function renderStudySetup() {
     renderModePicker();
 
+    // The carousel and its position bar can only be measured/scrolled
+    // correctly once the view is actually visible (showView runs right
+    // after this), so this part waits a frame.
+    requestAnimationFrame(function () {
+      var active = document.querySelector("#mode-picker .chip.active");
+      if (active) active.scrollIntoView({ block: "nearest", inline: "center" });
+      updateModePickerTrack();
+    });
+
     var prefSectionIds = lastStudyPrefs ? lastStudyPrefs.sectionIds : null;
     var prefIncludeUnsectioned = lastStudyPrefs ? lastStudyPrefs.includeUnsectioned : true;
 
@@ -1809,7 +1842,7 @@
     sections.slice().sort(function (a, b) { return a.name.localeCompare(b.name); }).forEach(function (s) {
       var count = cards.filter(function (c) { return c.sectionIds.indexOf(s.id) !== -1; }).length;
       var checked = prefSectionIds ? prefSectionIds.indexOf(s.id) !== -1 : true;
-      list.appendChild(buildSectionPickerRow(s.id, s.name, count, checked));
+      list.appendChild(buildSectionPickerRow(s.id, s.name, count, checked, s.color));
     });
 
     var unsectionedCount = cards.filter(function (c) { return c.sectionIds.length === 0; }).length;
@@ -1818,7 +1851,7 @@
     updateStudyStartState();
   }
 
-  function buildSectionPickerRow(value, label, count, checked) {
+  function buildSectionPickerRow(value, label, count, checked, color) {
     var row = document.createElement("label");
     row.className = "section-picker-row";
 
@@ -1828,10 +1861,19 @@
     checkbox.checked = checked;
 
     var text = document.createElement("span");
+    text.className = "section-picker-row-label";
     text.textContent = label + " (" + count + ")";
 
     row.appendChild(checkbox);
     row.appendChild(text);
+
+    if (color) {
+      var bookmark = document.createElement("span");
+      bookmark.className = "deck-bookmark";
+      bookmark.style.background = color;
+      row.appendChild(bookmark);
+    }
+
     return row;
   }
 

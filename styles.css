@@ -1807,7 +1807,10 @@ body {
   -webkit-overflow-scrolling: touch;
   scroll-snap-type: x proximity;
   gap: 10px;
-  padding-bottom: 2px;
+  /* Room above/below so the active chip's 10% scale-up (~7px each side)
+     never gets clipped by this scroll container or collides with the
+     "Practice mode" label above / position bar below. */
+  padding: 10px 0;
 }
 
 .mode-picker .chip-list::-webkit-scrollbar {
@@ -1829,6 +1832,33 @@ body {
   white-space: normal;
   border-radius: 20px;
   scroll-snap-align: start;
+  transition: transform 0.2s ease;
+}
+
+.mode-picker .chip.active {
+  transform: scale(1.1);
+}
+
+/* A continuous scroll-position bar rather than one-dot-per-item, so it
+   keeps making sense regardless of how many modes there are. */
+.mode-picker-track {
+  position: relative;
+  width: 28%;
+  height: 4px;
+  margin: 2px auto 0;
+  border-radius: 2px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.mode-picker-thumb {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  border-radius: 2px;
+  background: var(--accent);
 }
 
 .section-picker-block {
@@ -1869,6 +1899,21 @@ body {
   height: 20px;
   accent-color: var(--accent);
   flex-shrink: 0;
+}
+
+.section-picker-row-label {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Same idea as a deck's color elsewhere in the app, but as a small
+   ribbon-style tag rather than tinting the whole row - this list is
+   mostly about the checkbox/count, not the deck's own glass styling. */
+.deck-bookmark {
+  flex-shrink: 0;
+  width: 14px;
+  height: 28px;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 76%, 0 100%);
 }
 
 /* ===== README ===== */

@@ -11,6 +11,27 @@
     "#ffa8a8", "#63e6be"
   ];
 
+  // The 10 most commonly learned foreign languages - drives the flag icon,
+  // the "___ word / phrase" label in Add card, and the Ask Gemini prompt.
+  var LANGUAGES = [
+    { code: "en", name: "English", flag: "🇬🇧" },
+    { code: "es", name: "Spanish", flag: "🇪🇸" },
+    { code: "fr", name: "French", flag: "🇫🇷" },
+    { code: "de", name: "German", flag: "🇩🇪" },
+    { code: "it", name: "Italian", flag: "🇮🇹" },
+    { code: "pt", name: "Portuguese", flag: "🇵🇹" },
+    { code: "ja", name: "Japanese", flag: "🇯🇵" },
+    { code: "ko", name: "Korean", flag: "🇰🇷" },
+    { code: "zh", name: "Chinese", flag: "🇨🇳" },
+    { code: "ru", name: "Russian", flag: "🇷🇺" },
+    { code: "ar", name: "Arabic", flag: "🇸🇦" }
+  ];
+  var DEFAULT_LANGUAGE_CODE = "es";
+
+  function languageByCode(code) {
+    return LANGUAGES.filter(function (l) { return l.code === code; })[0] || LANGUAGES[0];
+  }
+
   function randomSectionColor() {
     return SECTION_COLORS[Math.floor(Math.random() * SECTION_COLORS.length)];
   }
@@ -58,7 +79,7 @@
   function loadData() {
     try {
       var raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return { cards: [], sections: [], streak: defaultStreak(), lastExportAt: null, lastStudyPrefs: null, notes: [] };
+      if (!raw) return { cards: [], sections: [], streak: defaultStreak(), lastExportAt: null, lastStudyPrefs: null, notes: [], foreignLanguage: DEFAULT_LANGUAGE_CODE };
       var parsed = JSON.parse(raw);
       // migrate from the old format where the key held a bare cards array
       if (Array.isArray(parsed)) {
@@ -67,7 +88,7 @@
           if (typeof c.reviewed !== "boolean") c.reviewed = c.box > 0;
           if (c.box <= 0 && c.dueAt > Date.now()) c.dueAt = Date.now();
         });
-        return { cards: parsed, sections: [], streak: defaultStreak(), lastExportAt: null, lastStudyPrefs: null, notes: [] };
+        return { cards: parsed, sections: [], streak: defaultStreak(), lastExportAt: null, lastStudyPrefs: null, notes: [], foreignLanguage: DEFAULT_LANGUAGE_CODE };
       }
       var loadedCards = Array.isArray(parsed.cards) ? parsed.cards : [];
       loadedCards.forEach(function (c) {
@@ -91,11 +112,12 @@
         streak: loadedStreak,
         lastExportAt: typeof parsed.lastExportAt === "number" ? parsed.lastExportAt : null,
         lastStudyPrefs: parsed.lastStudyPrefs && typeof parsed.lastStudyPrefs === "object" ? parsed.lastStudyPrefs : null,
-        notes: normalizeNotesList(parsed.notes, parsed.notepad)
+        notes: normalizeNotesList(parsed.notes, parsed.notepad),
+        foreignLanguage: typeof parsed.foreignLanguage === "string" ? parsed.foreignLanguage : DEFAULT_LANGUAGE_CODE
       };
     } catch (e) {
       console.error("Failed to load data", e);
-      return { cards: [], sections: [], streak: defaultStreak(), lastExportAt: null, lastStudyPrefs: null, notes: [] };
+      return { cards: [], sections: [], streak: defaultStreak(), lastExportAt: null, lastStudyPrefs: null, notes: [], foreignLanguage: DEFAULT_LANGUAGE_CODE };
     }
   }
 
@@ -106,7 +128,8 @@
       streak: streak,
       lastExportAt: lastExportAt,
       lastStudyPrefs: lastStudyPrefs,
-      notes: notesList
+      notes: notesList,
+      foreignLanguage: foreignLanguage
     }));
   }
 
@@ -118,6 +141,7 @@
   var lastStudyPrefs = initialData.lastStudyPrefs;
   var notesList = initialData.notes;
   var currentEditingNote = null;
+  var foreignLanguage = initialData.foreignLanguage;
 
   function uid() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
@@ -739,6 +763,7 @@
   // to hold the list at 10) each time a version ships with user-facing
   // changes worth calling out.
   var CHANGELOG = [
+    { version: "1.27.0", text: "The app is now just \"Flashcards\" - pick your learning language (11 options) from a new dropdown at the top of Settings, and the flag icon, the Add card word label, and the Ask Gemini prompt all follow whatever you choose." },
     { version: "1.26.1", text: "Fixed the practice mode carousel jittering when a card was selected (it was fighting with scroll-snap) - selecting a partially-visible card now smoothly scrolls it fully into view instead. Renamed \"Flip Spanish card\" to \"Flip Foreign word\" and \"Flip Translation card\" to \"Flip Translation\". Manage cards' search box no longer remembers what you typed after you leave and come back." },
     { version: "1.26.0", text: "Practice mode cards now have their own Material-style icon above the label, fixed so the selected card's 10% scale-up never gets clipped by the screen edge, and the position bar underneath is now a smaller, lower, centered bar. In Manage cards, deck tags moved to the card's upper-right corner - a long word now wraps to a new line rather than running under the tag." },
     { version: "1.25.2", text: "The selected practice mode card now grows 10% with a smooth animation, and the position bar under the mode carousel is now a small centered bar instead of spanning the full width." },
@@ -882,6 +907,35 @@
       document.getElementById("settings-menu").classList.add("hidden");
     }
   });
+
+  // ---------- learning language ----------
+  // Drives the flag icon and the "___ word / phrase" label in Add card -
+  // not wrapped in .dropdown-item so picking a language doesn't hide the
+  // settings menu out from under the native <select>'s own open picker.
+  (function initLanguageSelect() {
+    var select = document.getElementById("language-select");
+    LANGUAGES.forEach(function (l) {
+      var opt = document.createElement("option");
+      opt.value = l.code;
+      opt.textContent = l.flag + " " + l.name;
+      select.appendChild(opt);
+    });
+    select.value = foreignLanguage;
+    select.addEventListener("change", function () {
+      foreignLanguage = select.value;
+      saveData();
+      applyLanguage();
+      document.getElementById("settings-menu").classList.add("hidden");
+    });
+  })();
+
+  function applyLanguage() {
+    var lang = languageByCode(foreignLanguage);
+    document.getElementById("flag-icon").textContent = lang.flag;
+    document.getElementById("input-word-label-text").textContent = lang.name + " word / phrase";
+    var select = document.getElementById("language-select");
+    if (select.value !== foreignLanguage) select.value = foreignLanguage;
+  }
 
   // ---------- flag icon easter egg ----------
   var flagAnimating = false;
@@ -1302,12 +1356,13 @@
 
   function buildGeminiPrompt(theme, count, language, deckName) {
     var deckTag = tagForSection(deckName.trim());
-    return "Create a downloadable .txt file containing " + count + " Spanish vocabulary flashcards about the theme \"" + theme.trim() + "\". " +
-      "For each one, include the Spanish word or phrase, its translation into " + language.trim() + ", " +
-      "and a note containing both how the word is pronounced and one example sentence in Spanish showing how it's used, and in brackets its translation in " + language.trim() + ". " +
+    var foreignName = languageByCode(foreignLanguage).name;
+    return "Create a downloadable .txt file containing " + count + " " + foreignName + " vocabulary flashcards about the theme \"" + theme.trim() + "\". " +
+      "For each one, include the " + foreignName + " word or phrase, its translation into " + language.trim() + ", " +
+      "and a note containing both how the word is pronounced and one example sentence in " + foreignName + " showing how it's used, and in brackets its translation in " + language.trim() + ". " +
       "Inside the file, put ONLY the raw data, one flashcard per line, as " + count + " lines total, with these fields " +
       "separated by a single TAB character (not spaces or commas): " +
-      "Spanish word or phrase [TAB] translation in " + language.trim() + " [TAB] pronunciation and example sentence note [TAB] " + deckTag + ". " +
+      foreignName + " word or phrase [TAB] translation in " + language.trim() + " [TAB] pronunciation and example sentence note [TAB] " + deckTag + ". " +
       "Do not include a header row, numbering, bullets, quotation marks, or markdown formatting in the file, and don't add any commentary before or after the list. " +
       "Please generate this as an actual downloadable .txt file I can save to my device, not just text in the chat reply.";
   }
@@ -2061,8 +2116,9 @@
   // Case-insensitive and forgiving of accent marks/ñ (NFD-decomposing a
   // letter like "ñ" or "á" splits it into a base letter plus a separate
   // combining mark, so stripping those marks handles every accented
-  // Spanish letter generically) and of exclamation/question marks, so
-  // typing without a Spanish keyboard still counts as correct.
+  // Latin letter generically, across whichever language is selected) and
+  // of exclamation/question marks, so typing without that language's own
+  // keyboard still counts as correct.
   function normalizeTypedAnswer(s) {
     return s
       .normalize("NFD")
@@ -2928,6 +2984,7 @@
   }
 
   // ---------- init ----------
+  applyLanguage();
   refreshHome();
   showView("home");
   // confirm() blocks the main thread and can fire before the browser has

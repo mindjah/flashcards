@@ -1,7 +1,7 @@
 {
-  "name": "Español Flashcards",
-  "short_name": "Español",
-  "description": "Simple Spanish flashcards",
+  "name": "Flashcards",
+  "short_name": "Flashcards",
+  "description": "Simple language flashcards",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

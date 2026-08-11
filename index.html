@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, interactive-widget=resizes-visual">
-<title>Español Flashcards</title>
+<title>Flashcards</title>
 
 <meta name="theme-color" content="#26262e">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Español Flashcards">
+<meta name="apple-mobile-web-app-title" content="Flashcards">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <link rel="icon" href="icons/icon-192.png?v=2">
 <link rel="manifest" href="manifest.json">
@@ -31,6 +31,10 @@
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
         </button>
         <div class="dropdown-menu hidden" id="settings-menu">
+          <div class="dropdown-language-row">
+            <span class="dropdown-item-label">Learning language</span>
+            <select id="language-select" class="language-select"></select>
+          </div>
           <button id="btn-export" class="dropdown-item">
             <span class="dropdown-item-label">Export</span>
             <span class="dropdown-item-hint">Save cards and progress</span>
@@ -48,7 +52,7 @@
             <span class="dropdown-item-hint">Recent updates to the app</span>
           </button>
           <p class="dropdown-info">All data stays on this device. Import/export uses Anki's plain-text card format.</p>
-          <p class="app-version">v1.26.1</p>
+          <p class="app-version">v1.27.0</p>
         </div>
       </div>
     </header>
@@ -126,7 +130,7 @@
             <rect x="7" y="2" width="14" height="18" rx="3" opacity="0.35"/>
             <rect x="3" y="6" width="14" height="18" rx="3"/>
           </svg>
-          <span>Flip Foreign word</span>
+          <span>Flip the Foreign word</span>
         </button>
         <button type="button" class="chip" data-mode="reversed">
           <svg class="chip-icon" viewBox="0 0 24 24" fill="currentColor">
@@ -147,7 +151,7 @@
             </mask>
             <rect x="2" y="5" width="20" height="14" rx="2" mask="url(#mode-icon-keyboard-mask)"/>
           </svg>
-          <span>Type the Spanish word</span>
+          <span>Type the Foreign word</span>
         </button>
         <button type="button" class="chip" data-mode="match">
           <svg class="chip-icon" viewBox="0 0 24 24" fill="currentColor">
@@ -264,7 +268,7 @@
     </header>
 
     <form id="form-add" class="form">
-      <label>Spanish word / phrase
+      <label><span id="input-word-label-text">Spanish word / phrase</span>
         <div class="input-with-action">
           <input type="text" id="input-word" autocomplete="off" required>
           <button type="button" class="icon-btn icon-btn-translate" id="btn-add-translate" title="Open in Google Translate">
@@ -426,10 +430,10 @@
 
       <div class="readme-section">
         <h3>Practice modes</h3>
-        <p>Choose <b>Flip Foreign word</b>, <b>Flip Translation</b>, <b>Type the Spanish word</b>, or <b>Match the words</b> in Practice setup - swipe the carousel to see them all. Your last choice, along with your deck selection, is remembered for next time.</p>
+        <p>Choose <b>Flip Foreign word</b>, <b>Flip Translation</b>, <b>Type the Foreign word</b>, or <b>Match the words</b> in Practice setup - swipe the carousel to see them all. Your last choice, along with your deck selection, is remembered for next time.</p>
         <p>In <b>Flip Foreign word</b> and <b>Flip Translation</b>, tap the card to flip it, then swipe right (or tap <b>Knew it</b>) or swipe left (or tap <b>Didn't know</b>) to answer.</p>
-        <p>In <b>Type the Spanish word</b>, the card shows the translation - type the Spanish word into the field below it, then tap <b>Check</b> (enabled once you've typed something) to flip the card and check your answer, or tap <b>I don't know</b> to reveal it straight away without guessing. Checking ignores case, accent marks, ñ vs n, and ¡¿!? punctuation, so typing without a Spanish keyboard still counts as correct. There's no <b>Knew it</b> / <b>Didn't know</b> here: a correct typed answer counts as knew it, an incorrect one or <b>I don't know</b> counts as didn't know, then tap <b>Next</b> to continue.</p>
-        <p>In <b>Match the words</b>, tap a Spanish word then its translation to pair them up - correct pairs fade away, a wrong guess flashes red and you try again. This mode is just a quick warm-up: it never changes a card's due date or mastery, so it can't count as "learnt" (or missed) the way the other modes do.</p>
+        <p>In <b>Type the Foreign word</b>, the card shows the translation - type the foreign word into the field below it, then tap <b>Check</b> (enabled once you've typed something) to flip the card and check your answer, or tap <b>I don't know</b> to reveal it straight away without guessing. Checking ignores case, accent marks, and ¡¿!? punctuation, so typing without a keyboard for that language still counts as correct. There's no <b>Knew it</b> / <b>Didn't know</b> here: a correct typed answer counts as knew it, an incorrect one or <b>I don't know</b> counts as didn't know, then tap <b>Next</b> to continue.</p>
+        <p>In <b>Match the words</b>, tap a foreign word then its translation to pair them up - correct pairs fade away, a wrong guess flashes red and you try again. This mode is just a quick warm-up: it never changes a card's due date or mastery, so it can't count as "learnt" (or missed) the way the other modes do.</p>
         <p>Once a card is flipped, a pencil icon appears in its top-right corner - tap it to edit that card without leaving the lesson. Saving your changes (or backing out without saving) drops you right back into the same lesson, on the same card, with your progress untouched.</p>
       </div>
 

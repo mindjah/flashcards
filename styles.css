@@ -1811,7 +1811,6 @@ body {
   flex-wrap: nowrap;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  scroll-snap-type: x proximity;
   gap: 10px;
   /* Room on every side so the active chip's 10% scale-up (~7px each side)
      never gets clipped by this scroll container - including the first/
@@ -1840,7 +1839,6 @@ body {
   line-height: 1.25;
   white-space: normal;
   border-radius: 20px;
-  scroll-snap-align: start;
   transition: transform 0.2s ease;
 }
 

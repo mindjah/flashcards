@@ -205,7 +205,7 @@
     var trimmed = (text || "").trim();
     if (!trimmed) return;
     var query = encodeURIComponent(trimmed);
-    var webUrl = "https://translate.google.com/?sl=es&tl=en&text=" + query + "&op=translate";
+    var webUrl = "https://translate.google.com/?sl=" + foreignLanguage + "&tl=en&text=" + query + "&op=translate";
 
     var a = document.createElement("a");
     a.href = webUrl;

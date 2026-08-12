@@ -609,6 +609,7 @@
     el.classList.remove("flipped");
     document.getElementById("daily-card-word").textContent = card.word;
     document.getElementById("daily-card-translation").textContent = card.translation;
+    document.getElementById("btn-daily-card-speak").classList.toggle("hidden", foreignLanguage !== "es");
     var noteEl = document.getElementById("daily-card-note");
     if (card.notes) {
       document.getElementById("daily-card-note-text").textContent = card.notes;
@@ -617,6 +618,11 @@
       noteEl.classList.add("hidden");
     }
   }
+
+  document.getElementById("btn-daily-card-speak").addEventListener("click", function (e) {
+    e.stopPropagation();
+    speakWord(document.getElementById("daily-card-word").textContent);
+  });
 
   document.getElementById("daily-card-inner").addEventListener("click", function () {
     document.getElementById("daily-card").classList.toggle("flipped");
@@ -780,6 +786,7 @@
   // to hold the list at 10) each time a version ships with user-facing
   // changes worth calling out.
   var CHANGELOG = [
+    { version: "1.30.0", text: "Fixed a bug where a card's deck tag no longer reached the card's actual top-right corner. The speaker icon is bigger now, and (Spanish only, for now) plays on Card of the day and on the Practice card too - shown wherever the Spanish word is actually visible, so it's never a free hint before you've answered." },
     { version: "1.29.0", text: "Manage cards: due date moved to each card's bottom-right corner. Practice setup: deck picker text sized down to match the rest of the screen. Card previews in Manage cards now have a speaker icon under the word to hear it pronounced - trying this out for Spanish only for now, via the on-device Web Speech API." },
     { version: "1.28.0", text: "Switched the whole app from a monospace font to Roboto, self-hosted so it still works fully offline as an installed app." },
     { version: "1.27.0", text: "The app is now just \"Flashcards\" - pick your learning language (11 options) from a new dropdown at the top of Settings, and the flag icon, the Add card word label, and the Ask Gemini prompt all follow whatever you choose." },
@@ -954,6 +961,10 @@
     document.getElementById("input-word-label-text").textContent = lang.name + " word / phrase";
     var select = document.getElementById("language-select");
     if (select.value !== foreignLanguage) select.value = foreignLanguage;
+    // Kept in sync here too (not just when a new daily card is rendered) -
+    // the settings dropdown only lives on the home screen, so a language
+    // change can happen while today's daily card is already showing.
+    document.getElementById("btn-daily-card-speak").classList.toggle("hidden", foreignLanguage !== "es");
   }
 
   // ---------- flag icon easter egg ----------
@@ -1594,6 +1605,7 @@
       meta.className = "manage-item-due";
       var now = Date.now();
       meta.textContent = isDue(c, now) ? "To learn" : "Due " + formatRelative(c.dueAt - now);
+      text.appendChild(meta);
 
       var elementToAppend = row;
 
@@ -1651,7 +1663,6 @@
         attachManageSwipe(row, actionsPanel);
         elementToAppend = swipeWrap;
       }
-      row.appendChild(meta);
       list.appendChild(elementToAppend);
     });
   }
@@ -2065,6 +2076,13 @@
     var hasNote = !!session.current.notes;
     document.getElementById("card-note").classList.toggle("hidden", !hasNote);
     document.getElementById("card-note-text").textContent = hasNote ? session.current.notes : "";
+
+    // The foreign word sits on whichever face actually shows it for this
+    // mode - front in "normal", back in "reversed"/"type" (never front
+    // there, so hearing it can't double as a free answer before revealing).
+    var isEs = foreignLanguage === "es";
+    document.getElementById("btn-card-front-speak").classList.toggle("hidden", !(isEs && session.mode === "normal"));
+    document.getElementById("btn-card-back-speak").classList.toggle("hidden", !(isEs && reversed));
   }
 
   function nextCard() {
@@ -2253,6 +2271,16 @@
 
   document.getElementById("btn-study-translate").addEventListener("click", function () {
     if (session.current) openGoogleTranslate(session.current.word);
+  });
+
+  [document.getElementById("btn-card-front-speak"), document.getElementById("btn-card-back-speak")].forEach(function (btn) {
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      if (session.current) speakWord(session.current.word);
+    });
+    btn.addEventListener("touchstart", function (e) {
+      e.stopPropagation();
+    }, { passive: true });
   });
 
   // Editing mutates the same card object the session queue already holds,

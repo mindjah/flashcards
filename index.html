@@ -52,7 +52,7 @@
             <span class="dropdown-item-hint">Recent updates to the app</span>
           </button>
           <p class="dropdown-info">All data stays on this device. Import/export uses Anki's plain-text card format.</p>
-          <p class="app-version">v1.29.0</p>
+          <p class="app-version">v1.30.0</p>
         </div>
       </div>
     </header>
@@ -86,6 +86,9 @@
         <div class="daily-card-face daily-card-front">
           <span class="daily-card-label">Card of the day</span>
           <span class="daily-card-word" id="daily-card-word"></span>
+          <button type="button" class="icon-btn card-speak-btn hidden" id="btn-daily-card-speak" title="Play pronunciation">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+          </button>
         </div>
         <div class="daily-card-face daily-card-back">
           <span class="daily-card-translation" id="daily-card-translation"></span>
@@ -204,6 +207,9 @@
         <div class="flashcard-inner">
           <div class="card-face card-front">
             <span id="card-word" class="card-word"></span>
+            <button type="button" class="icon-btn card-speak-btn hidden" id="btn-card-front-speak" title="Play pronunciation">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+            </button>
             <div class="match-board" id="match-board-front">
               <div class="match-col" id="match-col-es-front"></div>
               <div class="match-col" id="match-col-tr-front"></div>
@@ -214,6 +220,9 @@
               <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
             </button>
             <span id="card-translation" class="card-translation"></span>
+            <button type="button" class="icon-btn card-speak-btn hidden" id="btn-card-back-speak" title="Play pronunciation">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+            </button>
             <p class="card-your-answer hidden" id="card-your-answer">
               <span class="card-note-label">You typed:</span>
               <span id="card-your-answer-text"></span>

@@ -904,6 +904,14 @@ body {
   gap: 14px;
 }
 
+/* Only the Practice card's front needs to stack (word, then speak button) -
+   .card-face's shared row-flex default is untouched elsewhere, including
+   Match the words' own board layout inside this same .card-front. */
+#card .card-front {
+  flex-direction: column;
+  gap: 14px;
+}
+
 /* In Practice/Card of the day, .card-face's backdrop-filter blurs a flat,
    solid --bg behind it, so there's no clutter for the glass to reveal.
    Sitting over the lighter modal-overlay here instead, the same card lets
@@ -936,6 +944,13 @@ body {
 
 .card-speak-btn {
   flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+}
+
+.card-speak-btn svg {
+  width: 26px;
+  height: 26px;
 }
 
 .card-edit-btn {
@@ -993,7 +1008,8 @@ body {
 #view-study.match-mode .card-translation,
 #view-study.match-mode .card-note,
 #view-study.match-mode .card-your-answer,
-#view-study.match-mode .card-edit-btn {
+#view-study.match-mode .card-edit-btn,
+#view-study.match-mode .card-speak-btn {
   display: none;
 }
 
@@ -1541,8 +1557,17 @@ body {
 }
 
 .manage-item-text {
+  position: relative;
   flex: 1;
   min-width: 0;
+  /* Reserves a dead strip along the bottom for .manage-item-due - normal
+     flow content (word/translation/notes) never paints into it regardless
+     of how long any line runs, so nothing needs to know how wide the due
+     text is to avoid it. Kept as its own padding (not stolen width from a
+     flex sibling) specifically so .manage-item-decks' float still floats
+     against this column's *full* width, reaching the card's actual right
+     edge rather than stopping wherever a due-text sibling started. */
+  padding-bottom: 16px;
 }
 
 .manage-item-word {
@@ -1574,8 +1599,9 @@ body {
    width, so long notes/translation text wraps around it instead of
    running underneath. */
 .manage-item-due {
-  align-self: flex-end;
-  flex-shrink: 0;
+  position: absolute;
+  right: 0;
+  bottom: 0;
   font-size: 11px;
   color: var(--text-dim);
   white-space: nowrap;

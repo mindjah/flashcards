@@ -513,6 +513,9 @@
     } else {
       noteEl.classList.add("hidden");
     }
+    // Trying this out for Spanish only for now - Web Speech API voice
+    // coverage/quality for the other 10 languages hasn't been checked yet.
+    document.getElementById("btn-card-preview-speak").classList.toggle("hidden", foreignLanguage !== "es");
     cardPreviewModal.classList.remove("hidden");
   }
 
@@ -526,6 +529,20 @@
 
   cardPreviewModal.addEventListener("click", function (e) {
     if (e.target === this) closeCardPreview();
+  });
+
+  // ---------- speak (Spanish only for now) ----------
+  function speakWord(text) {
+    if (!text || !("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    var utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "es-ES";
+    window.speechSynthesis.speak(utterance);
+  }
+
+  document.getElementById("btn-card-preview-speak").addEventListener("click", function (e) {
+    e.stopPropagation();
+    speakWord(document.getElementById("card-preview-word").textContent);
   });
 
   // "To learn"/"Total cards" (now shown on the Manage screen) and the
@@ -763,6 +780,7 @@
   // to hold the list at 10) each time a version ships with user-facing
   // changes worth calling out.
   var CHANGELOG = [
+    { version: "1.29.0", text: "Manage cards: due date moved to each card's bottom-right corner. Practice setup: deck picker text sized down to match the rest of the screen. Card previews in Manage cards now have a speaker icon under the word to hear it pronounced - trying this out for Spanish only for now, via the on-device Web Speech API." },
     { version: "1.28.0", text: "Switched the whole app from a monospace font to Roboto, self-hosted so it still works fully offline as an installed app." },
     { version: "1.27.0", text: "The app is now just \"Flashcards\" - pick your learning language (11 options) from a new dropdown at the top of Settings, and the flag icon, the Add card word label, and the Ask Gemini prompt all follow whatever you choose." },
     { version: "1.26.1", text: "Fixed the practice mode carousel jittering when a card was selected (it was fighting with scroll-snap) - selecting a partially-visible card now smoothly scrolls it fully into view instead. Renamed \"Flip Spanish card\" to \"Flip Foreign word\" and \"Flip Translation card\" to \"Flip Translation\". Manage cards' search box no longer remembers what you typed after you leave and come back." },
@@ -1573,10 +1591,9 @@
       }
 
       var meta = document.createElement("div");
-      meta.className = "manage-item-meta";
+      meta.className = "manage-item-due";
       var now = Date.now();
       meta.textContent = isDue(c, now) ? "To learn" : "Due " + formatRelative(c.dueAt - now);
-      text.appendChild(meta);
 
       var elementToAppend = row;
 
@@ -1634,6 +1651,7 @@
         attachManageSwipe(row, actionsPanel);
         elementToAppend = swipeWrap;
       }
+      row.appendChild(meta);
       list.appendChild(elementToAppend);
     });
   }

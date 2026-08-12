@@ -926,6 +926,18 @@ body {
     rgba(38, 38, 46, 0.88);
 }
 
+/* Only .card-front's own layout needs to change to stack the speak button
+   under the word - .card-face's shared row-flex default is untouched
+   everywhere else (including this same modal's .card-back). */
+#card-preview-flashcard .card-front {
+  flex-direction: column;
+  gap: 14px;
+}
+
+.card-speak-btn {
+  flex-shrink: 0;
+}
+
 .card-edit-btn {
   position: absolute;
   top: 14px;
@@ -1557,6 +1569,18 @@ body {
   color: var(--text-dim);
 }
 
+/* A real flex sibling of .manage-item-text (bottom-aligned within the
+   row), not absolutely positioned - that way it always reserves its own
+   width, so long notes/translation text wraps around it instead of
+   running underneath. */
+.manage-item-due {
+  align-self: flex-end;
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
 /* #manage-list is a column flex container, and per spec giving a flex item
    overflow:hidden (needed here to clip the swipe actions panel) removes
    its automatic min-content-size floor - without flex-shrink:0, that let
@@ -1966,7 +1990,7 @@ body {
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 14px;
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .section-picker-row input[type="checkbox"] {

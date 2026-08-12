@@ -763,6 +763,7 @@
   // to hold the list at 10) each time a version ships with user-facing
   // changes worth calling out.
   var CHANGELOG = [
+    { version: "1.28.0", text: "Switched the whole app from a monospace font to Roboto, self-hosted so it still works fully offline as an installed app." },
     { version: "1.27.0", text: "The app is now just \"Flashcards\" - pick your learning language (11 options) from a new dropdown at the top of Settings, and the flag icon, the Add card word label, and the Ask Gemini prompt all follow whatever you choose." },
     { version: "1.26.1", text: "Fixed the practice mode carousel jittering when a card was selected (it was fighting with scroll-snap) - selecting a partially-visible card now smoothly scrolls it fully into view instead. Renamed \"Flip Spanish card\" to \"Flip Foreign word\" and \"Flip Translation card\" to \"Flip Translation\". Manage cards' search box no longer remembers what you typed after you leave and come back." },
     { version: "1.26.0", text: "Practice mode cards now have their own Material-style icon above the label, fixed so the selected card's 10% scale-up never gets clipped by the screen edge, and the position bar underneath is now a smaller, lower, centered bar. In Manage cards, deck tags moved to the card's upper-right corner - a long word now wraps to a new line rather than running under the tag." },

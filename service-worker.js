@@ -1,4 +1,4 @@
-var CACHE_NAME = "flashcards-v66";
+var CACHE_NAME = "flashcards-v67";
 var ASSETS = [
   "./",
   "./index.html",
@@ -7,7 +7,11 @@ var ASSETS = [
   "./manifest.json",
   "./icons/icon-180.png",
   "./icons/icon-192.png",
-  "./icons/icon-512.png"
+  "./icons/icon-512.png",
+  "./fonts/roboto-latin.woff2",
+  "./fonts/roboto-latin-ext.woff2",
+  "./fonts/roboto-cyrillic.woff2",
+  "./fonts/roboto-cyrillic-ext.woff2"
 ];
 
 self.addEventListener("install", function (event) {

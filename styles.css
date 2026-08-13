@@ -102,6 +102,23 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
+/* Opacity only, deliberately no transform/translate - a transform here
+   would make this .view the containing block for any position:fixed
+   descendant (the type-answer-bar, stat-info-popup, ...) for the
+   animation's duration, yanking it away from the viewport and back. */
+@keyframes view-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.view.view-entering {
+  animation: view-fade-in 0.22s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .view.view-entering { animation: none; }
+}
+
 /* A .view's direct children are flex items in a column - by default
    they'd flex-shrink to fit before overflow ever triggers scrolling,
    squeezing things like the daily card shorter instead of the page
@@ -548,7 +565,7 @@ body {
 }
 
 .daily-card {
-  height: 320px;
+  height: 288px;
   perspective: 1200px;
 }
 
@@ -602,6 +619,7 @@ body {
 
 .daily-card-label {
   margin: 0;
+  text-align: center;
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -621,7 +639,7 @@ body {
 }
 
 .daily-card-translation {
-  font-size: 20px;
+  font-size: 26px;
   font-weight: 600;
   color: var(--accent);
   word-break: break-word;

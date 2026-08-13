@@ -805,6 +805,7 @@
   // to hold the list at 10) each time a version ships with user-facing
   // changes worth calling out.
   var CHANGELOG = [
+    { version: "1.31.2", text: "Fixed a bug where answering a card in Flip Translation (or Flip Foreign word / Type the foreign word) briefly flashed the next card's answer on the card you'd just answered, mid-flip." },
     { version: "1.31.1", text: "Screen fade-ins are slower and now wait a frame before starting, so they no longer get cut short entering a heavy screen like Manage cards. Added more breathing room between Mastery and Card of the day." },
     { version: "1.31.0", text: "Screens now fade in smoothly instead of snapping into view, and the bottom tab bar's highlight pill actually slides between tabs now (it was silently disabled)." },
     { version: "1.30.1", text: "Card of the day now matches Manage cards' card previews more closely - bigger word text, more room before the speaker icon, and its \"Card of the day\" label moved above the card instead of sitting inside it." },
@@ -2090,21 +2091,38 @@
   // Pulled out of nextCard() so resumeStudyAfterEdit() can refresh the face
   // text (word/translation/note may have just changed) without resetting
   // the flip/reveal state the way loading a new card would.
-  function updateStudyCardContent() {
+  // Split front/back so nextCard() can update the (currently hidden, about
+  // to become visible) front face right away while delaying the back
+  // face's update - see the comment in nextCard() for why.
+  function updateStudyCardFrontContent() {
     var reversed = session.mode === "reversed" || session.mode === "type";
     document.getElementById("card-word").textContent = reversed ? session.current.translation : session.current.word;
-    document.getElementById("card-translation").textContent = reversed ? session.current.word : session.current.translation;
-
-    var hasNote = !!session.current.notes;
-    document.getElementById("card-note").classList.toggle("hidden", !hasNote);
-    document.getElementById("card-note-text").textContent = hasNote ? session.current.notes : "";
-
     // The foreign word sits on whichever face actually shows it for this
     // mode - front in "normal", back in "reversed"/"type" (never front
     // there, so hearing it can't double as a free answer before revealing).
     var isEs = foreignLanguage === "es";
     document.getElementById("btn-card-front-speak").classList.toggle("hidden", !(isEs && session.mode === "normal"));
+  }
+
+  function updateStudyCardBackContent() {
+    var reversed = session.mode === "reversed" || session.mode === "type";
+    document.getElementById("card-translation").textContent = reversed ? session.current.word : session.current.translation;
+
+    var hasNote = !!session.current.notes;
+    document.getElementById("card-note").classList.toggle("hidden", !hasNote);
+    document.getElementById("card-note-text").textContent = hasNote ? session.current.notes : "";
+    document.getElementById("card-your-answer").classList.add("hidden");
+
+    var isEs = foreignLanguage === "es";
     document.getElementById("btn-card-back-speak").classList.toggle("hidden", !(isEs && reversed));
+  }
+
+  // Only resumeStudyAfterEdit() (editing mid-lesson) uses this combined
+  // form - there's no flip transition running then, so updating both
+  // faces at once is safe.
+  function updateStudyCardContent() {
+    updateStudyCardFrontContent();
+    updateStudyCardBackContent();
   }
 
   function nextCard() {
@@ -2123,14 +2141,27 @@
     session.revealed = false;
 
     var cardEl = document.getElementById("card");
+    // The back face (showing what was just answered) stays visible for
+    // roughly the first half of the .flashcard-inner's 0.45s un-flip
+    // transition - backface-visibility only swaps which face is shown
+    // once the rotation crosses 90deg, not the instant "flipped" is
+    // removed. Updating its content immediately flashed the next card's
+    // answer on that still-visible face; the front face has no such risk
+    // (it stays hidden until that same crossing point), so it updates
+    // right away.
+    var wasFlipped = cardEl.classList.contains("flipped");
     cardEl.classList.remove("flipped", "swipe-pass", "swipe-fail", "answer-correct", "answer-incorrect");
     cardEl.style.transition = "";
     cardEl.style.transform = "";
     cardEl.style.opacity = "";
     var cardWordEl = document.getElementById("card-word");
     cardWordEl.style.transform = "";
-    updateStudyCardContent();
-    document.getElementById("card-your-answer").classList.add("hidden");
+    updateStudyCardFrontContent();
+    if (wasFlipped) {
+      setTimeout(updateStudyCardBackContent, 230);
+    } else {
+      updateStudyCardBackContent();
+    }
 
     var isTypeMode = session.mode === "type";
     var typeBar = document.getElementById("type-answer-bar");

@@ -77,16 +77,23 @@ html, body {
 
 body {
   margin: 0;
-  /* Black, not var(--bg) - on mobile this is never visible (the app is
-     always exactly as wide as the viewport there), but on a desktop
-     browser it's the letterboxed area on either side of the centered
-     #app column, which keeps var(--bg) for itself below. */
-  background: #000;
+  /* var(--bg) here, matching #app - iOS's translucent status bar (and its
+     rubber-band overscroll bounce) can expose the body's own background
+     for an instant even on mobile, so this can't unconditionally be
+     black the way #app's desktop-only letterbox area is (see the
+     min-width override below, scoped to widths no real phone reaches). */
+  background: var(--bg);
   color: var(--text);
   font-family: "Roboto", ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   font-size: 17px;
   -webkit-font-smoothing: antialiased;
   user-select: none;
+}
+
+@media (min-width: 560px) {
+  body {
+    background: #000;
+  }
 }
 
 #app {

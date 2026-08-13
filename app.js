@@ -864,7 +864,13 @@
   function renderNotesList() {
     var grid = document.getElementById("notes-grid");
     grid.innerHTML = "";
-    document.getElementById("notes-empty").classList.toggle("hidden", notesList.length > 0);
+    // An empty grid still claims its flex:1 share of the view alongside
+    // .manage-empty's own flex:1, splitting the space in half instead of
+    // leaving the empty message centered in the whole view - hiding it
+    // outright (not just leaving it childless) avoids that.
+    var hasNotes = notesList.length > 0;
+    grid.classList.toggle("hidden", !hasNotes);
+    document.getElementById("notes-empty").classList.toggle("hidden", hasNotes);
 
     notesList.slice().sort(function (a, b) { return b.updatedAt - a.updatedAt; }).forEach(function (note) {
       var card = document.createElement("button");

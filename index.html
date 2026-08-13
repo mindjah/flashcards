@@ -52,7 +52,7 @@
             <span class="dropdown-item-hint">Recent updates to the app</span>
           </button>
           <p class="dropdown-info">All data stays on this device. Import/export uses Anki's plain-text card format.</p>
-          <p class="app-version">v1.30.0</p>
+          <p class="app-version">v1.30.1</p>
         </div>
       </div>
     </header>
@@ -81,21 +81,23 @@
       </div>
     </div>
 
-    <div class="daily-card hidden" id="daily-card">
-      <div class="daily-card-inner" id="daily-card-inner">
-        <div class="daily-card-face daily-card-front">
-          <span class="daily-card-label">Card of the day</span>
-          <span class="daily-card-word" id="daily-card-word"></span>
-          <button type="button" class="icon-btn card-speak-btn hidden" id="btn-daily-card-speak" title="Play pronunciation">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
-          </button>
-        </div>
-        <div class="daily-card-face daily-card-back">
-          <span class="daily-card-translation" id="daily-card-translation"></span>
-          <p class="daily-card-note hidden" id="daily-card-note">
-            <span class="card-note-label">📝 Note:</span>
-            <span id="daily-card-note-text"></span>
-          </p>
+    <div class="daily-card-block hidden" id="daily-card-block">
+      <p class="daily-card-label">Card of the day</p>
+      <div class="daily-card" id="daily-card">
+        <div class="daily-card-inner" id="daily-card-inner">
+          <div class="daily-card-face daily-card-front">
+            <span class="daily-card-word" id="daily-card-word"></span>
+            <button type="button" class="icon-btn card-speak-btn hidden" id="btn-daily-card-speak" title="Play pronunciation">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+            </button>
+          </div>
+          <div class="daily-card-face daily-card-back">
+            <span class="daily-card-translation" id="daily-card-translation"></span>
+            <p class="daily-card-note hidden" id="daily-card-note">
+              <span class="card-note-label">📝 Note:</span>
+              <span id="daily-card-note-text"></span>
+            </p>
+          </div>
         </div>
       </div>
     </div>

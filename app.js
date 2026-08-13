@@ -596,7 +596,7 @@
   }
 
   function renderDailyCard() {
-    var el = document.getElementById("daily-card");
+    var el = document.getElementById("daily-card-block");
     var card = pickDailyCard();
     if (!card) {
       el.classList.add("hidden");
@@ -786,6 +786,7 @@
   // to hold the list at 10) each time a version ships with user-facing
   // changes worth calling out.
   var CHANGELOG = [
+    { version: "1.30.1", text: "Card of the day now matches Manage cards' card previews more closely - bigger word text, more room before the speaker icon, and its \"Card of the day\" label moved above the card instead of sitting inside it." },
     { version: "1.30.0", text: "Fixed a bug where a card's deck tag no longer reached the card's actual top-right corner. The speaker icon is bigger now, and (Spanish only, for now) plays on Card of the day and on the Practice card too - shown wherever the Spanish word is actually visible, so it's never a free hint before you've answered." },
     { version: "1.29.0", text: "Manage cards: due date moved to each card's bottom-right corner. Practice setup: deck picker text sized down to match the rest of the screen. Card previews in Manage cards now have a speaker icon under the word to hear it pronounced - trying this out for Spanish only for now, via the on-device Web Speech API." },
     { version: "1.28.0", text: "Switched the whole app from a monospace font to Roboto, self-hosted so it still works fully offline as an installed app." },

@@ -77,7 +77,11 @@ html, body {
 
 body {
   margin: 0;
-  background: var(--bg);
+  /* Black, not var(--bg) - on mobile this is never visible (the app is
+     always exactly as wide as the viewport there), but on a desktop
+     browser it's the letterboxed area on either side of the centered
+     #app column, which keeps var(--bg) for itself below. */
+  background: #000;
   color: var(--text);
   font-family: "Roboto", ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   font-size: 17px;
@@ -87,6 +91,7 @@ body {
 
 #app {
   height: var(--app-height, 100dvh);
+  background: var(--bg);
   /* Only ever visibly kicks in on a desktop browser window - no real
      phone viewport is this wide, so mobile stays exactly edge-to-edge.
      500px centers the column with a little room either side of

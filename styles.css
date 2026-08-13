@@ -87,8 +87,51 @@ body {
 
 #app {
   height: var(--app-height, 100dvh);
+  /* Only ever visibly kicks in on a desktop browser window - no real
+     phone viewport is this wide, so mobile stays exactly edge-to-edge.
+     500px centers the column with a little room either side of
+     .bottom-tabbar's own 460px+32px-inset max width. */
+  max-width: 500px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
+}
+
+.rotate-lock-overlay {
+  display: none;
+}
+
+/* (hover: none) and (pointer: coarse) is true for touchscreens and false
+   for every desktop/laptop browser regardless of window size or aspect
+   ratio - a desktop window resized short-and-wide must never trigger
+   this, only an actual phone/tablet turned sideways should. The manifest
+   also requests portrait for installed Android PWAs, but iOS Safari (in
+   or out of standalone) doesn't honor that, hence this CSS-only fallback
+   that works everywhere. */
+@media (hover: none) and (pointer: coarse) and (orientation: landscape) {
+  #app {
+    display: none;
+  }
+
+  .rotate-lock-overlay {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 24px;
+    text-align: center;
+    background: var(--bg);
+    color: var(--text-dim);
+    font-size: 16px;
+  }
+
+  .rotate-lock-icon {
+    font-size: 48px;
+  }
 }
 
 .view {

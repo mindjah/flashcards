@@ -305,12 +305,18 @@
     Object.keys(views).forEach(function (k) {
       views[k].classList.toggle("hidden", k !== name);
     });
-    // Re-triggers the fade-in even if this same view was already shown
-    // (and had already finished animating) very recently.
+    // Unhiding a view with a lot of content (Manage cards' full list) forces
+    // a heavy layout pass of its own - starting the fade in the very same
+    // frame let that layout cost eat into the animation, dropping its first
+    // frames and making it look like it barely faded at all. Waiting a
+    // frame lets that settle first, so the animation itself always gets a
+    // clean run.
     var target = views[name];
     target.classList.remove("view-entering");
-    void target.offsetWidth;
-    target.classList.add("view-entering");
+    requestAnimationFrame(function () {
+      void target.offsetWidth;
+      target.classList.add("view-entering");
+    });
     if (name === "home") { celebrateStreakOnHomeLanding(); pulsePracticeIcon(); }
     updateTabbar(name);
   }
@@ -799,6 +805,7 @@
   // to hold the list at 10) each time a version ships with user-facing
   // changes worth calling out.
   var CHANGELOG = [
+    { version: "1.31.1", text: "Screen fade-ins are slower and now wait a frame before starting, so they no longer get cut short entering a heavy screen like Manage cards. Added more breathing room between Mastery and Card of the day." },
     { version: "1.31.0", text: "Screens now fade in smoothly instead of snapping into view, and the bottom tab bar's highlight pill actually slides between tabs now (it was silently disabled)." },
     { version: "1.30.1", text: "Card of the day now matches Manage cards' card previews more closely - bigger word text, more room before the speaker icon, and its \"Card of the day\" label moved above the card instead of sitting inside it." },
     { version: "1.30.0", text: "Fixed a bug where a card's deck tag no longer reached the card's actual top-right corner. The speaker icon is bigger now, and (Spanish only, for now) plays on Card of the day and on the Practice card too - shown wherever the Spanish word is actually visible, so it's never a free hint before you've answered." },

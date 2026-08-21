@@ -416,10 +416,6 @@
   function hideInfoPopup() {
     document.getElementById("stat-info-popup").classList.add("hidden");
     infoPopupAnchor = null;
-    if (activeRevealIcon) {
-      setRevealIcon(activeRevealIcon, false);
-      activeRevealIcon = null;
-    }
   }
 
   var STAT_INFO = {
@@ -658,17 +654,6 @@
     document.getElementById("daily-card").classList.toggle("flipped");
   });
 
-  // Same open/slashed-eye glyphs used by password fields' show/hide toggle -
-  // here they mark whether this row's translation popup is currently open.
-  var EYE_ICON_OPEN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
-  var EYE_ICON_CLOSED = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
-  var activeRevealIcon = null;
-
-  function setRevealIcon(el, open) {
-    el.innerHTML = open ? EYE_ICON_OPEN : EYE_ICON_CLOSED;
-    el.classList.toggle("is-open", open);
-  }
-
   function buildHintRow(c) {
     var item = document.createElement("button");
     item.type = "button";
@@ -678,16 +663,7 @@
     word.className = "struggling-item-word";
     word.textContent = c.word;
 
-    var right = document.createElement("span");
-    right.className = "struggling-item-right";
-
-    var revealIcon = document.createElement("span");
-    revealIcon.className = "struggling-item-icon";
-    setRevealIcon(revealIcon, false);
-    right.appendChild(revealIcon);
-
     item.appendChild(word);
-    item.appendChild(right);
 
     item.addEventListener("click", function () {
       openCardPreview(c);
@@ -888,6 +864,11 @@
       var card = document.createElement("button");
       card.type = "button";
       card.className = "note-card";
+
+      var title = document.createElement("div");
+      title.className = "note-card-title";
+      title.textContent = note.name || "Note";
+      card.appendChild(title);
 
       var preview = document.createElement("div");
       var text = (note.text || "").trim();

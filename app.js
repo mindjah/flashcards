@@ -167,11 +167,17 @@
     return dateStr(d);
   }
 
+  // Set for exactly one celebrateStreakOnHomeLanding() call - the streak
+  // should burst the first time it's extended today, not on every later
+  // landing on Home once it's already lit for the day.
+  var streakJustExtended = false;
+
   function recordStudyActivity() {
     var today = todayStr();
     if (streak.lastDate === today) return;
     streak.current = streak.lastDate === yesterdayStr() ? streak.current + 1 : 1;
     streak.lastDate = today;
+    streakJustExtended = true;
     saveData();
   }
 
@@ -479,7 +485,8 @@
 
   function celebrateStreakOnHomeLanding() {
     var streakEl = document.getElementById("stat-card-streak");
-    if (streak.lastDate === todayStr()) {
+    if (streakJustExtended) {
+      streakJustExtended = false;
       spawnFlameBurst(streakEl);
     } else {
       clearFlameParticles(streakEl);

@@ -1340,6 +1340,7 @@ body {
 
 .note-card {
   min-width: 0;
+  overflow: hidden;
   background: var(--glass-bg);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
   backdrop-filter: blur(20px) saturate(160%);
@@ -1358,10 +1359,13 @@ body {
   color: var(--text);
   font-size: 14px;
   font-weight: 700;
+  line-height: 1.3;
   margin-bottom: 4px;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
 }
 
 .note-card-preview {
@@ -1371,7 +1375,7 @@ body {
   line-height: 1.4;
   overflow: hidden;
   display: -webkit-box;
-  -webkit-line-clamp: 5;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   word-break: break-word;
   white-space: pre-wrap;

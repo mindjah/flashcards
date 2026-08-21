@@ -65,6 +65,7 @@
           return {
             id: typeof n.id === "string" ? n.id : uid(),
             text: n.text,
+            name: typeof n.name === "string" ? n.name : "",
             updatedAt: typeof n.updatedAt === "number" ? n.updatedAt : Date.now()
           };
         });
@@ -520,8 +521,10 @@
   // ---------- card preview modal (flip-able, same size/style as Practice) ----------
   var cardPreviewModal = document.getElementById("card-preview-modal");
   var cardPreviewFlashcard = document.getElementById("card-preview-flashcard");
+  var cardPreviewCard = null;
 
   function openCardPreview(c) {
+    cardPreviewCard = c;
     cardPreviewFlashcard.classList.remove("flipped");
     document.getElementById("card-preview-word").textContent = c.word;
     document.getElementById("card-preview-translation").textContent = c.translation;
@@ -562,6 +565,14 @@
   document.getElementById("btn-card-preview-speak").addEventListener("click", function (e) {
     e.stopPropagation();
     speakWord(document.getElementById("card-preview-word").textContent);
+  });
+
+  document.getElementById("btn-card-preview-edit").addEventListener("click", function (e) {
+    e.stopPropagation();
+    if (!cardPreviewCard) return;
+    closeCardPreview();
+    addReturnTo = "manage";
+    openAddView(cardPreviewCard);
   });
 
   // "To learn"/"Total cards" (now shown on the Manage screen) and the
@@ -805,6 +816,7 @@
   // to hold the list at 10) each time a version ships with user-facing
   // changes worth calling out.
   var CHANGELOG = [
+    { version: "1.33.0", text: "Deleting a card mid-practice now returns you to the lesson instead of kicking you out to Manage cards. Card previews in Manage cards gained the same edit icon as Practice. Notes can now be named (and renamed) via a new edit icon next to the title." },
     { version: "1.31.2", text: "Fixed a bug where answering a card in Flip Translation (or Flip Foreign word / Type the foreign word) briefly flashed the next card's answer on the card you'd just answered, mid-flip." },
     { version: "1.31.1", text: "Screen fade-ins are slower and now wait a frame before starting, so they no longer get cut short entering a heavy screen like Manage cards. Added more breathing room between Mastery and Card of the day." },
     { version: "1.31.0", text: "Screens now fade in smoothly instead of snapping into view, and the bottom tab bar's highlight pill actually slides between tabs now (it was silently disabled)." },
@@ -896,13 +908,23 @@
   function openNoteEditor(note) {
     currentEditingNote = note;
     document.getElementById("notes-textarea").value = note.text || "";
+    document.getElementById("note-editor-title").textContent = note.name || "Note";
     showView("noteEditor");
   }
 
   document.getElementById("btn-notes-add").addEventListener("click", function () {
-    var note = { id: uid(), text: "", updatedAt: Date.now() };
+    var note = { id: uid(), text: "", name: "", updatedAt: Date.now() };
     notesList.push(note);
     openNoteEditor(note);
+  });
+
+  document.getElementById("btn-note-rename").addEventListener("click", function () {
+    if (!currentEditingNote) return;
+    var newName = prompt("Rename note", currentEditingNote.name || "Note");
+    if (newName === null) return;
+    currentEditingNote.name = newName.trim();
+    document.getElementById("note-editor-title").textContent = currentEditingNote.name || "Note";
+    saveData();
   });
 
   document.getElementById("notes-textarea").addEventListener("input", function () {
@@ -1263,9 +1285,17 @@
     saveData();
     updateGlobalStats();
     editingId = null;
-    addReturnTo = "manage";
-    renderManageList(document.getElementById("manage-search").value);
-    showView("manage");
+    if (addReturnTo === "study") {
+      session.queue = session.queue.filter(function (c) { return c.id !== target.id; });
+      session.reviewQueue = session.reviewQueue.filter(function (c) { return c.id !== target.id; });
+      addReturnTo = "manage";
+      showView("study");
+      nextCard();
+    } else {
+      addReturnTo = "manage";
+      renderManageList(document.getElementById("manage-search").value);
+      showView("manage");
+    }
   });
 
   function updateSaveCardButtonState() {

@@ -1339,6 +1339,7 @@ body {
 }
 
 .note-card {
+  min-width: 0;
   background: var(--glass-bg);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
   backdrop-filter: blur(20px) saturate(160%);

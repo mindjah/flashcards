@@ -52,10 +52,6 @@
   }
 
   // ---------- storage ----------
-  function defaultStreak() {
-    return { current: 0, lastDate: null };
-  }
-
   // A single free-text note, as shown in the Notes tab's grid of cards.
   function normalizeNotesList(rawNotes, legacyNotepad) {
     if (Array.isArray(rawNotes)) {
@@ -80,7 +76,7 @@
   function loadData() {
     try {
       var raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return { cards: [], sections: [], streak: defaultStreak(), lastExportAt: null, lastStudyPrefs: null, notes: [], foreignLanguage: DEFAULT_LANGUAGE_CODE };
+      if (!raw) return { cards: [], sections: [], lastExportAt: null, lastStudyPrefs: null, notes: [], foreignLanguage: DEFAULT_LANGUAGE_CODE };
       var parsed = JSON.parse(raw);
       // migrate from the old format where the key held a bare cards array
       if (Array.isArray(parsed)) {
@@ -89,7 +85,7 @@
           if (typeof c.reviewed !== "boolean") c.reviewed = c.box > 0;
           if (c.box <= 0 && c.dueAt > Date.now()) c.dueAt = Date.now();
         });
-        return { cards: parsed, sections: [], streak: defaultStreak(), lastExportAt: null, lastStudyPrefs: null, notes: [], foreignLanguage: DEFAULT_LANGUAGE_CODE };
+        return { cards: parsed, sections: [], lastExportAt: null, lastStudyPrefs: null, notes: [], foreignLanguage: DEFAULT_LANGUAGE_CODE };
       }
       var loadedCards = Array.isArray(parsed.cards) ? parsed.cards : [];
       loadedCards.forEach(function (c) {
@@ -106,11 +102,9 @@
       loadedSections.forEach(function (s) {
         if (!s.color) s.color = randomSectionColor();
       });
-      var loadedStreak = parsed.streak && typeof parsed.streak.current === "number" ? parsed.streak : defaultStreak();
       return {
         cards: loadedCards,
         sections: loadedSections,
-        streak: loadedStreak,
         lastExportAt: typeof parsed.lastExportAt === "number" ? parsed.lastExportAt : null,
         lastStudyPrefs: parsed.lastStudyPrefs && typeof parsed.lastStudyPrefs === "object" ? parsed.lastStudyPrefs : null,
         notes: normalizeNotesList(parsed.notes, parsed.notepad),
@@ -118,7 +112,7 @@
       };
     } catch (e) {
       console.error("Failed to load data", e);
-      return { cards: [], sections: [], streak: defaultStreak(), lastExportAt: null, lastStudyPrefs: null, notes: [], foreignLanguage: DEFAULT_LANGUAGE_CODE };
+      return { cards: [], sections: [], lastExportAt: null, lastStudyPrefs: null, notes: [], foreignLanguage: DEFAULT_LANGUAGE_CODE };
     }
   }
 
@@ -126,7 +120,6 @@
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       cards: cards,
       sections: sections,
-      streak: streak,
       lastExportAt: lastExportAt,
       lastStudyPrefs: lastStudyPrefs,
       notes: notesList,
@@ -137,7 +130,6 @@
   var initialData = loadData();
   var cards = initialData.cards;
   var sections = initialData.sections;
-  var streak = initialData.streak;
   var lastExportAt = initialData.lastExportAt;
   var lastStudyPrefs = initialData.lastStudyPrefs;
   var notesList = initialData.notes;
@@ -152,7 +144,7 @@
     return card.dueAt <= now;
   }
 
-  // ---------- streak ----------
+  // ---------- dates ----------
   function pad2(n) { return n < 10 ? "0" + n : "" + n; }
 
   function dateStr(d) {
@@ -160,26 +152,6 @@
   }
 
   function todayStr() { return dateStr(new Date()); }
-
-  function yesterdayStr() {
-    var d = new Date();
-    d.setDate(d.getDate() - 1);
-    return dateStr(d);
-  }
-
-  // Set for exactly one celebrateStreakOnHomeLanding() call - the streak
-  // should burst the first time it's extended today, not on every later
-  // landing on Home once it's already lit for the day.
-  var streakJustExtended = false;
-
-  function recordStudyActivity() {
-    var today = todayStr();
-    if (streak.lastDate === today) return;
-    streak.current = streak.lastDate === yesterdayStr() ? streak.current + 1 : 1;
-    streak.lastDate = today;
-    streakJustExtended = true;
-    saveData();
-  }
 
   // ---------- mastery ----------
   function masteryTier(c) {
@@ -324,7 +296,7 @@
       void target.offsetWidth;
       target.classList.add("view-entering");
     });
-    if (name === "home") { celebrateStreakOnHomeLanding(); pulsePracticeIcon(); }
+    if (name === "home") { pulsePracticeIcon(); }
     updateTabbar(name);
   }
 
@@ -426,8 +398,7 @@
 
   var STAT_INFO = {
     "stat-card-due": "To learn: cards that are due for review right now - new cards plus any whose review interval has passed. Tap Practice to work through them.",
-    "stat-card-total": "Total cards: every card in your collection, across all card decks.",
-    "stat-card-streak": "Day streak: consecutive days you've practiced at least one card. Practice today to keep it going."
+    "stat-card-total": "Total cards: every card in your collection, across all card decks."
   };
 
   Object.keys(STAT_INFO).forEach(function (cardId) {
@@ -436,62 +407,6 @@
       showInfoPopup(el, STAT_INFO[cardId]);
     });
   });
-
-  // ---------- streak flame burst ----------
-  // If a burst is interrupted by navigating away mid-animation, display:none
-  // cancels it without ever firing animationend, so the JS-side removal
-  // never runs and the flame is stuck in the DOM. Clearing any leftover
-  // particles before spawning a new batch (or on every home landing, even
-  // when no new burst plays) keeps them from silently replaying and piling
-  // up every time the home screen becomes visible again.
-  function clearFlameParticles(anchorEl) {
-    Array.prototype.slice.call(anchorEl.querySelectorAll(".flame-particle")).forEach(function (el) {
-      el.remove();
-    });
-  }
-
-  function spawnFlameBurst(anchorEl) {
-    clearFlameParticles(anchorEl);
-    var COUNT = 10;
-    for (var i = 0; i < COUNT; i++) {
-      var flame = document.createElement("span");
-      flame.className = "flame-particle";
-      flame.textContent = "🔥";
-
-      var angle = Math.random() * Math.PI * 2;
-      var distance = 35 + Math.random() * 45;
-      var dx = Math.cos(angle) * distance;
-      var dy = Math.sin(angle) * distance;
-      var rot = (Math.random() - 0.5) * 140;
-      var scale = 0.5 + Math.random() * 0.6;
-      var duration = 500 + Math.random() * 300;
-
-      flame.style.setProperty("--dx", dx + "px");
-      flame.style.setProperty("--dy", dy + "px");
-      flame.style.setProperty("--rot", rot + "deg");
-      flame.style.setProperty("--scale", scale);
-      flame.style.animationDuration = duration + "ms";
-
-      flame.addEventListener("animationend", function () {
-        flame.remove();
-      });
-      anchorEl.appendChild(flame);
-    }
-  }
-
-  document.getElementById("stat-card-streak").addEventListener("click", function () {
-    spawnFlameBurst(this);
-  });
-
-  function celebrateStreakOnHomeLanding() {
-    var streakEl = document.getElementById("stat-card-streak");
-    if (streakJustExtended) {
-      streakJustExtended = false;
-      spawnFlameBurst(streakEl);
-    } else {
-      clearFlameParticles(streakEl);
-    }
-  }
 
   // Draws the eye to Practice on every home landing - capped to once per
   // 12s so rapid back-and-forth navigation (e.g. editing a card, backing
@@ -694,16 +609,13 @@
     openAddView(cardPreviewCard);
   });
 
-  // "To learn"/"Total cards" (now shown on the Manage screen) and the
-  // streak (now a compact header button) are global counts unrelated to
+  // "To learn"/"Total cards" (now shown on the Manage screen) are global
+  // counts unrelated to
   // Manage's own search/filters, so they're refreshed from both here and
   // openManageView() rather than only whenever the home screen updates.
   function updateGlobalStats() {
     document.getElementById("stat-due").textContent = dueCards().length;
     document.getElementById("stat-total").textContent = cards.length;
-    document.getElementById("stat-streak").textContent = streak.current;
-    document.querySelector("#stat-card-streak .streak-icon")
-      .classList.toggle("streak-inactive", streak.lastDate !== todayStr());
   }
 
   function refreshHome() {
@@ -2566,7 +2478,6 @@
   // the single-card mode's immediate nextCard() advance.
   function resolveStudyCard(c, passed) {
     session.studied++;
-    recordStudyActivity();
 
     // Match the words is a lightweight warm-up, not a real recall test -
     // it draws from the same due cards but must never touch their box/
@@ -2856,8 +2767,6 @@
       "#html:false",
       "#notetype:Basic",
       "#tags column:4",
-      "#streak-current:" + streak.current,
-      "#streak-last-date:" + (streak.lastDate || ""),
       "#notes:" + encodeURIComponent(JSON.stringify(notesList))
     ];
 
@@ -2898,19 +2807,12 @@
 
   function parseAnkiTsv(text) {
     var items = [];
-    var importedStreak = null;
     var importedNotes = null;
 
     text.split(/\r?\n/).forEach(function (line) {
       if (!line) return;
       if (line.charAt(0) === "#") {
-        if (line.indexOf("#streak-current:") === 0) {
-          importedStreak = importedStreak || {};
-          importedStreak.current = parseInt(line.slice("#streak-current:".length), 10) || 0;
-        } else if (line.indexOf("#streak-last-date:") === 0) {
-          importedStreak = importedStreak || {};
-          importedStreak.lastDate = line.slice("#streak-last-date:".length).trim() || null;
-        } else if (line.indexOf("#notes:") === 0) {
+        if (line.indexOf("#notes:") === 0) {
           try {
             var decodedNotes = JSON.parse(decodeURIComponent(line.slice("#notes:".length)));
             importedNotes = normalizeNotesList(decodedNotes, null);
@@ -2956,7 +2858,7 @@
       items.push(item);
     });
 
-    return { items: items, streak: importedStreak, notes: importedNotes };
+    return { items: items, notes: importedNotes };
   }
 
   // still accepted for backwards compatibility with files exported before this format changed
@@ -2977,7 +2879,7 @@
           createdAt: typeof item.createdAt === "number" ? item.createdAt : Date.now()
         };
       });
-    return { items: items, streak: null };
+    return { items: items };
   }
 
   document.getElementById("file-import").addEventListener("change", function (e) {
@@ -2993,15 +2895,8 @@
           : parseAnkiTsv(text);
         var incoming = parsed.items;
 
-        // Only adopt an imported streak on a fresh start - otherwise importing
-        // someone else's export (or a re-import) would clobber a streak
-        // that's already actively being built up on this device.
-        if (parsed.streak && streak.current === 0) {
-          streak = { current: parsed.streak.current || 0, lastDate: parsed.streak.lastDate || null };
-        }
-
-        // Same caution as the streak above - only adopt imported notes
-        // when there are none written locally yet, so it can't clobber
+        // Only adopt imported notes when there are none written locally
+        // yet, so it can't clobber
         // notes already in progress on this device.
         if (parsed.notes && parsed.notes.length && !notesList.length) {
           notesList = parsed.notes;

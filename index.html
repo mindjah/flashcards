@@ -25,9 +25,6 @@
   <section id="view-home" class="view">
     <header class="topbar">
       <h1><span id="flag-icon" class="flag-icon">🇪🇸</span> Flashcards</h1>
-      <button type="button" class="streak-btn info-trigger" id="stat-card-streak">
-        <span class="streak-icon">🔥</span><span class="streak-num" id="stat-streak">0</span>
-      </button>
       <div class="dropdown" id="settings-dropdown">
         <button class="icon-btn icon-btn-plain" id="btn-settings">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
@@ -54,7 +51,7 @@
             <span class="dropdown-item-hint">Recent updates to the app</span>
           </button>
           <p class="dropdown-info">All data stays on this device. Import/export uses Anki's plain-text card format.</p>
-          <p class="app-version">v1.35.1</p>
+          <p class="app-version">v1.36.0</p>
         </div>
       </div>
     </header>
@@ -475,13 +472,13 @@
 
       <div class="readme-section">
         <h3>Notes</h3>
-        <p>The Notes tab holds any number of freeform notes, shown as a grid of cards. Tap + to add one, tap a note to open and edit it - it saves automatically - and use Delete in its top-right corner to remove it. Notes travel with Export/Import alongside your cards and streak, so they survive moving to a new device.</p>
+        <p>The Notes tab holds any number of freeform notes, shown as a grid of cards. Tap + to add one, tap a note to open and edit it - it saves automatically - and use Delete in its top-right corner to remove it. Notes travel with Export/Import alongside your cards, so they survive moving to a new device.</p>
       </div>
 
       <div class="readme-section">
         <h3>Export / Import</h3>
-        <p>Export saves a plain-text file in Anki's tab-separated note format (word, translation, notes, deck tags, box, due date, reviewed), so it opens directly in Anki too. Deck memberships are stored as <code>deck::Name</code> tags - a card in several decks gets several tags. Your streak and notes are saved in header comment lines.</p>
-        <p>Import reads that same format (older JSON exports still work too). Matching is by word + translation, case-insensitive: a duplicate isn't re-added, but any new deck tags on it are merged in. Missing decks mentioned in tags are created automatically. If it's been a week since your last export, the app will offer to back up on launch. A streak saved in the file is only adopted if your current streak is 0, and an imported notepad only if yours is currently empty - so importing cards never overwrites progress you're already building on this device.</p>
+        <p>Export saves a plain-text file in Anki's tab-separated note format (word, translation, notes, deck tags, box, due date, reviewed), so it opens directly in Anki too. Deck memberships are stored as <code>deck::Name</code> tags - a card in several decks gets several tags. Your notes are saved in a header comment line.</p>
+        <p>Import reads that same format (older JSON exports still work too). Matching is by word + translation, case-insensitive: a duplicate isn't re-added, but any new deck tags on it are merged in. Missing decks mentioned in tags are created automatically. If it's been a week since your last export, the app will offer to back up on launch. Imported notes are only adopted if you have none yet - so importing cards never overwrites progress you're already building on this device.</p>
       </div>
     </div>
   </section>

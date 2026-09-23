@@ -269,29 +269,6 @@ body {
 
 .icon-btn-plain svg { width: 24px; height: 24px; flex-shrink: 0; display: block; }
 
-.streak-btn {
-  position: relative;
-  height: 32px;
-  padding: 0 6px;
-  border: none;
-  background: none;
-  color: var(--text);
-  font-family: inherit;
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 2px;
-  flex-shrink: 0;
-}
-
-.streak-btn:active { opacity: 0.7; }
-
-.streak-icon { font-size: 22px; transition: filter 0.3s ease, opacity 0.3s ease; }
-
-.streak-icon.streak-inactive { filter: grayscale(1); opacity: 0.45; }
-
-.streak-num { font-size: 15px; font-weight: 700; }
-
 .icon-btn-translate {
   background: #4285f4;
   color: #fff;
@@ -469,32 +446,6 @@ body {
 
 .stat-card:active {
   opacity: 0.8;
-}
-
-.flame-particle {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  font-size: 18px;
-  line-height: 1;
-  pointer-events: none;
-  animation-name: flame-burst;
-  animation-timing-function: ease-out;
-  animation-fill-mode: forwards;
-}
-
-@keyframes flame-burst {
-  0% {
-    transform: translate(-50%, -50%) scale(0.3) rotate(0deg);
-    opacity: 1;
-  }
-  60% {
-    opacity: 1;
-  }
-  100% {
-    transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(var(--scale)) rotate(var(--rot));
-    opacity: 0;
-  }
 }
 
 .stat-num {

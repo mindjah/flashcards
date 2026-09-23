@@ -557,12 +557,38 @@
   });
 
   // ---------- speak (Spanish only for now) ----------
+  // iOS drops a speak() issued right after cancel(), can leave the queue
+  // paused, and garbage-collects utterances mid-speech - so only cancel when
+  // something's actually playing, resume first, pin an explicit Spanish voice,
+  // and keep a reference to the live utterance.
+  var currentUtterance = null;
+  function pickSpanishVoice() {
+    var voices = window.speechSynthesis.getVoices() || [];
+    return voices.find(function (v) { return v.lang === "es-ES"; }) ||
+           voices.find(function (v) { return /^es[-_]/i.test(v.lang); }) || null;
+  }
+  if ("speechSynthesis" in window) {
+    window.speechSynthesis.getVoices();
+    window.speechSynthesis.addEventListener("voiceschanged", function () { window.speechSynthesis.getVoices(); });
+  }
   function speakWord(text) {
     if (!text || !("speechSynthesis" in window)) return;
-    window.speechSynthesis.cancel();
+    var synth = window.speechSynthesis;
     var utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "es-ES";
-    window.speechSynthesis.speak(utterance);
+    var voice = pickSpanishVoice();
+    if (voice) utterance.voice = voice;
+    utterance.onend = utterance.onerror = function () {
+      if (currentUtterance === utterance) currentUtterance = null;
+    };
+    currentUtterance = utterance;
+    if (synth.speaking || synth.pending) {
+      synth.cancel();
+      setTimeout(function () { synth.resume(); synth.speak(utterance); }, 60);
+    } else {
+      synth.resume();
+      synth.speak(utterance);
+    }
   }
 
   document.getElementById("btn-card-preview-speak").addEventListener("click", function (e) {
@@ -799,6 +825,7 @@
   // to hold the list at 10) each time a version ships with user-facing
   // changes worth calling out.
   var CHANGELOG = [
+    { version: "1.34.0", text: "Add card's Notes field now wraps long notes onto new lines and grows to fit. Tapping + Add card with text in Cards search pre-fills the word field with it. Search now ignores accents, so \"o\" also finds \"ó\". Fixed speaker buttons going silent on iOS 27." },
     { version: "1.33.0", text: "Deleting a card mid-practice now returns you to the lesson instead of kicking you out to Manage cards. Card previews in Manage cards gained the same edit icon as Practice. Notes can now be named (and renamed) via a new edit icon next to the title." },
     { version: "1.31.2", text: "Fixed a bug where answering a card in Flip Translation (or Flip Foreign word / Type the foreign word) briefly flashed the next card's answer on the card you'd just answered, mid-flip." },
     { version: "1.31.1", text: "Screen fade-ins are slower and now wait a frame before starting, so they no longer get cut short entering a heavy screen like Manage cards. Added more breathing room between Mastery and Card of the day." },
@@ -1228,7 +1255,21 @@
     }
   });
 
-  function openAddView(cardToEdit) {
+  function autogrow(el) {
+    el.style.height = "auto";
+    el.style.height = el.scrollHeight + 2 + "px";
+  }
+
+  document.getElementById("input-notes").addEventListener("input", function () { autogrow(this); });
+  document.getElementById("input-notes").addEventListener("keydown", function (e) {
+    // Keep Enter submitting the form like the single-line field it replaced.
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      document.getElementById("form-add").requestSubmit();
+    }
+  });
+
+  function openAddView(cardToEdit, prefillWord) {
     var wordEl = document.getElementById("input-word");
     var transEl = document.getElementById("input-translation");
     var notesEl = document.getElementById("input-notes");
@@ -1247,7 +1288,7 @@
       editingId = null;
       titleEl.textContent = "Add card";
       saveBtn.textContent = "Save card";
-      wordEl.value = "";
+      wordEl.value = prefillWord || "";
       transEl.value = "";
       notesEl.value = "";
       editingSectionIds = [];
@@ -1262,6 +1303,7 @@
     document.getElementById("btn-ask-gemini").classList.toggle("hidden", !!cardToEdit);
     updateSaveCardButtonState();
     showView("add");
+    autogrow(notesEl);
     wordEl.focus();
   }
 
@@ -1545,7 +1587,7 @@
   });
 
   document.getElementById("btn-manage-add-card").addEventListener("click", function () {
-    openAddView(null);
+    openAddView(null, document.getElementById("manage-search").value.trim());
   });
 
   document.getElementById("btn-bulk-select-all").addEventListener("click", function () {
@@ -1571,6 +1613,11 @@
     renderManageList(document.getElementById("manage-search").value);
   });
 
+  // Case- and accent-insensitive: "o" matches "ó", "n" matches "ñ", etc.
+  function foldForSearch(str) {
+    return (str || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  }
+
   function renderManageList(filter) {
     var list = document.getElementById("manage-list");
     list.innerHTML = "";
@@ -1581,10 +1628,10 @@
 
     var items = cards.slice().sort(function (a, b) { return b.createdAt - a.createdAt; });
     if (filter) {
-      var f = filter.toLowerCase();
+      var f = foldForSearch(filter);
       items = items.filter(function (c) {
-        return c.word.toLowerCase().indexOf(f) !== -1 ||
-               c.translation.toLowerCase().indexOf(f) !== -1;
+        return foldForSearch(c.word).indexOf(f) !== -1 ||
+               foldForSearch(c.translation).indexOf(f) !== -1;
       });
     }
     if (sectionFilterVal === "unsectioned") {

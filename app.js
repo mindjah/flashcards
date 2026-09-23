@@ -637,7 +637,16 @@
     if (silentAudioEl) silentAudioEl.pause();
   }
 
-  function speakWord(text) {
+  // The button that triggered the current utterance glows while it speaks.
+  var speakingBtn = null;
+  function setSpeakingBtn(btn) {
+    if (speakingBtn) speakingBtn.classList.remove("speaking");
+    speakingBtn = btn || null;
+    if (speakingBtn) speakingBtn.classList.add("speaking");
+  }
+
+  function speakWord(text, btn) {
+    setSpeakingBtn(btn);
     startSilentAudio();
     speakDebug("speakWord(\"" + text + "\")");
     if (!text || !("speechSynthesis" in window)) { speakDebug("no text / no speechSynthesis"); return; }
@@ -656,12 +665,12 @@
     utterance.onstart = function () { started = true; speakDebug("onstart"); };
     utterance.onend = function () {
       speakDebug("onend");
-      if (currentUtterance === utterance) stopSilentAudio();
+      if (currentUtterance === utterance) { stopSilentAudio(); setSpeakingBtn(null); }
       if (currentUtterance === utterance) currentUtterance = null;
     };
     utterance.onerror = function (ev) {
       speakDebug("onerror: " + ev.error);
-      if (currentUtterance === utterance) stopSilentAudio();
+      if (currentUtterance === utterance) { stopSilentAudio(); setSpeakingBtn(null); }
       if (currentUtterance === utterance) currentUtterance = null;
     };
     setTimeout(function () {
@@ -679,7 +688,7 @@
 
   document.getElementById("btn-card-preview-speak").addEventListener("click", function (e) {
     e.stopPropagation();
-    speakWord(document.getElementById("card-preview-word").textContent);
+    speakWord(document.getElementById("card-preview-word").textContent, this);
   });
 
   document.getElementById("btn-card-preview-edit").addEventListener("click", function (e) {
@@ -766,7 +775,7 @@
 
   document.getElementById("btn-daily-card-speak").addEventListener("click", function (e) {
     e.stopPropagation();
-    speakWord(document.getElementById("daily-card-word").textContent);
+    speakWord(document.getElementById("daily-card-word").textContent, this);
   });
 
   document.getElementById("daily-card-inner").addEventListener("click", function () {
@@ -2486,7 +2495,7 @@
   [document.getElementById("btn-card-front-speak"), document.getElementById("btn-card-back-speak")].forEach(function (btn) {
     btn.addEventListener("click", function (e) {
       e.stopPropagation();
-      if (session.current) speakWord(session.current.word);
+      if (session.current) speakWord(session.current.word, btn);
     });
     btn.addEventListener("touchstart", function (e) {
       e.stopPropagation();

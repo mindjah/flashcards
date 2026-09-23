@@ -1006,7 +1006,20 @@ body {
   gap: 14px;
 }
 
+/* The hidden face of a flip card still sits in the hit-test stack (the back
+   is later in the DOM, so on top) - iOS 27 WebKit stopped honoring
+   backface-visibility for taps, letting the invisible back swallow taps on
+   the front's speaker button. Only the visible face takes pointer events. */
+.flashcard:not(.flipped) .card-back,
+.flashcard.flipped .card-front,
+.daily-card:not(.flipped) .daily-card-back,
+.daily-card.flipped .daily-card-front {
+  pointer-events: none;
+}
+
 .card-speak-btn {
+  position: relative;
+  z-index: 1;
   flex-shrink: 0;
   width: 48px;
   height: 48px;

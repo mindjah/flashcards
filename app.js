@@ -602,7 +602,43 @@
     try { navigator.audioSession.type = "playback"; } catch (err) {}
   }
 
+  // iOS 27 mutes Web Speech when the ring/silent switch is on silent, and
+  // navigator.audioSession alone doesn't change that. Playing a (silent) media
+  // element alongside it moves the page into the media-playback audio
+  // category, which ignores the switch - so loop a tiny silent WAV while
+  // speaking, then stop it once the utterance ends.
+  var silentAudioEl = null;
+  function silentWavUrl() {
+    var sampleRate = 8000, samples = 4000;
+    var buf = new ArrayBuffer(44 + samples);
+    var v = new DataView(buf);
+    function str(o, t) { for (var i = 0; i < t.length; i++) v.setUint8(o + i, t.charCodeAt(i)); }
+    str(0, "RIFF"); v.setUint32(4, 36 + samples, true); str(8, "WAVE");
+    str(12, "fmt "); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, sampleRate, true); v.setUint32(28, sampleRate, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true);
+    str(36, "data"); v.setUint32(40, samples, true);
+    for (var i = 0; i < samples; i++) v.setUint8(44 + i, 128);
+    return URL.createObjectURL(new Blob([buf], { type: "audio/wav" }));
+  }
+  function startSilentAudio() {
+    if (!silentAudioEl) {
+      silentAudioEl = document.createElement("audio");
+      silentAudioEl.src = silentWavUrl();
+      silentAudioEl.loop = true;
+      silentAudioEl.setAttribute("playsinline", "");
+      silentAudioEl.setAttribute("x-webkit-airplay", "deny");
+    }
+    var played = silentAudioEl.play();
+    if (played && played.then) {
+      played.then(function () { speakDebug("silent audio: playing"); }, function (err) { speakDebug("silent audio failed: " + err.name); });
+    }
+  }
+  function stopSilentAudio() {
+    if (silentAudioEl) silentAudioEl.pause();
+  }
+
   function speakWord(text) {
+    startSilentAudio();
     speakDebug("speakWord(\"" + text + "\")");
     if (!text || !("speechSynthesis" in window)) { speakDebug("no text / no speechSynthesis"); return; }
     var synth = window.speechSynthesis;
@@ -620,10 +656,12 @@
     utterance.onstart = function () { started = true; speakDebug("onstart"); };
     utterance.onend = function () {
       speakDebug("onend");
+      if (currentUtterance === utterance) stopSilentAudio();
       if (currentUtterance === utterance) currentUtterance = null;
     };
     utterance.onerror = function (ev) {
       speakDebug("onerror: " + ev.error);
+      if (currentUtterance === utterance) stopSilentAudio();
       if (currentUtterance === utterance) currentUtterance = null;
     };
     setTimeout(function () {

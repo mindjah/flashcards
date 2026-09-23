@@ -571,33 +571,6 @@
     window.speechSynthesis.getVoices();
     window.speechSynthesis.addEventListener("voiceschanged", function () { window.speechSynthesis.getVoices(); });
   }
-  // TEMP diagnostics for the iOS 27 speaker bug - an on-screen log of what
-  // the tap and the speech engine actually do. Remove once fixed.
-  var speakDebugEl = null;
-  var speakDebugTimer = null;
-  function speakDebug(msg) {
-    if (!speakDebugEl) {
-      speakDebugEl = document.createElement("pre");
-      speakDebugEl.style.cssText = "position:fixed;top:8px;left:8px;right:8px;z-index:99999;margin:0;padding:8px 10px;" +
-        "background:rgba(0,0,0,0.85);color:#7CFC00;font:11px/1.35 monospace;white-space:pre-wrap;border-radius:8px;pointer-events:none;";
-      document.body.appendChild(speakDebugEl);
-    }
-    speakDebugEl.textContent += msg + "\n";
-    speakDebugEl.style.display = "block";
-    clearTimeout(speakDebugTimer);
-    speakDebugTimer = setTimeout(function () { speakDebugEl.style.display = "none"; speakDebugEl.textContent = ""; }, 12000);
-  }
-  document.addEventListener("touchstart", function (e) {
-    var t = e.touches[0];
-    if (!t) return;
-    document.querySelectorAll(".card-speak-btn").forEach(function (btn) {
-      var r = btn.getBoundingClientRect();
-      if (!r.width || t.clientX < r.left || t.clientX > r.right || t.clientY < r.top || t.clientY > r.bottom) return;
-      var tgt = e.target;
-      speakDebug("touch on " + btn.id + " -> target: " + (tgt.id || tgt.tagName + "." + (tgt.className.baseVal !== undefined ? tgt.className.baseVal : tgt.className)));
-    });
-  }, { capture: true, passive: true });
-
   if (navigator.audioSession) {
     try { navigator.audioSession.type = "playback"; } catch (err) {}
   }
@@ -630,7 +603,7 @@
     }
     var played = silentAudioEl.play();
     if (played && played.then) {
-      played.then(function () { speakDebug("silent audio: playing"); }, function (err) { speakDebug("silent audio failed: " + err.name); });
+      played.catch(function () {});
     }
   }
   function stopSilentAudio() {
@@ -650,8 +623,8 @@
   // TTS played as a regular audio clip (plays reliably, silent switch
   // included). Offline, or if that clip fails, fall back to Web Speech.
   var ttsAudioEl = null;
+  var ttsPlayId = 0;
   function speakWord(text, btn) {
-    speakDebug("speakWord(\"" + text + "\") online=" + navigator.onLine);
     if (!text) return;
     if (!navigator.onLine) { speakWithSynth(text, btn); return; }
     if (!ttsAudioEl) {
@@ -662,26 +635,27 @@
     audio.pause();
     if (window.speechSynthesis) window.speechSynthesis.cancel();
     setSpeakingBtn(btn);
+    var src = "https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=es&q=" + encodeURIComponent(text);
+    var playId = ++ttsPlayId;
     var fellBack = false;
-    function fallback(reason) {
-      if (fellBack || ttsAudioEl.src !== audio.src) return;
+    // A re-tap restarts the clip, rejecting the previous play() - only fall
+    // back for the tap that's still current.
+    function fallback() {
+      if (fellBack || playId !== ttsPlayId) return;
       fellBack = true;
-      speakDebug("google tts failed (" + reason + "), using device voice");
       speakWithSynth(text, btn);
     }
-    audio.onplaying = function () { speakDebug("google tts: playing"); };
-    audio.onended = function () { speakDebug("google tts: ended"); setSpeakingBtn(null); };
-    audio.onerror = function () { fallback("error " + (audio.error ? audio.error.code : "?")); };
-    audio.src = "https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=es&q=" + encodeURIComponent(text);
+    audio.onended = function () { setSpeakingBtn(null); };
+    audio.onerror = fallback;
+    audio.src = src;
     var played = audio.play();
-    if (played && played.catch) played.catch(function (err) { fallback(err.name); });
+    if (played && played.catch) played.catch(fallback);
   }
 
   function speakWithSynth(text, btn) {
     setSpeakingBtn(btn);
     startSilentAudio();
-    speakDebug("device voice");
-    if (!text || !("speechSynthesis" in window)) { speakDebug("no text / no speechSynthesis"); return; }
+    if (!text || !("speechSynthesis" in window)) { setSpeakingBtn(null); return; }
     var synth = window.speechSynthesis;
     if (navigator.audioSession) {
       try { navigator.audioSession.type = "playback"; } catch (err) {}
@@ -690,24 +664,13 @@
     utterance.lang = "es-ES";
     var voice = pickSpanishVoice();
     if (voice) utterance.voice = voice;
-    speakDebug("voices: " + synth.getVoices().length + ", picked: " + (voice ? voice.name + " (" + voice.lang + (voice.localService ? ", local" : "") + ")" : "none") +
-      "\naudioSession: " + (navigator.audioSession ? navigator.audioSession.type + "/" + navigator.audioSession.state : "n/a") +
-      "\nbefore: speaking=" + synth.speaking + " pending=" + synth.pending + " paused=" + synth.paused);
-    var started = false;
-    utterance.onstart = function () { started = true; speakDebug("onstart"); };
-    utterance.onend = function () {
-      speakDebug("onend");
-      if (currentUtterance === utterance) { stopSilentAudio(); setSpeakingBtn(null); }
-      if (currentUtterance === utterance) currentUtterance = null;
+    utterance.onend = utterance.onerror = function () {
+      if (currentUtterance === utterance) {
+        stopSilentAudio();
+        setSpeakingBtn(null);
+        currentUtterance = null;
+      }
     };
-    utterance.onerror = function (ev) {
-      speakDebug("onerror: " + ev.error);
-      if (currentUtterance === utterance) { stopSilentAudio(); setSpeakingBtn(null); }
-      if (currentUtterance === utterance) currentUtterance = null;
-    };
-    setTimeout(function () {
-      if (!started) speakDebug("no start after 2s: speaking=" + synth.speaking + " pending=" + synth.pending + " paused=" + synth.paused);
-    }, 2000);
     currentUtterance = utterance;
     if (synth.speaking || synth.pending) {
       synth.cancel();

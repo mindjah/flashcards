@@ -571,16 +571,64 @@
     window.speechSynthesis.getVoices();
     window.speechSynthesis.addEventListener("voiceschanged", function () { window.speechSynthesis.getVoices(); });
   }
+  // TEMP diagnostics for the iOS 27 speaker bug - an on-screen log of what
+  // the tap and the speech engine actually do. Remove once fixed.
+  var speakDebugEl = null;
+  var speakDebugTimer = null;
+  function speakDebug(msg) {
+    if (!speakDebugEl) {
+      speakDebugEl = document.createElement("pre");
+      speakDebugEl.style.cssText = "position:fixed;top:8px;left:8px;right:8px;z-index:99999;margin:0;padding:8px 10px;" +
+        "background:rgba(0,0,0,0.85);color:#7CFC00;font:11px/1.35 monospace;white-space:pre-wrap;border-radius:8px;pointer-events:none;";
+      document.body.appendChild(speakDebugEl);
+    }
+    speakDebugEl.textContent += msg + "\n";
+    speakDebugEl.style.display = "block";
+    clearTimeout(speakDebugTimer);
+    speakDebugTimer = setTimeout(function () { speakDebugEl.style.display = "none"; speakDebugEl.textContent = ""; }, 12000);
+  }
+  document.addEventListener("touchstart", function (e) {
+    var t = e.touches[0];
+    if (!t) return;
+    document.querySelectorAll(".card-speak-btn").forEach(function (btn) {
+      var r = btn.getBoundingClientRect();
+      if (!r.width || t.clientX < r.left || t.clientX > r.right || t.clientY < r.top || t.clientY > r.bottom) return;
+      var tgt = e.target;
+      speakDebug("touch on " + btn.id + " -> target: " + (tgt.id || tgt.tagName + "." + (tgt.className.baseVal !== undefined ? tgt.className.baseVal : tgt.className)));
+    });
+  }, { capture: true, passive: true });
+
+  if (navigator.audioSession) {
+    try { navigator.audioSession.type = "playback"; } catch (err) {}
+  }
+
   function speakWord(text) {
-    if (!text || !("speechSynthesis" in window)) return;
+    speakDebug("speakWord(\"" + text + "\")");
+    if (!text || !("speechSynthesis" in window)) { speakDebug("no text / no speechSynthesis"); return; }
     var synth = window.speechSynthesis;
+    if (navigator.audioSession) {
+      try { navigator.audioSession.type = "playback"; } catch (err) {}
+    }
     var utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "es-ES";
     var voice = pickSpanishVoice();
     if (voice) utterance.voice = voice;
-    utterance.onend = utterance.onerror = function () {
+    speakDebug("voices: " + synth.getVoices().length + ", picked: " + (voice ? voice.name + " (" + voice.lang + (voice.localService ? ", local" : "") + ")" : "none") +
+      "\naudioSession: " + (navigator.audioSession ? navigator.audioSession.type + "/" + navigator.audioSession.state : "n/a") +
+      "\nbefore: speaking=" + synth.speaking + " pending=" + synth.pending + " paused=" + synth.paused);
+    var started = false;
+    utterance.onstart = function () { started = true; speakDebug("onstart"); };
+    utterance.onend = function () {
+      speakDebug("onend");
       if (currentUtterance === utterance) currentUtterance = null;
     };
+    utterance.onerror = function (ev) {
+      speakDebug("onerror: " + ev.error);
+      if (currentUtterance === utterance) currentUtterance = null;
+    };
+    setTimeout(function () {
+      if (!started) speakDebug("no start after 2s: speaking=" + synth.speaking + " pending=" + synth.pending + " paused=" + synth.paused);
+    }, 2000);
     currentUtterance = utterance;
     if (synth.speaking || synth.pending) {
       synth.cancel();

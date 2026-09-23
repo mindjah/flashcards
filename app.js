@@ -827,7 +827,9 @@
   // to hold the list at 10) each time a version ships with user-facing
   // changes worth calling out.
   var CHANGELOG = [
-    { version: "1.34.0", text: "Add card's Notes field now wraps long notes onto new lines and grows to fit. Tapping + Add card with text in Cards search pre-fills the word field with it. Search now ignores accents, so \"o\" also finds \"ó\". Fixed speaker buttons going silent on iOS 27." },
+    { version: "1.36.0", text: "Removed the day streak - the flame counter is gone from the home screen, practice no longer tracks it, and exports no longer include it (older backups with streak lines still import fine)." },
+    { version: "1.35.0", text: "Fixed the speaker buttons playing no sound on iOS 27 - words are now spoken with Google Translate's voice (needs internet, and plays even in silent mode), falling back to the device voice when offline. The speaker button now shrinks when pressed and glows yellow while the word plays." },
+    { version: "1.34.0", text: "Add card's Notes field now wraps long notes onto new lines and grows to fit. Tapping + Add card with text in Cards search pre-fills the word field with it. Search now ignores accents, so \"o\" also finds \"ó\"." },
     { version: "1.33.0", text: "Deleting a card mid-practice now returns you to the lesson instead of kicking you out to Manage cards. Card previews in Manage cards gained the same edit icon as Practice. Notes can now be named (and renamed) via a new edit icon next to the title." },
     { version: "1.31.2", text: "Fixed a bug where answering a card in Flip Translation (or Flip Foreign word / Type the foreign word) briefly flashed the next card's answer on the card you'd just answered, mid-flip." },
     { version: "1.31.1", text: "Screen fade-ins are slower and now wait a frame before starting, so they no longer get cut short entering a heavy screen like Manage cards. Added more breathing room between Mastery and Card of the day." },

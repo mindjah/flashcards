@@ -1,4 +1,4 @@
-var CACHE_NAME = "flashcards-v77";
+var CACHE_NAME = "flashcards-v78";
 var ASSETS = [
   "./",
   "./index.html",
@@ -50,6 +50,9 @@ var ALWAYS_FRESH_URLS = ["", "index.html", "app.js", "styles.css"].map(function 
 
 self.addEventListener("fetch", function (event) {
   if (event.request.method !== "GET") return;
+  // Cross-origin requests (e.g. the Google TTS audio clips, which iOS fetches
+  // with Range headers) go straight to the network untouched.
+  if (new URL(event.request.url).origin !== self.location.origin) return;
 
   var forceFresh = event.request.mode === "navigate" ||
     ALWAYS_FRESH_URLS.indexOf(event.request.url) !== -1;

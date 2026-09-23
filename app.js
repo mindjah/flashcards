@@ -645,10 +645,42 @@
     if (speakingBtn) speakingBtn.classList.add("speaking");
   }
 
+  // iOS 27's on-device Web Speech runs start-to-end in a home-screen app but
+  // produces no sound at all, so the primary voice is now Google Translate's
+  // TTS played as a regular audio clip (plays reliably, silent switch
+  // included). Offline, or if that clip fails, fall back to Web Speech.
+  var ttsAudioEl = null;
   function speakWord(text, btn) {
+    speakDebug("speakWord(\"" + text + "\") online=" + navigator.onLine);
+    if (!text) return;
+    if (!navigator.onLine) { speakWithSynth(text, btn); return; }
+    if (!ttsAudioEl) {
+      ttsAudioEl = document.createElement("audio");
+      ttsAudioEl.setAttribute("playsinline", "");
+    }
+    var audio = ttsAudioEl;
+    audio.pause();
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    setSpeakingBtn(btn);
+    var fellBack = false;
+    function fallback(reason) {
+      if (fellBack || ttsAudioEl.src !== audio.src) return;
+      fellBack = true;
+      speakDebug("google tts failed (" + reason + "), using device voice");
+      speakWithSynth(text, btn);
+    }
+    audio.onplaying = function () { speakDebug("google tts: playing"); };
+    audio.onended = function () { speakDebug("google tts: ended"); setSpeakingBtn(null); };
+    audio.onerror = function () { fallback("error " + (audio.error ? audio.error.code : "?")); };
+    audio.src = "https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=es&q=" + encodeURIComponent(text);
+    var played = audio.play();
+    if (played && played.catch) played.catch(function (err) { fallback(err.name); });
+  }
+
+  function speakWithSynth(text, btn) {
     setSpeakingBtn(btn);
     startSilentAudio();
-    speakDebug("speakWord(\"" + text + "\")");
+    speakDebug("device voice");
     if (!text || !("speechSynthesis" in window)) { speakDebug("no text / no speechSynthesis"); return; }
     var synth = window.speechSynthesis;
     if (navigator.audioSession) {

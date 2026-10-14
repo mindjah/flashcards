@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, interactive-widget=resizes-visual">
 <title>Flashcards</title>
 
-<meta name="theme-color" content="#f5ede0">
+<meta name="theme-color" content="#efe3c8">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Flashcards">
@@ -28,7 +28,7 @@
       <button type="button" class="avatar hidden" id="btn-drive-avatar" title="Google Drive backup"></button>
       <div class="dropdown" id="settings-dropdown">
         <button class="icon-btn icon-btn-plain" id="btn-settings">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2.6"/><circle cx="12" cy="12" r="6.4"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>
         </button>
         <div class="dropdown-menu hidden" id="settings-menu">
           <div class="dropdown-language-row">
@@ -56,7 +56,7 @@
             <span class="dropdown-item-hint">Recent updates to the app</span>
           </button>
           <p class="dropdown-info">Your data stays on this device unless you turn on Google Drive backup. Import/export uses Anki's plain-text card format.</p>
-          <p class="app-version">v1.37.0</p>
+          <p class="app-version">v1.38.0</p>
         </div>
       </div>
     </header>
@@ -97,7 +97,7 @@
           <div class="daily-card-face daily-card-front">
             <span class="daily-card-word" id="daily-card-word"></span>
             <button type="button" class="icon-btn card-speak-btn hidden" id="btn-daily-card-speak" title="Play pronunciation">
-              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z"/><path d="M15.5 9a4 4 0 0 1 0 6"/><path d="M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>
             </button>
           </div>
           <div class="daily-card-face daily-card-back">
@@ -140,40 +140,19 @@
       <span class="field-label">Practice mode</span>
       <div class="chip-list" id="mode-picker">
         <button type="button" class="chip" data-mode="normal">
-          <svg class="chip-icon" viewBox="0 0 24 24" fill="currentColor">
-            <rect x="7" y="2" width="14" height="18" rx="3" opacity="0.35"/>
-            <rect x="3" y="6" width="14" height="18" rx="3"/>
-          </svg>
+          <svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2.5" width="12" height="16" rx="1" opacity=".45"/><rect x="4" y="5.5" width="12" height="16" rx="1"/></svg>
           <span>Flip the Foreign word</span>
         </button>
         <button type="button" class="chip" data-mode="reversed">
-          <svg class="chip-icon" viewBox="0 0 24 24" fill="currentColor">
-            <rect x="3" y="2" width="14" height="18" rx="3" opacity="0.35"/>
-            <rect x="7" y="6" width="14" height="18" rx="3"/>
-          </svg>
+          <svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2.5" width="12" height="16" rx="1" opacity=".45"/><rect x="8" y="5.5" width="12" height="16" rx="1"/></svg>
           <span>Flip Translation</span>
         </button>
         <button type="button" class="chip" data-mode="type">
-          <svg class="chip-icon" viewBox="0 0 24 24" fill="currentColor">
-            <mask id="mode-icon-keyboard-mask">
-              <rect x="0" y="0" width="24" height="24" fill="white"/>
-              <rect x="4" y="8" width="2.6" height="2.6" fill="black"/>
-              <rect x="8" y="8" width="2.6" height="2.6" fill="black"/>
-              <rect x="12" y="8" width="2.6" height="2.6" fill="black"/>
-              <rect x="16" y="8" width="2.6" height="2.6" fill="black"/>
-              <rect x="7" y="13" width="10" height="2.6" fill="black"/>
-            </mask>
-            <rect x="2" y="5" width="20" height="14" rx="2" mask="url(#mode-icon-keyboard-mask)"/>
-          </svg>
+          <svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="12" rx="1.5"/><path d="M6.5 10h.01M10 10h.01M13.5 10h.01M17 10h.01M8 14.5h8"/></svg>
           <span>Type the Foreign word</span>
         </button>
         <button type="button" class="chip" data-mode="match">
-          <svg class="chip-icon" viewBox="0 0 24 24" fill="currentColor">
-            <rect x="3" y="7" width="13" height="2.4"/>
-            <polygon points="16,4.5 16,11.5 21,8"/>
-            <rect x="8" y="14.5" width="13" height="2.4"/>
-            <polygon points="8,12 8,19 3,15.5"/>
-          </svg>
+          <svg class="chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h13M13 5l3 3-3 3M21 16H8M11 13l-3 3 3 3"/></svg>
           <span>Match the words</span>
         </button>
       </div>
@@ -200,10 +179,7 @@
       <button class="icon-btn" id="btn-study-back">✕</button>
       <div class="progress-text" id="study-progress"></div>
       <button class="icon-btn icon-btn-translate" id="btn-study-translate" title="Open in Google Translate">
-        <svg viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8H4.69c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11z"/>
-          <path d="M18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/>
-        </svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 5.5h9M8 3.5v2M10.5 5.5c-.8 3.6-3.4 6.4-6.5 7.8M5.8 8.6c1 1.8 2.6 3.4 4.6 4.4"/><path d="M12.5 20.5l4-9.5 4 9.5M14 17h5"/></svg>
       </button>
     </header>
 
@@ -219,7 +195,7 @@
           <div class="card-face card-front">
             <span id="card-word" class="card-word"></span>
             <button type="button" class="icon-btn card-speak-btn hidden" id="btn-card-front-speak" title="Play pronunciation">
-              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z"/><path d="M15.5 9a4 4 0 0 1 0 6"/><path d="M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>
             </button>
             <div class="match-board" id="match-board-front">
               <div class="match-col" id="match-col-es-front"></div>
@@ -228,11 +204,11 @@
           </div>
           <div class="card-face card-back">
             <button type="button" class="icon-btn card-edit-btn" id="btn-study-edit-card" title="Edit card">
-              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1.2-4.6L15.6 5a2 2 0 0 1 2.8 0l.6.6a2 2 0 0 1 0 2.8L8.6 18.8z"/><path d="M14 6.6l3.4 3.4"/></svg>
             </button>
             <span id="card-translation" class="card-translation"></span>
             <button type="button" class="icon-btn card-speak-btn hidden" id="btn-card-back-speak" title="Play pronunciation">
-              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z"/><path d="M15.5 9a4 4 0 0 1 0 6"/><path d="M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>
             </button>
             <p class="card-your-answer hidden" id="card-your-answer">
               <span class="card-note-label">You typed:</span>
@@ -292,10 +268,7 @@
         <div class="input-with-action">
           <input type="text" id="input-word" autocomplete="off" required>
           <button type="button" class="icon-btn icon-btn-translate" id="btn-add-translate" title="Open in Google Translate">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8H4.69c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11z"/>
-              <path d="M18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/>
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 5.5h9M8 3.5v2M10.5 5.5c-.8 3.6-3.4 6.4-6.5 7.8M5.8 8.6c1 1.8 2.6 3.4 4.6 4.4"/><path d="M12.5 20.5l4-9.5 4 9.5M14 17h5"/></svg>
           </button>
         </div>
       </label>
@@ -420,7 +393,7 @@
       <button class="icon-btn" id="btn-sections-back">✕</button>
       <h2>Card decks</h2>
       <button type="button" class="icon-btn icon-btn-plain" id="btn-open-new-deck" title="Add card deck">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
       </button>
     </header>
     <div id="sections-list" class="manage-list"></div>
@@ -557,7 +530,7 @@
       <button class="icon-btn" id="btn-notes-list-back">✕</button>
       <h2>Notes</h2>
       <button type="button" class="icon-btn icon-btn-plain" id="btn-notes-add" title="Add note">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
       </button>
     </header>
 
@@ -572,7 +545,7 @@
       <div class="note-editor-title-group">
         <h2 id="note-editor-title">Note</h2>
         <button type="button" class="icon-btn icon-btn-plain" id="btn-note-rename" title="Rename note">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1.2-4.6L15.6 5a2 2 0 0 1 2.8 0l.6.6a2 2 0 0 1 0 2.8L8.6 18.8z"/><path d="M14 6.6l3.4 3.4"/></svg>
         </button>
       </div>
       <button type="button" class="text-action-btn text-action-btn-danger" id="btn-note-delete">Delete</button>
@@ -595,11 +568,11 @@
       <div class="flashcard-inner">
         <div class="card-face card-front">
           <button type="button" class="icon-btn card-edit-btn" id="btn-card-preview-edit" title="Edit card">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1.2-4.6L15.6 5a2 2 0 0 1 2.8 0l.6.6a2 2 0 0 1 0 2.8L8.6 18.8z"/><path d="M14 6.6l3.4 3.4"/></svg>
           </button>
           <span id="card-preview-word" class="card-word"></span>
           <button type="button" class="icon-btn card-speak-btn hidden" id="btn-card-preview-speak" title="Play pronunciation">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z"/><path d="M15.5 9a4 4 0 0 1 0 6"/><path d="M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>
           </button>
         </div>
         <div class="card-face card-back">
@@ -630,23 +603,23 @@
   <nav class="bottom-tabbar hidden" id="bottom-tabbar">
     <div class="tabbar-indicator" id="tabbar-indicator"></div>
     <button type="button" class="tab-btn" id="btn-tab-home" data-view="home">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 11L12 4l8.5 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5.5h4V20"/></svg>
       <span class="tab-label">Home</span>
     </button>
     <button type="button" class="tab-btn" id="btn-tab-manage" data-view="manage">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 18.54l-7.37-5.73L3 14.07l9 7 9-7-1.63-1.27-7.38 5.74zM12 16l7.36-5.73L21 9l-9-7-9 7 1.63 1.27L12 16z"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="7.5" y="3.5" width="12" height="15" rx="1"/><path d="M4.5 7v12.5a1 1 0 0 0 1 1H15"/></svg>
       <span class="tab-label">Cards</span>
     </button>
     <button type="button" class="tab-btn" id="btn-tab-practice" data-view="practice">
-      <svg viewBox="0 0 24 24" fill="currentColor" id="tab-practice-icon"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" id="tab-practice-icon"><path d="M9 11h6v9.5H9z"/><path d="M6.5 20.5h11"/><path d="M12 2.8c1.6 1.8 2.2 3 2.2 4.1a2.2 2.2 0 0 1-4.4 0c0-1.1.6-2.3 2.2-4.1z"/><path d="M12 9.1V11"/></svg>
       <span class="tab-label">Practice</span>
     </button>
     <button type="button" class="tab-btn" id="btn-tab-decks" data-view="sections">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 14h4v-4H3v4zm0 5h4v-4H3v4zM3 9h4V5H3v4zm5 5h13v-4H8v4zm0 5h13v-4H8v4zM8 5v4h13V5H8z"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5h3.5v15H4zM9.5 6.5H13v13H9.5z"/><path d="M14.8 6.2l3.3-.9 3.2 13.6-3.3.9z"/><path d="M3 19.5h12.5"/></svg>
       <span class="tab-label">Decks</span>
     </button>
     <button type="button" class="tab-btn" id="btn-tab-notes" data-view="notes">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-1-5V3.5L18.5 9H15z"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5C10 5 7 4.5 3.5 5v13.5c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5c-3.5-.5-6.5 0-8.5 1.5z"/><path d="M12 6.5V20"/></svg>
       <span class="tab-label">Notes</span>
     </button>
   </nav>

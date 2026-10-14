@@ -5,18 +5,23 @@
   var BOX_INTERVALS_DAYS = [0, 1, 3, 7, 16, 35]; // index = box number, box0 = due immediately
   var MAX_BOX = BOX_INTERVALS_DAYS.length - 1;
 
-  // Soft pastels, like colored ribbon bookmarks in a notebook.
+  // Old book-cloth colors: oxblood, forest, navy, ochre... like the spines
+  // on a library shelf.
   var SECTION_COLORS = [
-    "#f6d98b", "#a8dcc0", "#f4aaa6", "#a9c4ee", "#cdb4ee",
-    "#f8c49a", "#a3dedd", "#f2b1cc", "#c4dd9c", "#b8bff0",
-    "#f7c6c0", "#b3e6d3"
+    "#85603f", "#4f6b45", "#8e3b2f", "#3f5873", "#6a4a6e",
+    "#a35a2c", "#3e6c69", "#7d3447", "#6f7a38", "#525d86",
+    "#9a5b4c", "#4c7a62"
   ];
-  // Decks created before the pastel redesign keep their hue, softened -
-  // same index in SECTION_COLORS as in this old, saturated palette.
-  var LEGACY_SECTION_COLORS = [
-    "#f1bf00", "#3ecf8e", "#ff6b6b", "#5b8def", "#c77dff",
-    "#ff9f45", "#38d9d9", "#f06595", "#82c91e", "#748ffc",
-    "#ffa8a8", "#63e6be"
+  // Decks created before this palette keep their hue - same index in
+  // SECTION_COLORS as in these earlier palettes (the original saturated
+  // one, then the short-lived pastel one).
+  var LEGACY_SECTION_PALETTES = [
+    ["#f1bf00", "#3ecf8e", "#ff6b6b", "#5b8def", "#c77dff",
+     "#ff9f45", "#38d9d9", "#f06595", "#82c91e", "#748ffc",
+     "#ffa8a8", "#63e6be"],
+    ["#f6d98b", "#a8dcc0", "#f4aaa6", "#a9c4ee", "#cdb4ee",
+     "#f8c49a", "#a3dedd", "#f2b1cc", "#c4dd9c", "#b8bff0",
+     "#f7c6c0", "#b3e6d3"]
   ];
 
   // The 10 most commonly learned foreign languages - drives the flag icon,
@@ -108,8 +113,10 @@
       });
       var loadedSections = Array.isArray(parsed.sections) ? parsed.sections : [];
       loadedSections.forEach(function (s) {
-        var legacyIdx = LEGACY_SECTION_COLORS.indexOf(String(s.color).toLowerCase());
-        if (legacyIdx !== -1) s.color = SECTION_COLORS[legacyIdx];
+        LEGACY_SECTION_PALETTES.forEach(function (palette) {
+          var legacyIdx = palette.indexOf(String(s.color).toLowerCase());
+          if (legacyIdx !== -1) s.color = SECTION_COLORS[legacyIdx];
+        });
         if (!s.color) s.color = randomSectionColor();
       });
       return {
@@ -839,6 +846,7 @@
   // to hold the list at 10) each time a version ships with user-facing
   // changes worth calling out.
   var CHANGELOG = [
+    { version: "1.38.0", text: "A new look on every screen, like an old leather-bound book: parchment pages with a printed frame, sepia ink, serif type, brown leather buttons and a leather tab bar with a ribbon bookmark marking the current tab. Icons are now engraved-style line drawings, and deck colors are old book-cloth shades. Fixed the speaker button showing through on the back of a flipped card." },
     { version: "1.37.0", text: "Google Drive backup - sign in from Settings and your cards, decks, progress and notes back up by themselves to a hidden app folder in your Google Drive, and restore onto a new phone in one tap. Plus a cozy new look: warm paper pages, book-style cards and soft pastel colors on every screen." },
     { version: "1.36.0", text: "Removed the day streak - the flame counter is gone from the home screen, practice no longer tracks it, and exports no longer include it (older backups with streak lines still import fine)." },
     { version: "1.35.0", text: "Fixed the speaker buttons playing no sound on iOS 27 - words are now spoken with Google Translate's voice (needs internet, and plays even in silent mode), falling back to the device voice when offline. The speaker button now shrinks when pressed and glows yellow while the word plays." },

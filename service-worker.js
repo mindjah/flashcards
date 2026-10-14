@@ -1,4 +1,4 @@
-var CACHE_NAME = "flashcards-v84";
+var CACHE_NAME = "flashcards-v85";
 var ASSETS = [
   "./",
   "./index.html",

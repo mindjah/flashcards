@@ -5,23 +5,26 @@
   var BOX_INTERVALS_DAYS = [0, 1, 3, 7, 16, 35]; // index = box number, box0 = due immediately
   var MAX_BOX = BOX_INTERVALS_DAYS.length - 1;
 
-  // Old book-cloth colors: oxblood, forest, navy, ochre... like the spines
-  // on a library shelf.
+  // Muted book-cloth colors, shown as each deck's spine - warm enough to
+  // sit next to the coffee-brown accent in both light and dark mode.
   var SECTION_COLORS = [
-    "#85603f", "#4f6b45", "#8e3b2f", "#3f5873", "#6a4a6e",
-    "#a35a2c", "#3e6c69", "#7d3447", "#6f7a38", "#525d86",
-    "#9a5b4c", "#4c7a62"
+    "#9a6c46", "#6f7d4f", "#a85f48", "#4f6a86", "#7a5a78",
+    "#c08a5a", "#4f7d78", "#8a4f5f", "#8a8a4a", "#6b6f9a",
+    "#b07a6a", "#5f8a6f"
   ];
   // Decks created before this palette keep their hue - same index in
   // SECTION_COLORS as in these earlier palettes (the original saturated
-  // one, then the short-lived pastel one).
+  // one, the pastel one, then the old-book one).
   var LEGACY_SECTION_PALETTES = [
     ["#f1bf00", "#3ecf8e", "#ff6b6b", "#5b8def", "#c77dff",
      "#ff9f45", "#38d9d9", "#f06595", "#82c91e", "#748ffc",
      "#ffa8a8", "#63e6be"],
     ["#f6d98b", "#a8dcc0", "#f4aaa6", "#a9c4ee", "#cdb4ee",
      "#f8c49a", "#a3dedd", "#f2b1cc", "#c4dd9c", "#b8bff0",
-     "#f7c6c0", "#b3e6d3"]
+     "#f7c6c0", "#b3e6d3"],
+    ["#85603f", "#4f6b45", "#8e3b2f", "#3f5873", "#6a4a6e",
+     "#a35a2c", "#3e6c69", "#7d3447", "#6f7a38", "#525d86",
+     "#9a5b4c", "#4c7a62"]
   ];
 
   // The 10 most commonly learned foreign languages - drives the flag icon,
@@ -290,7 +293,6 @@
     manage: document.getElementById("view-manage"),
     sections: document.getElementById("view-sections"),
     readme: document.getElementById("view-readme"),
-    changelog: document.getElementById("view-changelog"),
     gemini: document.getElementById("view-gemini"),
     notes: document.getElementById("view-notes-list"),
     noteEditor: document.getElementById("view-notes"),
@@ -648,6 +650,10 @@
     document.getElementById("mastery-new-count").textContent = m.fresh;
     document.getElementById("mastery-learning-count").textContent = m.learning;
     document.getElementById("mastery-mastered-count").textContent = m.mastered;
+    document.getElementById("mastery-headline").textContent = total
+      ? m.mastered + " of " + total + " word" + (total === 1 ? "" : "s") + " mastered"
+      : "Your first word is waiting";
+    updateHomeSubtitle();
 
     renderDailyCard();
     renderStrugglingList();
@@ -841,72 +847,6 @@
     showView("home");
   });
 
-  // ---------- change log ----------
-  // Newest first - prepend a new entry (and drop the last one, if you want
-  // to hold the list at 10) each time a version ships with user-facing
-  // changes worth calling out.
-  var CHANGELOG = [
-    { version: "1.38.0", text: "A new look on every screen, like an old leather-bound book: parchment pages with a printed frame, sepia ink, serif type, brown leather buttons and a leather tab bar with a ribbon bookmark marking the current tab. Icons are now engraved-style line drawings, and deck colors are old book-cloth shades. Fixed the speaker button showing through on the back of a flipped card." },
-    { version: "1.37.0", text: "Google Drive backup - sign in from Settings and your cards, decks, progress and notes back up by themselves to a hidden app folder in your Google Drive, and restore onto a new phone in one tap. Plus a cozy new look: warm paper pages, book-style cards and soft pastel colors on every screen." },
-    { version: "1.36.0", text: "Removed the day streak - the flame counter is gone from the home screen, practice no longer tracks it, and exports no longer include it (older backups with streak lines still import fine)." },
-    { version: "1.35.0", text: "Fixed the speaker buttons playing no sound on iOS 27 - words are now spoken with Google Translate's voice (needs internet, and plays even in silent mode), falling back to the device voice when offline. The speaker button now shrinks when pressed and glows yellow while the word plays." },
-    { version: "1.34.0", text: "Add card's Notes field now wraps long notes onto new lines and grows to fit. Tapping + Add card with text in Cards search pre-fills the word field with it. Search now ignores accents, so \"o\" also finds \"ó\"." },
-    { version: "1.33.0", text: "Deleting a card mid-practice now returns you to the lesson instead of kicking you out to Manage cards. Card previews in Manage cards gained the same edit icon as Practice. Notes can now be named (and renamed) via a new edit icon next to the title." },
-    { version: "1.31.2", text: "Fixed a bug where answering a card in Flip Translation (or Flip Foreign word / Type the foreign word) briefly flashed the next card's answer on the card you'd just answered, mid-flip." },
-    { version: "1.31.1", text: "Screen fade-ins are slower and now wait a frame before starting, so they no longer get cut short entering a heavy screen like Manage cards. Added more breathing room between Mastery and Card of the day." },
-    { version: "1.31.0", text: "Screens now fade in smoothly instead of snapping into view, and the bottom tab bar's highlight pill actually slides between tabs now (it was silently disabled)." },
-    { version: "1.30.1", text: "Card of the day now matches Manage cards' card previews more closely - bigger word text, more room before the speaker icon, and its \"Card of the day\" label moved above the card instead of sitting inside it." },
-    { version: "1.30.0", text: "Fixed a bug where a card's deck tag no longer reached the card's actual top-right corner. The speaker icon is bigger now, and (Spanish only, for now) plays on Card of the day and on the Practice card too - shown wherever the Spanish word is actually visible, so it's never a free hint before you've answered." },
-    { version: "1.29.0", text: "Manage cards: due date moved to each card's bottom-right corner. Practice setup: deck picker text sized down to match the rest of the screen. Card previews in Manage cards now have a speaker icon under the word to hear it pronounced - trying this out for Spanish only for now, via the on-device Web Speech API." },
-    { version: "1.28.0", text: "Switched the whole app from a monospace font to Roboto, self-hosted so it still works fully offline as an installed app." },
-    { version: "1.27.0", text: "The app is now just \"Flashcards\" - pick your learning language (11 options) from a new dropdown at the top of Settings, and the flag icon, the Add card word label, and the Ask Gemini prompt all follow whatever you choose." },
-    { version: "1.26.1", text: "Fixed the practice mode carousel jittering when a card was selected (it was fighting with scroll-snap) - selecting a partially-visible card now smoothly scrolls it fully into view instead. Renamed \"Flip Spanish card\" to \"Flip Foreign word\" and \"Flip Translation card\" to \"Flip Translation\". Manage cards' search box no longer remembers what you typed after you leave and come back." },
-    { version: "1.26.0", text: "Practice mode cards now have their own Material-style icon above the label, fixed so the selected card's 10% scale-up never gets clipped by the screen edge, and the position bar underneath is now a smaller, lower, centered bar. In Manage cards, deck tags moved to the card's upper-right corner - a long word now wraps to a new line rather than running under the tag." },
-    { version: "1.25.2", text: "The selected practice mode card now grows 10% with a smooth animation, and the position bar under the mode carousel is now a small centered bar instead of spanning the full width." },
-    { version: "1.25.1", text: "Practice setup now scrolls its mode carousel to whichever mode you last used when the screen opens, with a position bar underneath tracking the scroll instead of dots. Card decks in the deck picker now show a small colored bookmark on the right matching each deck's own color." },
-    { version: "1.25.0", text: "Notes is now a grid of card-style notes instead of one big notepad - tap + to add one, tap a note to open and edit it full-screen, and use Delete in its top-right corner to remove it; a blank note is discarded automatically. Match the words no longer affects a card's due date, box, or reviewed status - it's just a quick warm-up and never counts as \"learnt\" (or missed) the way the other practice modes do." },
-    { version: "1.24.2", text: "Match the words: a solved pair's tile now leaves an empty gap where it was instead of the remaining tiles growing to fill the space." },
-    { version: "1.24.1", text: "Match the words: word tiles now fill the full height of the card with bigger gaps and bigger text, growing as pairs are solved. A matched pair now fades and shrinks away instead of sitting there highlighted green for the rest of the round." },
-    { version: "1.24.0", text: "Added a new practice mode, Match the words - match 5 Spanish words to their translations at a time, in a two-column flip card; a wrong guess flashes red and repeats later like a normal miss, a clean first-try match won't come back this lesson. Card decks' Rename/Delete now swipe open the same way Manage cards does, with the card count moved to the row's right edge. The Practice mode picker is now a swipeable carousel instead of a wrapping grid, so new modes just add another card to swipe to." },
-    { version: "1.23.0", text: "The Practice tab icon now grows, glows yellow, and shakes for 2 seconds every time you land on the home screen, capped to once every 12 seconds. The streak flame also turns grey when you haven't practiced yet today, returning to full color once you have." },
-    { version: "1.22.1", text: "Fixed a bug from the swipe-to-reveal change that deleted CSS Card decks still needed, making its rows resize/reflow badly. Also fixed Manage cards rows going invisible on some devices (visible only in Select mode) by making the swipe layout's widths explicit rather than relying on implicit flex sizing, and fixed + Add card wrapping onto two lines." },
-    { version: "1.21.0", text: "Reworked the tab bar: swapped the Cards/Decks icons, renamed Manage to Cards, moved Practice to the center, and added a new Notes tab (a freeform notepad that exports/imports alongside your cards). Add card no longer has its own tab - use \"+ Add card\" in Manage cards instead, which also gained a Delete card option when editing. Added spacing above the Practice progress bar, and the finished-session screen is now a square card with a matching-width Back home button and no close button." },
-    { version: "1.20.0", text: "Moved Practice off the home screen and into the tab bar as its own filled button, right next to Home - Card of the day now expands to fill the freed space. Also darkened the backdrop behind the card preview modal (Manage cards / home lists) so it reads as solid glass instead of looking washed out." },
-    { version: "1.19.4", text: "Send request now opens Gemini via a new tab again - iOS always routes an external link tapped from a home-screen app through its own in-app browser sheet no matter how it's opened, so this at least leaves the app's own window untouched underneath. Use that sheet's Safari icon to fully open Gemini in the real browser." },
-    { version: "1.19.2", text: "Ask Gemini's requested notes now include pronunciation and an example sentence for each word, not just a translation. Trimmed the Ask Gemini screen's instructions to just the download-and-import step." },
-    { version: "1.19.1", text: "Fixed Ask Gemini not actually prefilling the prompt - Gemini's web app has no URL prefill, so Send request now copies the prompt to your clipboard instead (paste it into Gemini yourself). The prompt now also asks Gemini to generate an actual downloadable .txt file rather than just chat text, so there's no more manual copy-paste-into-a-file step. Also moved Save card above the Gemini button in Add card, with more spacing after Card decks." },
-    { version: "1.19.0", text: "Added \"Ask Gemini to create a deck\" in Add card - fill in a theme, word count, language and deck name and it opens Gemini with a ready-made prompt to generate an importable word list. Importing a file now only adopts its saved streak if your current streak is 0, so it can't overwrite one you're already building." },
-    { version: "1.18.0", text: "Card decks now have a true liquid-glass look (gradient + glow, not just a flat tint). Added this Change log to Settings, and refreshed the README to match current features." },
-    { version: "1.17.0", text: "Missing a card now brings it back after at least 10 other cards; missing it a second time sets it aside for a review pass at the end of the session. You can also edit a card right from its flipped practice view, then pick up the lesson exactly where you left off." },
-    { version: "1.16.0", text: "Deck colors now fill the whole chip/row background instead of just outlining it. Tapping a card in Manage cards or on the home lists opens a flip-able preview - same size and style as practice - instead of a plain text popup." }
-  ];
-
-  function renderChangelog() {
-    var content = document.getElementById("changelog-content");
-    content.innerHTML = "";
-    CHANGELOG.slice(0, 10).forEach(function (entry) {
-      var section = document.createElement("div");
-      section.className = "readme-section";
-      var h3 = document.createElement("h3");
-      h3.textContent = "v" + entry.version;
-      var p = document.createElement("p");
-      p.textContent = entry.text;
-      section.appendChild(h3);
-      section.appendChild(p);
-      content.appendChild(section);
-    });
-  }
-
-  document.getElementById("btn-changelog").addEventListener("click", function () {
-    renderChangelog();
-    showView("changelog");
-  });
-
-  document.getElementById("btn-changelog-back").addEventListener("click", function () {
-    refreshHome();
-    showView("home");
-  });
-
   // ---------- notes ----------
   function renderNotesList() {
     var grid = document.getElementById("notes-grid");
@@ -1046,8 +986,15 @@
     });
   })();
 
+  // "Your Spanish word book" - the home screen's line under the title.
+  function updateHomeSubtitle() {
+    document.getElementById("home-subtitle").textContent =
+      "Your " + languageByCode(foreignLanguage).name + " word book";
+  }
+
   function applyLanguage() {
     var lang = languageByCode(foreignLanguage);
+    updateHomeSubtitle();
     document.getElementById("flag-icon").textContent = lang.flag;
     document.getElementById("input-word-label-text").textContent = lang.name + " word / phrase";
     var select = document.getElementById("language-select");

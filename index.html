@@ -7,7 +7,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, interactive-widget=resizes-visual">
 <title>Flashcards</title>
 
-<meta name="theme-color" content="#efe3c8">
+<meta name="theme-color" content="#fbf8f4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#14110f" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Flashcards">
@@ -51,15 +52,13 @@
             <span class="dropdown-item-label">README</span>
             <span class="dropdown-item-hint">How practice, decks & mastery work</span>
           </button>
-          <button id="btn-changelog" class="dropdown-item">
-            <span class="dropdown-item-label">Change log</span>
-            <span class="dropdown-item-hint">Recent updates to the app</span>
-          </button>
           <p class="dropdown-info">Your data stays on this device unless you turn on Google Drive backup. Import/export uses Anki's plain-text card format.</p>
-          <p class="app-version">v1.38.0</p>
+          <p class="app-version">v1.39.0</p>
         </div>
       </div>
     </header>
+
+    <p class="home-subtitle" id="home-subtitle"></p>
 
     <div class="install-banner hidden" id="install-banner">
       <span class="install-banner-text" id="install-banner-text"></span>
@@ -75,8 +74,12 @@
     <input type="file" id="file-import" accept=".txt,.tsv,text/plain,.json,application/json" hidden>
 
     <div class="mastery-block">
+      <span class="hero-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5C10 5 7 4.5 3.5 5v13.5c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5c-3.5-.5-6.5 0-8.5 1.5z"/><path d="M12 6.5V20"/></svg>
+      </span>
       <div class="mastery-header">
         <span class="field-label">Mastery</span>
+        <p class="mastery-headline" id="mastery-headline"></p>
       </div>
       <div class="mastery-bar" id="mastery-bar">
         <button type="button" class="mastery-seg mastery-new" id="mastery-new" data-tier="fresh"></button>
@@ -511,17 +514,6 @@
 
       <p class="drive-footnote hidden" id="drive-auto-note">Backs up by itself a few seconds after each change while connected. Google keeps the connection for about an hour; after that one tap reconnects.</p>
     </div>
-  </section>
-
-  <!-- ===== CHANGE LOG VIEW ===== -->
-  <section id="view-changelog" class="view hidden">
-    <header class="topbar">
-      <button class="icon-btn" id="btn-changelog-back">✕</button>
-      <h2>Change log</h2>
-      <span class="spacer"></span>
-    </header>
-
-    <div class="readme-content" id="changelog-content"></div>
   </section>
 
   <!-- ===== NOTES LIST VIEW ===== -->

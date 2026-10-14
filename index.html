@@ -27,35 +27,9 @@
     <header class="topbar">
       <h1><span id="flag-icon" class="flag-icon">🇪🇸</span> Flashcards</h1>
       <button type="button" class="avatar hidden" id="btn-drive-avatar" title="Google Drive backup"></button>
-      <div class="dropdown" id="settings-dropdown">
-        <button class="icon-btn icon-btn-plain" id="btn-settings">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2.6"/><circle cx="12" cy="12" r="6.4"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>
-        </button>
-        <div class="dropdown-menu hidden" id="settings-menu">
-          <div class="dropdown-language-row">
-            <span class="dropdown-item-label">Learning language</span>
-            <select id="language-select" class="language-select"></select>
-          </div>
-          <button id="btn-drive" class="dropdown-item hidden">
-            <span class="dropdown-item-label">Google Drive backup</span>
-            <span class="dropdown-item-hint" id="drive-menu-hint">Keep your cards safe in Google Drive</span>
-          </button>
-          <button id="btn-export" class="dropdown-item">
-            <span class="dropdown-item-label">Export</span>
-            <span class="dropdown-item-hint">Save cards and progress</span>
-          </button>
-          <button id="btn-import" class="dropdown-item">
-            <span class="dropdown-item-label">Import</span>
-            <span class="dropdown-item-hint">Add new words from .txt</span>
-          </button>
-          <button id="btn-readme" class="dropdown-item">
-            <span class="dropdown-item-label">README</span>
-            <span class="dropdown-item-hint">How practice, decks & mastery work</span>
-          </button>
-          <p class="dropdown-info">Your data stays on this device unless you turn on Google Drive backup. Import/export uses Anki's plain-text card format.</p>
-          <p class="app-version">v1.39.0</p>
-        </div>
-      </div>
+      <button type="button" class="icon-btn icon-btn-plain" id="btn-settings" title="Settings" aria-label="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+      </button>
     </header>
 
     <p class="home-subtitle" id="home-subtitle"></p>
@@ -112,18 +86,6 @@
           </div>
         </div>
       </div>
-    </div>
-
-    <div class="struggling-block hidden" id="struggling-block">
-      <div class="field-label">Keep practicing 🎯</div>
-      <div class="struggling-list" id="struggling-list"></div>
-      <button type="button" class="hint-toggle hidden" id="struggling-toggle">Show more</button>
-    </div>
-
-    <div class="struggling-block hidden" id="recent-block">
-      <div class="field-label">Recently added 🆕</div>
-      <div class="struggling-list" id="recent-list"></div>
-      <button type="button" class="hint-toggle hidden" id="recent-toggle">Show more</button>
     </div>
 
     <div class="empty-home-placeholder hidden" id="empty-home-placeholder">
@@ -330,7 +292,7 @@
         <input type="text" id="gemini-theme" autocomplete="off" placeholder="e.g. cafe, gym, health..." required>
       </label>
       <label>How many words?
-        <input type="text" id="gemini-count" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="e.g. 20" required>
+        <input type="text" id="gemini-count" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="e.g. 20 (up to 100)" required>
       </label>
       <label>To what language to translate?
         <input type="text" id="gemini-language" autocomplete="off" placeholder="e.g. English" required>
@@ -338,16 +300,15 @@
       <label>How to name the deck?
         <input type="text" id="gemini-deck-name" autocomplete="off" placeholder="e.g. Cafe words" required>
       </label>
-
-      <p class="gemini-instructions">When the Gemini page opens, tap the input field and <b>Paste</b>. Once Gemini replies, download the .txt file it created, then come back here and use <b>Settings → Import</b> to load that file straight into this deck.</p>
-
-      <label class="gemini-checkbox-row">
-        <input type="checkbox" id="gemini-understand-checkbox">
-        <span>I understand how to import the file after it is created by the AI</span>
+      <label>Gemini API key
+        <input type="password" id="gemini-key" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="AIza...">
       </label>
+      <p class="gemini-instructions">Free from <a class="hint-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">aistudio.google.com/apikey</a>. It's saved on this device only. If you already use Coffee Shelf, its key is filled in for you.</p>
 
-      <button type="button" id="btn-gemini-send" class="btn btn-primary btn-big" disabled>Send request</button>
-      <p class="save-toast hidden" id="gemini-copied-toast">Prompt copied ✓ paste it into Gemini</p>
+      <div class="gemini-error hidden" id="gemini-error"></div>
+
+      <button type="submit" id="btn-gemini-send" class="btn btn-primary btn-big" disabled>Create deck</button>
+      <p class="gemini-status hidden" id="gemini-status">Gemini is writing your deck…</p>
     </form>
   </section>
 
@@ -368,7 +329,12 @@
         <div class="stat-label">total cards</div>
       </button>
     </div>
-    <input type="text" id="manage-search" class="search-input" placeholder="Search...">
+    <div class="search-field">
+      <input type="text" id="manage-search" class="search-input" placeholder="Search..." autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+      <button type="button" class="search-clear hidden" id="btn-manage-search-clear" title="Clear search" aria-label="Clear search">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8.6 8.6l6.8 6.8M15.4 8.6l-6.8 6.8"/></svg>
+      </button>
+    </div>
     <div class="filter-row">
       <select id="manage-section-filter" class="search-input"></select>
       <select id="manage-mastery-filter" class="search-input">
@@ -400,6 +366,64 @@
       </button>
     </header>
     <div id="sections-list" class="manage-list"></div>
+  </section>
+
+  <!-- ===== SETTINGS VIEW ===== -->
+  <section id="view-settings" class="view hidden">
+    <header class="topbar">
+      <button class="icon-btn" id="btn-settings-back">✕</button>
+      <h2>Settings</h2>
+      <span class="spacer"></span>
+    </header>
+
+    <div class="settings-content">
+      <h3 class="settings-section">Learning</h3>
+      <div class="settings-group">
+        <div class="settings-row">
+          <span class="settings-row-text"><span class="settings-row-label">Learning language</span></span>
+          <select id="language-select" class="language-select"></select>
+        </div>
+      </div>
+
+      <h3 class="settings-section">Backup</h3>
+      <div class="settings-group">
+        <button type="button" id="btn-drive" class="settings-row hidden">
+          <span class="settings-row-text">
+            <span class="settings-row-label">Google Drive backup</span>
+            <span class="settings-row-hint" id="drive-menu-hint">Keep your cards safe in Google Drive</span>
+          </span>
+          <svg class="settings-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <button type="button" id="btn-export" class="settings-row">
+          <span class="settings-row-text">
+            <span class="settings-row-label">Export</span>
+            <span class="settings-row-hint">Save cards and progress as a .txt file</span>
+          </span>
+          <svg class="settings-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <button type="button" id="btn-import" class="settings-row">
+          <span class="settings-row-text">
+            <span class="settings-row-label">Import</span>
+            <span class="settings-row-hint">Add new words from a .txt file</span>
+          </span>
+          <svg class="settings-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+
+      <h3 class="settings-section">Help</h3>
+      <div class="settings-group">
+        <button type="button" id="btn-readme" class="settings-row">
+          <span class="settings-row-text">
+            <span class="settings-row-label">README</span>
+            <span class="settings-row-hint">How practice, decks &amp; mastery work</span>
+          </span>
+          <svg class="settings-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+
+      <p class="settings-footnote">Your data stays on this device unless you turn on Google Drive backup. Import/export uses Anki's plain-text card format.</p>
+      <p class="app-version">v1.40.0</p>
+    </div>
   </section>
 
   <!-- ===== README VIEW ===== -->
@@ -437,23 +461,17 @@
         <h3>Card decks</h3>
         <p>Decks are tags you can put on a card - a card can belong to any number of decks, or none. Each deck gets a random color as soon as you create it, shown as a tinted glass background on its row and on its tag chips wherever it's listed, so it's easy to spot at a glance.</p>
         <p>Practice setup and Manage cards both let you filter by deck, including a "No card deck" bucket for untagged cards. In Practice setup, use the small <b>Select all</b> / <b>Unselect</b> chips to quickly check or clear every deck - Start practicing stays disabled until at least one is selected. Tapping a deck from the Card decks screen jumps straight into Manage cards filtered to it. Deleting a deck removes that tag from its cards - the cards themselves stay put.</p>
-        <p>In Add card, <b>Ask Gemini to create a deck</b> opens a small form (theme, word count, translation language, deck name) and, once you've checked the box confirming you know how to import the result, copies a matching request to your clipboard and opens Gemini's web app in a new tab - paste the request into Gemini's message box and send it there. The request asks Gemini to generate an actual downloadable .txt file already in this app's import format, so once Gemini replies you just download that file and bring it in with Import. This button only appears when adding a brand-new card, not while editing an existing one.</p>
+        <p>In Add card, <b>Ask Gemini to create a deck</b> opens a small form (theme, word count, translation language, deck name and your Gemini API key) - tap <b>Create deck</b> and the app asks Gemini directly, then adds the new deck and its cards (each with pronunciation and an example sentence in the notes) and opens it in Cards. Words you already have aren't added twice; they just join the new deck. The key is free from aistudio.google.com/apikey and stays on this device - if Coffee Shelf already has one, it's filled in for you. This button only appears when adding a brand-new card, not while editing an existing one.</p>
       </div>
 
       <div class="readme-section">
         <h3>Manage cards (Cards tab)</h3>
-        <p>Search and filter by deck or mastery, then tap any card's row to open a flip-able preview - same size and style as the practice card - to check its translation and notes without leaving the list. Swipe a row left to reveal <b>Edit</b> / <b>Delete</b> for that card. Tap <b>Select</b> to check off several cards and delete them together - <b>Select all</b> toggles to <b>Unselect all</b> once everything's checked - or tap <b>+ Add card</b> (below the filters) to add a new one; this is now the only way into Add card, which no longer has its own tab. Editing a card shows a <b>Delete</b> option in its own top-right corner instead.</p>
+        <p>Search (the ⓧ in the field clears it) and filter by deck or mastery, then tap any card's row to open a flip-able preview - same size and style as the practice card - to check its translation and notes without leaving the list. Swipe a row left to reveal <b>Edit</b> / <b>Delete</b> for that card. Tap <b>Select</b> to check off several cards and delete them together - <b>Select all</b> toggles to <b>Unselect all</b> once everything's checked - or tap <b>+ Add card</b> (below the filters) to add a new one; this is now the only way into Add card, which no longer has its own tab. Editing a card shows a <b>Delete</b> option in its own top-right corner instead.</p>
       </div>
 
       <div class="readme-section">
         <h3>Card of the day</h3>
-        <p>The home screen features one card, picked at random and kept the same all day. Tap it to flip between the word and its translation/notes, just like in practice.</p>
-      </div>
-
-      <div class="readme-section">
-        <h3>Keep practicing &amp; Recently added</h3>
-        <p><b>Keep practicing</b> lists cards you've recently gotten wrong (failed back down to box 0), most recent first, up to 20. <b>Recently added</b> shows your newest cards instead, but only when nothing is currently struggling - only one of the two lists is shown at a time. Both start collapsed to 3 rows with a "Show more" toggle.</p>
-        <p>Tap a word in either list to open the same flip-able card preview as Manage cards, without leaving the home screen.</p>
+        <p>The home screen features one card, picked at random and kept the same all day, filling the page below Mastery. Tap it to flip between the word and its translation/notes, just like in practice.</p>
       </div>
 
       <div class="readme-section">
@@ -463,7 +481,7 @@
 
       <div class="readme-section">
         <h3>Google Drive backup</h3>
-        <p>Settings → <b>Google Drive backup</b> → <b>Sign in with Google</b>. The app talks to Google directly (no server in between) and keeps one backup file in a hidden app folder in your Google Drive - it can't see any of your other files. While connected, it backs up by itself a few seconds after each change. Google's sign-in lasts about an hour; after that, a "Changes not backed up" reminder on the home screen reconnects with one tap.</p>
+        <p>Settings (the gear on Home) → <b>Google Drive backup</b> → <b>Sign in with Google</b>. The app talks to Google directly (no server in between) and keeps one backup file in a hidden app folder in your Google Drive - it can't see any of your other files. While connected, it backs up by itself a few seconds after each change. Google's sign-in lasts about an hour; after that, a "Changes not backed up" reminder on the home screen reconnects with one tap.</p>
         <p>On a new phone, signing in finds the existing backup and asks whether to <b>Restore it here</b> or <b>Replace with this phone</b> - nothing is overwritten until you choose. Restoring replaces everything on the phone with the backup. Once Drive backup is set up, the weekly "export your cards" reminder stops.</p>
       </div>
 

@@ -187,13 +187,6 @@
     return counts;
   }
 
-  function strugglingCards() {
-    return cards
-      .filter(function (c) { return c.box <= 0 && c.reviewed; })
-      .sort(function (a, b) { return b.dueAt - a.dueAt; })
-      .slice(0, 20);
-  }
-
   // ---------- google translate ----------
   // Dispatches a real, synchronous <a> click (not window.open/location.href)
   // so the navigation carries full "trusted user gesture" status in WebKit -
@@ -296,7 +289,8 @@
     gemini: document.getElementById("view-gemini"),
     notes: document.getElementById("view-notes-list"),
     noteEditor: document.getElementById("view-notes"),
-    drive: document.getElementById("view-drive")
+    drive: document.getElementById("view-drive"),
+    settings: document.getElementById("view-settings")
   };
 
   var TABBAR_VIEWS = { home: true, manage: true, sections: true, notes: true };
@@ -656,7 +650,6 @@
     updateHomeSubtitle();
 
     renderDailyCard();
-    renderStrugglingList();
     document.getElementById("empty-home-placeholder").classList.toggle("hidden", cards.length > 0);
   }
 
@@ -714,89 +707,6 @@
     document.getElementById("daily-card").classList.toggle("flipped");
   });
 
-  function buildHintRow(c) {
-    var item = document.createElement("button");
-    item.type = "button";
-    item.className = "struggling-item info-trigger";
-
-    var word = document.createElement("span");
-    word.className = "struggling-item-word";
-    word.textContent = c.word;
-
-    item.appendChild(word);
-
-    item.addEventListener("click", function () {
-      openCardPreview(c);
-    });
-
-    return item;
-  }
-
-  function recentlyAddedCards() {
-    return cards.slice().sort(function (a, b) { return b.createdAt - a.createdAt; }).slice(0, 20);
-  }
-
-  var HINT_COLLAPSED_COUNT = 3;
-  var HINT_SHOW_MORE_THRESHOLD = 6;
-  var strugglingExpanded = false;
-  var recentExpanded = false;
-
-  function renderHintSection(listId, toggleId, items, expanded) {
-    var list = document.getElementById(listId);
-    list.innerHTML = "";
-    items.slice(0, expanded ? 20 : HINT_COLLAPSED_COUNT).forEach(function (c) {
-      list.appendChild(buildHintRow(c));
-    });
-
-    var toggle = document.getElementById(toggleId);
-    toggle.classList.toggle("hidden", items.length <= HINT_SHOW_MORE_THRESHOLD);
-    toggle.textContent = expanded ? "Show less" : "Show more";
-  }
-
-  function renderStrugglingList() {
-    hideInfoPopup(); // rows are rebuilt below - don't leave a stale-anchored popup on screen
-    var struggling = strugglingCards();
-    var showStruggling = struggling.length > 0;
-
-    document.getElementById("struggling-block").classList.toggle("hidden", !showStruggling);
-
-    // Only one of these two hint sections shows at a time - recently added
-    // cards fill the space when nothing is currently struggling.
-    if (showStruggling) {
-      renderHintSection("struggling-list", "struggling-toggle", struggling, strugglingExpanded);
-      document.getElementById("recent-block").classList.add("hidden");
-      return;
-    }
-
-    var recent = recentlyAddedCards();
-    document.getElementById("recent-block").classList.toggle("hidden", recent.length === 0);
-    renderHintSection("recent-list", "recent-toggle", recent, recentExpanded);
-  }
-
-  // Keeps the toggle button itself - "Show less" once expanded, "Show
-  // more" again once collapsed - clear of the floating tab bar rather
-  // than scrolling to the top of the block, which left an expanded
-  // list's toggle far below the fold with no automatic way to reach it.
-  // Uses the browser's own scrollIntoView + scroll-margin-bottom (see
-  // styles.css) instead of a hand-computed scrollBy delta, which wasn't
-  // reliably landing on a real device despite matching the math in
-  // every automated test.
-  function scrollToggleAboveTabbar(toggleId) {
-    document.getElementById(toggleId).scrollIntoView({ behavior: "smooth", block: "end" });
-  }
-
-  document.getElementById("struggling-toggle").addEventListener("click", function () {
-    strugglingExpanded = !strugglingExpanded;
-    renderStrugglingList();
-    scrollToggleAboveTabbar("struggling-toggle");
-  });
-
-  document.getElementById("recent-toggle").addEventListener("click", function () {
-    recentExpanded = !recentExpanded;
-    renderStrugglingList();
-    scrollToggleAboveTabbar("recent-toggle");
-  });
-
   function setMasterySegment(id, count, total) {
     var el = document.getElementById(id);
     el.classList.toggle("hidden", count === 0);
@@ -843,8 +753,7 @@
   });
 
   document.getElementById("btn-readme-back").addEventListener("click", function () {
-    refreshHome();
-    showView("home");
+    showView("settings");
   });
 
   // ---------- notes ----------
@@ -947,28 +856,20 @@
     showView("home");
   });
 
-  // ---------- settings dropdown ----------
+  // ---------- settings ----------
   document.getElementById("btn-settings").addEventListener("click", function () {
-    document.getElementById("settings-menu").classList.toggle("hidden");
+    renderDrive();
+    showView("settings");
   });
 
-  document.getElementById("settings-menu").addEventListener("click", function (e) {
-    if (e.target.closest(".dropdown-item")) {
-      document.getElementById("settings-menu").classList.add("hidden");
-    }
-  });
-
-  document.addEventListener("click", function (e) {
-    var dropdown = document.getElementById("settings-dropdown");
-    if (!dropdown.contains(e.target)) {
-      document.getElementById("settings-menu").classList.add("hidden");
-    }
+  document.getElementById("btn-settings-back").addEventListener("click", function () {
+    refreshHome();
+    showView("home");
   });
 
   // ---------- learning language ----------
-  // Drives the flag icon and the "___ word / phrase" label in Add card -
-  // not wrapped in .dropdown-item so picking a language doesn't hide the
-  // settings menu out from under the native <select>'s own open picker.
+  // Drives the flag icon, the home subtitle and the "___ word / phrase"
+  // label in Add card.
   (function initLanguageSelect() {
     var select = document.getElementById("language-select");
     LANGUAGES.forEach(function (l) {
@@ -982,7 +883,6 @@
       foreignLanguage = select.value;
       saveData();
       applyLanguage();
-      document.getElementById("settings-menu").classList.add("hidden");
     });
   })();
 
@@ -1388,19 +1288,61 @@
   });
 
   // ---------- ask Gemini to create a deck ----------
-  // Opens Gemini's web app with a prefilled prompt (same trusted-gesture <a>
-  // click as openGoogleTranslate) asking it to generate an Anki-style
-  // tab-separated word list this app's own importer already understands -
-  // the user still has to paste Gemini's reply into a .txt file themselves
-  // and run Import, hence the checkbox making sure that's understood upfront.
+  // Calls the Gemini API straight from the phone, the way Coffee Shelf does,
+  // with the user's own key - asking for JSON in a fixed shape, so the cards
+  // go through the same merge as Import, into the named deck.
+  var GEMINI_KEY_STORAGE = "flashcards.geminiKey";
+  var GEMINI_DEFAULT_MODEL = "gemini-3.8-flash";
+  var GEMINI_MAX_WORDS = 100;
+
+  // Coffee Shelf lives on the same origin, so its saved Gemini key (and
+  // model choice) can be reused instead of asking for a key twice.
+  function coffeeShelfGeminiSettings() {
+    try {
+      var cs = JSON.parse(localStorage.getItem("coffee-shelf.settings") || "{}");
+      return {
+        key: typeof cs.geminiKey === "string" ? cs.geminiKey : "",
+        model: typeof cs.geminiModel === "string" ? cs.geminiModel : ""
+      };
+    } catch (e) {
+      return { key: "", model: "" };
+    }
+  }
+
+  function savedGeminiKey() {
+    var own = "";
+    try { own = localStorage.getItem(GEMINI_KEY_STORAGE) || ""; } catch (e) {}
+    return own || coffeeShelfGeminiSettings().key;
+  }
+
+  var GEMINI_ERRORS = {
+    offline: "No internet connection - Gemini can't be reached.",
+    badKey: "Gemini didn't accept this API key. Check it at aistudio.google.com/apikey.",
+    rateLimit: "Gemini's free limit is used up for now. Wait a minute and try again.",
+    noModel: "This Gemini model isn't available for your key.",
+    refusal: "Gemini declined to write this deck. Try a different theme.",
+    truncated: "That's too many words for one go - try fewer.",
+    unreadable: "Gemini's reply couldn't be read. Try again.",
+    api: "Gemini returned an error."
+  };
+
+  function GeminiError(kind, detail) {
+    this.kind = kind;
+    this.detail = detail || "";
+  }
+
+  var geminiBusy = false;
+
   function geminiFormFields() {
     return {
       theme: document.getElementById("gemini-theme"),
       count: document.getElementById("gemini-count"),
       language: document.getElementById("gemini-language"),
       deckName: document.getElementById("gemini-deck-name"),
-      checkbox: document.getElementById("gemini-understand-checkbox"),
-      send: document.getElementById("btn-gemini-send")
+      key: document.getElementById("gemini-key"),
+      send: document.getElementById("btn-gemini-send"),
+      error: document.getElementById("gemini-error"),
+      status: document.getElementById("gemini-status")
     };
   }
 
@@ -1410,9 +1352,15 @@
     var ready = !!f.theme.value.trim() &&
       !!f.language.value.trim() &&
       !!f.deckName.value.trim() &&
-      !isNaN(count) && count > 0 &&
-      f.checkbox.checked;
-    f.send.disabled = !ready;
+      !!f.key.value.trim() &&
+      !isNaN(count) && count > 0 && count <= GEMINI_MAX_WORDS;
+    f.send.disabled = !ready || geminiBusy;
+  }
+
+  function showGeminiError(text) {
+    var f = geminiFormFields();
+    f.error.textContent = text || "";
+    f.error.classList.toggle("hidden", !text);
   }
 
   function openAskGeminiView() {
@@ -1421,7 +1369,8 @@
     f.count.value = "";
     f.language.value = "";
     f.deckName.value = "";
-    f.checkbox.checked = false;
+    f.key.value = savedGeminiKey();
+    showGeminiError("");
     updateGeminiSendState();
     showView("gemini");
     f.theme.focus();
@@ -1439,74 +1388,128 @@
     updateGeminiSendState();
   });
 
-  ["gemini-theme", "gemini-language", "gemini-deck-name"].forEach(function (id) {
+  ["gemini-theme", "gemini-language", "gemini-deck-name", "gemini-key"].forEach(function (id) {
     document.getElementById(id).addEventListener("input", updateGeminiSendState);
   });
 
-  document.getElementById("gemini-understand-checkbox").addEventListener("change", updateGeminiSendState);
-
-  function buildGeminiPrompt(theme, count, language, deckName) {
-    var deckTag = tagForSection(deckName.trim());
+  function buildGeminiPrompt(theme, count, language) {
     var foreignName = languageByCode(foreignLanguage).name;
-    return "Create a downloadable .txt file containing " + count + " " + foreignName + " vocabulary flashcards about the theme \"" + theme.trim() + "\". " +
-      "For each one, include the " + foreignName + " word or phrase, its translation into " + language.trim() + ", " +
-      "and a note containing both how the word is pronounced and one example sentence in " + foreignName + " showing how it's used, and in brackets its translation in " + language.trim() + ". " +
-      "Inside the file, put ONLY the raw data, one flashcard per line, as " + count + " lines total, with these fields " +
-      "separated by a single TAB character (not spaces or commas): " +
-      foreignName + " word or phrase [TAB] translation in " + language.trim() + " [TAB] pronunciation and example sentence note [TAB] " + deckTag + ". " +
-      "Do not include a header row, numbering, bullets, quotation marks, or markdown formatting in the file, and don't add any commentary before or after the list. " +
-      "Please generate this as an actual downloadable .txt file I can save to my device, not just text in the chat reply.";
+    return "Create exactly " + count + " " + foreignName + " vocabulary flashcards about the theme \"" + theme + "\". " +
+      "For each card give the " + foreignName + " word or phrase (with its article if it's a noun), its translation into " + language + ", " +
+      "and a note with how the word is pronounced and one example sentence in " + foreignName + " showing how it's used, " +
+      "followed by that sentence's translation into " + language + " in brackets. " +
+      "Pick common, useful words and don't repeat any.";
   }
 
-  // Gemini's web app has no documented URL parameter for prefilling the
-  // message box (unlike Google Translate's ?text=), so a link alone just
-  // opens it empty - copying the prompt to the clipboard first is the only
-  // reliable way to hand it over, with the user pasting it in themselves.
-  function copyTextToClipboard(text) {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).catch(function () { fallbackCopyToClipboard(text); });
-    } else {
-      fallbackCopyToClipboard(text);
-    }
+  var GEMINI_CARDS_SCHEMA = {
+    type: "object",
+    properties: {
+      cards: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            word: { type: "string" },
+            translation: { type: "string" },
+            note: { type: "string" }
+          },
+          required: ["word", "translation", "note"]
+        }
+      }
+    },
+    required: ["cards"]
+  };
+
+  // Google's error body -> one of GEMINI_ERRORS' kinds.
+  function geminiErrorKind(status, body) {
+    var err = (body && body.error) || {};
+    var reasons = (err.details || []).map(function (d) { return d.reason || ""; }).join(" ");
+    if (status === 429) return "rateLimit";
+    if (status === 401 || status === 403 || /API_KEY_INVALID/.test(reasons) || /api key/i.test(err.message || "")) return "badKey";
+    if (status === 404) return "noModel";
+    return "api";
   }
 
-  function fallbackCopyToClipboard(text) {
-    var ta = document.createElement("textarea");
-    ta.value = text;
-    ta.style.position = "fixed";
-    ta.style.opacity = "0";
-    document.body.appendChild(ta);
-    ta.focus();
-    ta.select();
-    try { document.execCommand("copy"); } catch (e) {}
-    document.body.removeChild(ta);
+  function askGeminiForCards(key, prompt) {
+    var model = coffeeShelfGeminiSettings().model || GEMINI_DEFAULT_MODEL;
+    return fetch("https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(model) + ":generateContent", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+      body: JSON.stringify({
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseJsonSchema: GEMINI_CARDS_SCHEMA,
+          maxOutputTokens: 16000
+        }
+      })
+    }).catch(function () {
+      throw new GeminiError("offline");
+    }).then(function (res) {
+      return res.json().catch(function () { return {}; }).then(function (body) {
+        if (!res.ok) {
+          throw new GeminiError(geminiErrorKind(res.status, body), (res.status + " " + ((body.error && body.error.message) || "")).trim());
+        }
+        if (body.promptFeedback && body.promptFeedback.blockReason) throw new GeminiError("refusal");
+        var candidate = (body.candidates || [])[0] || {};
+        if (candidate.finishReason === "MAX_TOKENS") throw new GeminiError("truncated");
+        if (candidate.finishReason === "SAFETY" || candidate.finishReason === "PROHIBITED_CONTENT") throw new GeminiError("refusal");
+        var text = ((candidate.content && candidate.content.parts) || []).map(function (part) { return part.text || ""; }).join("");
+        var parsed;
+        try { parsed = JSON.parse(text); } catch (e) { throw new GeminiError("unreadable"); }
+        var list = (parsed && Array.isArray(parsed.cards) ? parsed.cards : []).filter(function (c) {
+          return c && typeof c.word === "string" && c.word.trim() && typeof c.translation === "string" && c.translation.trim();
+        });
+        if (!list.length) throw new GeminiError("unreadable");
+        return list;
+      });
+    });
   }
 
-  document.getElementById("btn-gemini-send").addEventListener("click", function () {
+  document.getElementById("form-gemini").addEventListener("submit", function (e) {
+    e.preventDefault();
     var f = geminiFormFields();
-    if (f.send.disabled) return;
-    var prompt = buildGeminiPrompt(f.theme.value, f.count.value, f.language.value, f.deckName.value);
-    copyTextToClipboard(prompt);
+    if (f.send.disabled || geminiBusy) return;
+    var key = f.key.value.trim();
+    var deckName = f.deckName.value.trim();
+    var prompt = buildGeminiPrompt(f.theme.value.trim(), parseInt(f.count.value, 10), f.language.value.trim());
 
-    var toast = document.getElementById("gemini-copied-toast");
-    toast.classList.remove("hidden");
-    setTimeout(function () { toast.classList.add("hidden"); }, 2500);
+    geminiBusy = true;
+    showGeminiError("");
+    f.send.textContent = "Creating deck…";
+    f.status.classList.remove("hidden");
+    updateGeminiSendState();
 
-    // iOS forces any external link tapped from a standalone home-screen web
-    // app through its own in-app Safari View Controller sheet (Done button +
-    // a Safari icon that fully opens the real browser) - that's true no
-    // matter how the navigation is triggered here, and there's no JS-only
-    // way around it short of Universal Links, which Gemini isn't registered
-    // for. Given the sheet is unavoidable either way, target="_blank" at
-    // least keeps this app's own window untouched underneath it, so tapping
-    // Done returns to the form exactly as it was instead of a blank page.
-    var a = document.createElement("a");
-    a.href = "https://gemini.google.com/app";
-    a.target = "_blank";
-    a.rel = "noopener noreferrer";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    askGeminiForCards(key, prompt).then(function (list) {
+      try { localStorage.setItem(GEMINI_KEY_STORAGE, key); } catch (err) {}
+      var deck = getOrCreateSectionByName(deckName);
+      var added = mergeIncomingCards(list.map(function (c) {
+        return {
+          word: c.word.trim(),
+          translation: c.translation.trim(),
+          notes: typeof c.note === "string" ? c.note.trim() : "",
+          sectionNamesList: [deck.name]
+        };
+      }));
+      saveData();
+      refreshHome();
+      openManageForSection(deck.id);
+      var skipped = list.length - added;
+      // After the Cards screen has painted, not over the form.
+      setTimeout(function () {
+        alert("Added " + added + " new card" + (added === 1 ? "" : "s") + " to “" + deck.name + "”" +
+          (skipped > 0 ? " (" + skipped + " you already had joined the deck)" : "") + ".");
+      }, 300);
+    }).catch(function (err) {
+      var kind = err instanceof GeminiError ? err.kind : "api";
+      var detail = err instanceof GeminiError ? err.detail : (err && err.message) || "";
+      showGeminiError(GEMINI_ERRORS[kind] + (kind === "api" && detail ? " (" + detail.slice(0, 160) + ")" : ""));
+    }).then(function () {
+      geminiBusy = false;
+      f.send.textContent = "Create deck";
+      f.status.classList.add("hidden");
+      updateGeminiSendState();
+    });
   });
 
   // ---------- manage ----------
@@ -1591,6 +1594,7 @@
   }
 
   function renderManageList(filter) {
+    document.getElementById("btn-manage-search-clear").classList.toggle("hidden", !document.getElementById("manage-search").value);
     var list = document.getElementById("manage-list");
     list.innerHTML = "";
     openManageSwipeRow = null;
@@ -1811,6 +1815,13 @@
 
   document.getElementById("manage-search").addEventListener("input", function (e) {
     renderManageList(e.target.value);
+  });
+
+  document.getElementById("btn-manage-search-clear").addEventListener("click", function () {
+    var input = document.getElementById("manage-search");
+    input.value = "";
+    renderManageList("");
+    input.focus();
   });
 
   document.getElementById("manage-section-filter").addEventListener("change", function () {
@@ -2852,6 +2863,56 @@
     return { items: items };
   }
 
+  // Adds parsed cards (Import or Ask Gemini), matching by word + translation
+  // case-insensitively: a duplicate isn't re-added, but its deck tags are
+  // merged in. Missing decks are created. Returns how many cards were new.
+  function mergeIncomingCards(incoming) {
+    var existingByKey = {};
+    cards.forEach(function (c) {
+      existingByKey[c.word.toLowerCase() + "|" + c.translation.toLowerCase()] = c;
+    });
+    var added = 0;
+    incoming.forEach(function (item) {
+      var key = item.word.toLowerCase() + "|" + item.translation.toLowerCase();
+
+      var sectionIds = item.sectionNamesList.map(function (name) {
+        return getOrCreateSectionByName(name).id;
+      });
+
+      var existing = existingByKey[key];
+      if (existing) {
+        // A duplicate word shouldn't mean its deck tags in the imported
+        // file get silently ignored - merge in any new memberships.
+        sectionIds.forEach(function (id) {
+          if (existing.sectionIds.indexOf(id) === -1) existing.sectionIds.push(id);
+        });
+        return;
+      }
+
+      var importedBox = typeof item.box === "number" ? item.box : 0;
+
+      var newCard = {
+        id: uid(),
+        word: item.word,
+        translation: item.translation,
+        notes: item.notes,
+        sectionIds: sectionIds,
+        box: importedBox,
+        reviewed: typeof item.reviewed === "boolean" ? item.reviewed : importedBox > 0,
+        // A box-0 card is "New" - never studied - and has no
+        // legitimate reason to carry a future due date, so any
+        // provided dueAt only applies once a card has actually
+        // graduated past box 0.
+        dueAt: importedBox > 0 && typeof item.dueAt === "number" ? item.dueAt : Date.now(),
+        createdAt: typeof item.createdAt === "number" ? item.createdAt : Date.now()
+      };
+      cards.push(newCard);
+      existingByKey[key] = newCard;
+      added++;
+    });
+    return added;
+  }
+
   document.getElementById("file-import").addEventListener("change", function (e) {
     var file = e.target.files[0];
     if (!file) return;
@@ -2872,49 +2933,7 @@
           notesList = parsed.notes;
         }
 
-        var existingByKey = {};
-        cards.forEach(function (c) {
-          existingByKey[c.word.toLowerCase() + "|" + c.translation.toLowerCase()] = c;
-        });
-        var added = 0;
-        incoming.forEach(function (item) {
-          var key = item.word.toLowerCase() + "|" + item.translation.toLowerCase();
-
-          var sectionIds = item.sectionNamesList.map(function (name) {
-            return getOrCreateSectionByName(name).id;
-          });
-
-          var existing = existingByKey[key];
-          if (existing) {
-            // A duplicate word shouldn't mean its deck tags in the imported
-            // file get silently ignored - merge in any new memberships.
-            sectionIds.forEach(function (id) {
-              if (existing.sectionIds.indexOf(id) === -1) existing.sectionIds.push(id);
-            });
-            return;
-          }
-
-          var importedBox = typeof item.box === "number" ? item.box : 0;
-
-          var newCard = {
-            id: uid(),
-            word: item.word,
-            translation: item.translation,
-            notes: item.notes,
-            sectionIds: sectionIds,
-            box: importedBox,
-            reviewed: typeof item.reviewed === "boolean" ? item.reviewed : importedBox > 0,
-            // A box-0 card is "New" - never studied - and has no
-            // legitimate reason to carry a future due date, so any
-            // provided dueAt only applies once a card has actually
-            // graduated past box 0.
-            dueAt: importedBox > 0 && typeof item.dueAt === "number" ? item.dueAt : Date.now(),
-            createdAt: typeof item.createdAt === "number" ? item.createdAt : Date.now()
-          };
-          cards.push(newCard);
-          existingByKey[key] = newCard;
-          added++;
-        });
+        var added = mergeIncomingCards(incoming);
         saveData();
         refreshHome();
         alert("Imported " + added + " new card" + (added === 1 ? "" : "s") +
@@ -3230,14 +3249,22 @@
 
   drive.subscribe(renderDrive);
 
-  function openDriveView() {
+  // Settings or the home avatar - back returns there.
+  var driveReturnTo = "home";
+
+  function openDriveView(from) {
+    driveReturnTo = from;
     renderDrive();
     showView("drive");
   }
 
-  document.getElementById("btn-drive").addEventListener("click", openDriveView);
-  document.getElementById("btn-drive-avatar").addEventListener("click", openDriveView);
+  document.getElementById("btn-drive").addEventListener("click", function () { openDriveView("settings"); });
+  document.getElementById("btn-drive-avatar").addEventListener("click", function () { openDriveView("home"); });
   document.getElementById("btn-drive-back").addEventListener("click", function () {
+    if (driveReturnTo === "settings") {
+      showView("settings");
+      return;
+    }
     refreshHome();
     showView("home");
   });

@@ -5,7 +5,15 @@
   var BOX_INTERVALS_DAYS = [0, 1, 3, 7, 16, 35]; // index = box number, box0 = due immediately
   var MAX_BOX = BOX_INTERVALS_DAYS.length - 1;
 
+  // Soft pastels, like colored ribbon bookmarks in a notebook.
   var SECTION_COLORS = [
+    "#f6d98b", "#a8dcc0", "#f4aaa6", "#a9c4ee", "#cdb4ee",
+    "#f8c49a", "#a3dedd", "#f2b1cc", "#c4dd9c", "#b8bff0",
+    "#f7c6c0", "#b3e6d3"
+  ];
+  // Decks created before the pastel redesign keep their hue, softened -
+  // same index in SECTION_COLORS as in this old, saturated palette.
+  var LEGACY_SECTION_COLORS = [
     "#f1bf00", "#3ecf8e", "#ff6b6b", "#5b8def", "#c77dff",
     "#ff9f45", "#38d9d9", "#f06595", "#82c91e", "#748ffc",
     "#ffa8a8", "#63e6be"
@@ -100,6 +108,8 @@
       });
       var loadedSections = Array.isArray(parsed.sections) ? parsed.sections : [];
       loadedSections.forEach(function (s) {
+        var legacyIdx = LEGACY_SECTION_COLORS.indexOf(String(s.color).toLowerCase());
+        if (legacyIdx !== -1) s.color = SECTION_COLORS[legacyIdx];
         if (!s.color) s.color = randomSectionColor();
       });
       return {
@@ -125,6 +135,7 @@
       notes: notesList,
       foreignLanguage: foreignLanguage
     }));
+    if (window.FlashcardsDrive) window.FlashcardsDrive.markChanged();
   }
 
   var initialData = loadData();
@@ -275,7 +286,8 @@
     changelog: document.getElementById("view-changelog"),
     gemini: document.getElementById("view-gemini"),
     notes: document.getElementById("view-notes-list"),
-    noteEditor: document.getElementById("view-notes")
+    noteEditor: document.getElementById("view-notes"),
+    drive: document.getElementById("view-drive")
   };
 
   var TABBAR_VIEWS = { home: true, manage: true, sections: true, notes: true };
@@ -827,6 +839,7 @@
   // to hold the list at 10) each time a version ships with user-facing
   // changes worth calling out.
   var CHANGELOG = [
+    { version: "1.37.0", text: "Google Drive backup - sign in from Settings and your cards, decks, progress and notes back up by themselves to a hidden app folder in your Google Drive, and restore onto a new phone in one tap. Plus a cozy new look: warm paper pages, book-style cards and soft pastel colors on every screen." },
     { version: "1.36.0", text: "Removed the day streak - the flame counter is gone from the home screen, practice no longer tracks it, and exports no longer include it (older backups with streak lines still import fine)." },
     { version: "1.35.0", text: "Fixed the speaker buttons playing no sound on iOS 27 - words are now spoken with Google Translate's voice (needs internet, and plays even in silent mode), falling back to the device voice when offline. The speaker button now shrinks when pressed and glows yellow while the word plays." },
     { version: "1.34.0", text: "Add card's Notes field now wraps long notes onto new lines and grows to fit. Tapping + Add card with text in Cards search pre-fills the word field with it. Search now ignores accents, so \"o\" also finds \"ó\"." },
@@ -3130,9 +3143,169 @@
     });
   }
 
+  // ---------- google drive backup (see drive.js) ----------
+  var drive = window.FlashcardsDrive;
+
+  drive.init({
+    // Everything a new phone needs - not lastExportAt, which is about this
+    // device's own file exports.
+    exportData: function () {
+      return {
+        cards: cards,
+        sections: sections,
+        notes: notesList,
+        foreignLanguage: foreignLanguage,
+        lastStudyPrefs: lastStudyPrefs
+      };
+    },
+    // Replaces everything here with the Drive copy, run through loadData()
+    // so a backup gets the same repairs/migrations as local storage does.
+    importData: function (data) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        cards: Array.isArray(data.cards) ? data.cards : [],
+        sections: Array.isArray(data.sections) ? data.sections : [],
+        lastExportAt: lastExportAt,
+        lastStudyPrefs: data.lastStudyPrefs || null,
+        notes: Array.isArray(data.notes) ? data.notes : [],
+        foreignLanguage: typeof data.foreignLanguage === "string" ? data.foreignLanguage : DEFAULT_LANGUAGE_CODE
+      }));
+      var restored = loadData();
+      cards = restored.cards;
+      sections = restored.sections;
+      notesList = restored.notes;
+      foreignLanguage = restored.foreignLanguage;
+      lastStudyPrefs = restored.lastStudyPrefs;
+      saveData();
+      applyLanguage();
+      lastDailyCardId = null;
+      refreshHome();
+    }
+  });
+
+  var DRIVE_ERRORS = {
+    signin: "Google sign-in was cancelled or failed.",
+    expired: "The Google connection expired - tap “Back up now” to reconnect.",
+    network: "No connection to Google Drive.",
+    quota: "Your Google Drive is full.",
+    missing: "There's no Flashcards backup in this Google Drive yet.",
+    apiDisabled: "The Google Drive API isn't turned on for this app's Google Cloud project. In console.cloud.google.com open the same project → APIs & Services → Library → Google Drive API → Enable, wait a minute, then tap “Back up now”.",
+    scope: "Google Drive access wasn't allowed during sign-in. Tap “Sign in again” and tick the Google Drive box on Google's permission screen.",
+    failed: "Google Drive returned an error. Try again."
+  };
+
+  function driveWhen(ms) {
+    return new Date(ms).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+  }
+
+  // Google profile picture, or the account's initial when there's none (or no network).
+  function fillAvatar(el, st) {
+    el.innerHTML = "";
+    var initial = document.createElement("span");
+    initial.textContent = (st.name || st.email || "?").trim().charAt(0).toUpperCase();
+    if (st.picture) {
+      var img = document.createElement("img");
+      img.alt = "";
+      img.referrerPolicy = "no-referrer";
+      img.src = st.picture;
+      img.onerror = function () { el.innerHTML = ""; el.appendChild(initial); };
+      el.appendChild(img);
+    } else {
+      el.appendChild(initial);
+    }
+  }
+
+  var lastAvatarKey = null;
+
+  function renderDrive() {
+    var st = drive.state();
+    document.getElementById("btn-drive").classList.toggle("hidden", !st.enabled);
+    if (!st.enabled) return;
+
+    var avatarBtn = document.getElementById("btn-drive-avatar");
+    avatarBtn.classList.toggle("hidden", !st.signedIn);
+    var avatarKey = st.signedIn ? (st.picture || "") + "|" + st.email : null;
+    if (avatarKey !== lastAvatarKey) {
+      lastAvatarKey = avatarKey;
+      if (st.signedIn) {
+        fillAvatar(avatarBtn, st);
+        fillAvatar(document.getElementById("drive-account-avatar"), st);
+      }
+    }
+
+    document.getElementById("drive-menu-hint").textContent = !st.signedIn
+      ? "Keep your cards safe in Google Drive"
+      : st.lastBackup ? "Last backup: " + driveWhen(st.lastBackup) : "Signed in as " + st.email;
+
+    // Changes are waiting and the Google connection has lapsed.
+    document.getElementById("drive-banner").classList.toggle("hidden",
+      !(st.signedIn && st.linked && st.unsaved && !st.connected && !st.busy));
+
+    document.getElementById("drive-signed-out").classList.toggle("hidden", st.signedIn);
+    document.getElementById("drive-signed-in").classList.toggle("hidden", !st.signedIn);
+    document.getElementById("drive-auto-note").classList.toggle("hidden", !st.signedIn);
+    if (!st.signedIn) return;
+
+    document.getElementById("drive-account-email").textContent = "Signed in as " + st.email;
+
+    var status = document.getElementById("drive-status");
+    status.classList.toggle("hidden", !!st.choose);
+    status.textContent = st.busy === "backup" ? "Backing up…"
+      : st.busy === "restore" ? "Restoring…"
+      : (st.lastBackup ? "Last backup: " + driveWhen(st.lastBackup) + "." : "Not backed up yet.") +
+        (st.unsaved && st.lastBackup ? " Some changes aren't backed up yet." : "");
+
+    document.getElementById("drive-choose").classList.toggle("hidden", !st.choose);
+    if (st.choose) {
+      document.getElementById("drive-choose-text").textContent =
+        "Your Google Drive already has a backup from " + driveWhen(st.choose.remoteTime) +
+        ". Restore it to this phone, or replace it with what's on this phone?";
+    }
+
+    document.getElementById("drive-error").classList.toggle("hidden", !st.error);
+    document.getElementById("drive-error-text").textContent = st.error ? DRIVE_ERRORS[st.error] : "";
+    var detail = document.getElementById("drive-error-detail");
+    detail.classList.toggle("hidden", !st.errorDetail);
+    detail.textContent = st.errorDetail ? "Details: " + st.errorDetail : "";
+    document.getElementById("btn-drive-signin-again").classList.toggle("hidden", st.error !== "scope");
+
+    document.getElementById("drive-actions").classList.toggle("hidden", !!st.choose);
+    document.getElementById("btn-drive-backup").disabled = !!st.busy;
+    document.getElementById("btn-drive-restore").disabled = !!st.busy;
+  }
+
+  drive.subscribe(renderDrive);
+
+  function openDriveView() {
+    renderDrive();
+    showView("drive");
+  }
+
+  document.getElementById("btn-drive").addEventListener("click", openDriveView);
+  document.getElementById("btn-drive-avatar").addEventListener("click", openDriveView);
+  document.getElementById("btn-drive-back").addEventListener("click", function () {
+    refreshHome();
+    showView("home");
+  });
+  document.getElementById("btn-drive-signin").addEventListener("click", function () { drive.signIn("connect"); });
+  document.getElementById("btn-drive-signin-again").addEventListener("click", function () { drive.signIn("connect", true); });
+  document.getElementById("btn-drive-backup").addEventListener("click", function () { drive.backupNow(); });
+  document.getElementById("btn-drive-banner-action").addEventListener("click", function () { drive.backupNow(); });
+  document.getElementById("btn-drive-restore").addEventListener("click", function () {
+    if (confirm("Replace everything on this phone with the Google Drive backup?")) drive.restoreFromDrive();
+  });
+  document.getElementById("btn-drive-use-drive").addEventListener("click", function () { drive.restoreFromDrive(); });
+  document.getElementById("btn-drive-use-phone").addEventListener("click", function () {
+    if (confirm("Overwrite the Google Drive backup with this phone's data?")) drive.backupNow(true);
+  });
+  document.getElementById("btn-drive-signout").addEventListener("click", function () {
+    if (confirm("Sign out of Google? Your cards stay on this phone.")) drive.signOut();
+  });
+
   // ---------- backup reminder ----------
   function maybePromptBackup() {
     if (cards.length === 0) return;
+    // Google Drive already keeps a copy - no need to nag about file exports.
+    if (drive.state().linked) return;
     var weekMs = 7 * 86400000;
     if (lastExportAt && Date.now() - lastExportAt < weekMs) return;
     var msg = lastExportAt
@@ -3144,6 +3317,13 @@
   // ---------- init ----------
   applyLanguage();
   refreshHome();
+  drive.handleRedirect();
+  renderDrive();
+  // Back from Google's sign-in page: land where the outcome is shown.
+  if (drive.cameBackFromSignIn()) {
+    showView("drive");
+    return;
+  }
   showView("home");
   // confirm() blocks the main thread and can fire before the browser has
   // painted anything - a short delay lets the home screen actually render

@@ -7,9 +7,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, interactive-widget=resizes-visual">
 <title>Flashcards</title>
 
-<meta name="theme-color" content="#26262e">
+<meta name="theme-color" content="#f5ede0">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Flashcards">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <link rel="icon" href="icons/icon-192.png?v=2">
@@ -25,6 +25,7 @@
   <section id="view-home" class="view">
     <header class="topbar">
       <h1><span id="flag-icon" class="flag-icon">🇪🇸</span> Flashcards</h1>
+      <button type="button" class="avatar hidden" id="btn-drive-avatar" title="Google Drive backup"></button>
       <div class="dropdown" id="settings-dropdown">
         <button class="icon-btn icon-btn-plain" id="btn-settings">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
@@ -34,6 +35,10 @@
             <span class="dropdown-item-label">Learning language</span>
             <select id="language-select" class="language-select"></select>
           </div>
+          <button id="btn-drive" class="dropdown-item hidden">
+            <span class="dropdown-item-label">Google Drive backup</span>
+            <span class="dropdown-item-hint" id="drive-menu-hint">Keep your cards safe in Google Drive</span>
+          </button>
           <button id="btn-export" class="dropdown-item">
             <span class="dropdown-item-label">Export</span>
             <span class="dropdown-item-hint">Save cards and progress</span>
@@ -50,8 +55,8 @@
             <span class="dropdown-item-label">Change log</span>
             <span class="dropdown-item-hint">Recent updates to the app</span>
           </button>
-          <p class="dropdown-info">All data stays on this device. Import/export uses Anki's plain-text card format.</p>
-          <p class="app-version">v1.36.1</p>
+          <p class="dropdown-info">Your data stays on this device unless you turn on Google Drive backup. Import/export uses Anki's plain-text card format.</p>
+          <p class="app-version">v1.37.0</p>
         </div>
       </div>
     </header>
@@ -60,6 +65,11 @@
       <span class="install-banner-text" id="install-banner-text"></span>
       <button type="button" class="install-banner-action hidden" id="btn-install-banner-action">Install</button>
       <button class="icon-btn" id="btn-install-banner-close">✕</button>
+    </div>
+
+    <div class="drive-banner hidden" id="drive-banner">
+      <span class="drive-banner-text">Changes not backed up to Google Drive</span>
+      <button type="button" class="install-banner-action" id="btn-drive-banner-action">Back up</button>
     </div>
 
     <input type="file" id="file-import" accept=".txt,.tsv,text/plain,.json,application/json" hidden>
@@ -476,10 +486,57 @@
       </div>
 
       <div class="readme-section">
+        <h3>Google Drive backup</h3>
+        <p>Settings → <b>Google Drive backup</b> → <b>Sign in with Google</b>. The app talks to Google directly (no server in between) and keeps one backup file in a hidden app folder in your Google Drive - it can't see any of your other files. While connected, it backs up by itself a few seconds after each change. Google's sign-in lasts about an hour; after that, a "Changes not backed up" reminder on the home screen reconnects with one tap.</p>
+        <p>On a new phone, signing in finds the existing backup and asks whether to <b>Restore it here</b> or <b>Replace with this phone</b> - nothing is overwritten until you choose. Restoring replaces everything on the phone with the backup. Once Drive backup is set up, the weekly "export your cards" reminder stops.</p>
+      </div>
+
+      <div class="readme-section">
         <h3>Export / Import</h3>
         <p>Export saves a plain-text file in Anki's tab-separated note format (word, translation, notes, deck tags, box, due date, reviewed), so it opens directly in Anki too. Deck memberships are stored as <code>deck::Name</code> tags - a card in several decks gets several tags. Your notes are saved in a header comment line.</p>
         <p>Import reads that same format (older JSON exports still work too). Matching is by word + translation, case-insensitive: a duplicate isn't re-added, but any new deck tags on it are merged in. Missing decks mentioned in tags are created automatically. If it's been a week since your last export, the app will offer to back up on launch. Imported notes are only adopted if you have none yet - so importing cards never overwrites progress you're already building on this device.</p>
       </div>
+    </div>
+  </section>
+
+  <!-- ===== GOOGLE DRIVE VIEW ===== -->
+  <section id="view-drive" class="view hidden">
+    <header class="topbar">
+      <button class="icon-btn" id="btn-drive-back">✕</button>
+      <h2>Google Drive backup</h2>
+      <span class="spacer"></span>
+    </header>
+
+    <div class="drive-content">
+      <div class="drive-card" id="drive-signed-out">
+        <p class="drive-text">Sign in with Google and the app keeps a backup of your cards, decks, progress and notes in a hidden app folder in your Google Drive. It can't see your other files.</p>
+        <button type="button" class="btn btn-primary" id="btn-drive-signin">Sign in with Google</button>
+      </div>
+
+      <div class="drive-card hidden" id="drive-signed-in">
+        <div class="drive-account">
+          <span class="avatar avatar-large" id="drive-account-avatar"></span>
+          <span class="drive-account-email" id="drive-account-email"></span>
+        </div>
+        <p class="drive-status" id="drive-status"></p>
+        <div class="drive-notice hidden" id="drive-choose">
+          <p id="drive-choose-text"></p>
+          <button type="button" class="btn btn-primary" id="btn-drive-use-drive">Restore it here</button>
+          <button type="button" class="btn btn-ghost" id="btn-drive-use-phone">Replace with this phone</button>
+        </div>
+        <div class="drive-error hidden" id="drive-error">
+          <p id="drive-error-text"></p>
+          <p class="drive-error-detail hidden" id="drive-error-detail"></p>
+        </div>
+        <button type="button" class="btn btn-primary hidden" id="btn-drive-signin-again">Sign in again</button>
+        <div class="drive-actions" id="drive-actions">
+          <button type="button" class="btn btn-primary" id="btn-drive-backup">Back up now</button>
+          <button type="button" class="btn btn-secondary" id="btn-drive-restore">Restore from Google Drive</button>
+        </div>
+        <button type="button" class="text-action-btn" id="btn-drive-signout">Sign out</button>
+      </div>
+
+      <p class="drive-footnote hidden" id="drive-auto-note">Backs up by itself a few seconds after each change while connected. Google keeps the connection for about an hour; after that one tap reconnects.</p>
     </div>
   </section>
 
@@ -603,6 +660,7 @@
   <p>Please rotate your device back to portrait to use this app.</p>
 </div>
 
+<script src="drive.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

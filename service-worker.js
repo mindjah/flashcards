@@ -1,9 +1,10 @@
-var CACHE_NAME = "flashcards-v81";
+var CACHE_NAME = "flashcards-v82";
 var ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
+  "./drive.js",
   "./manifest.json",
   "./icons/icon-180.png",
   "./icons/icon-192.png",
@@ -44,7 +45,7 @@ self.addEventListener("activate", function (event) {
 // stay on normal caching to keep ordinary loads fast. Built from the
 // worker's own registration scope rather than a hardcoded path so this
 // doesn't silently break if the repo/hosting path ever changes.
-var ALWAYS_FRESH_URLS = ["", "index.html", "app.js", "styles.css"].map(function (p) {
+var ALWAYS_FRESH_URLS = ["", "index.html", "app.js", "drive.js", "styles.css"].map(function (p) {
   return new URL(p, self.registration.scope).href;
 });
 

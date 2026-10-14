@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
   <!-- Google Translate TTS (the speaker buttons) 404s any request carrying a foreign Referer. -->
   <meta name="referrer" content="no-referrer">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, interactive-widget=resizes-visual">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, interactive-widget=resizes-visual, viewport-fit=cover">
 <title>Flashcards</title>
 
 <meta name="theme-color" content="#fbf8f4" media="(prefers-color-scheme: light)">
@@ -391,6 +391,11 @@
         <label class="settings-row settings-row-field">
           <span class="settings-row-label">Gemini API key</span>
           <input type="password" id="settings-gemini-key" class="settings-input" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="AIza...">
+          <span class="settings-actions">
+            <button type="button" class="btn btn-primary" id="btn-settings-gemini-save">Save</button>
+            <button type="button" class="btn btn-secondary" id="btn-settings-gemini-test">Test connection</button>
+          </span>
+          <span class="settings-status hidden" id="settings-gemini-status"></span>
           <span class="settings-row-hint">Used by Ask Gemini to create decks. Free from <a class="hint-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">aistudio.google.com/apikey</a> - saved on this device only.</span>
         </label>
       </div>
@@ -432,7 +437,7 @@
       </div>
 
       <p class="settings-footnote">Your data stays on this device unless you turn on Google Drive backup. Import/export uses Anki's plain-text card format.</p>
-      <p class="app-version">v1.41.0</p>
+      <p class="app-version">v1.42.0</p>
     </div>
   </section>
 

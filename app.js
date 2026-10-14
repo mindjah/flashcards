@@ -1325,20 +1325,66 @@
     return ownGeminiKey() || coffeeShelfGeminiSettings().key;
   }
 
+  function geminiModelName() {
+    return coffeeShelfGeminiSettings().model || GEMINI_DEFAULT_MODEL;
+  }
+
+  function geminiUrl(model, method) {
+    return "https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(model) + method;
+  }
+
   // Settings -> AI: the key Ask Gemini uses. Left empty, Coffee Shelf's
   // key (if any) is used, which the placeholder says.
   function renderSettingsGeminiKey() {
     var input = document.getElementById("settings-gemini-key");
     input.value = ownGeminiKey();
     input.placeholder = coffeeShelfGeminiSettings().key ? "Using Coffee Shelf's key" : "AIza...";
+    showSettingsGeminiStatus("", "");
   }
 
-  document.getElementById("settings-gemini-key").addEventListener("input", function () {
-    saveGeminiKey(this.value.trim());
+  function showSettingsGeminiStatus(text, tone) {
+    var el = document.getElementById("settings-gemini-status");
+    el.textContent = text;
+    el.className = "settings-status" + (tone ? " settings-status-" + tone : "");
+    el.classList.toggle("hidden", !text);
+  }
+
+  document.getElementById("btn-settings-gemini-save").addEventListener("click", function () {
+    var key = document.getElementById("settings-gemini-key").value.trim();
+    saveGeminiKey(key);
+    showSettingsGeminiStatus(key ? "Saved ✓"
+      : coffeeShelfGeminiSettings().key ? "Cleared - Coffee Shelf's key will be used." : "Cleared.", "ok");
+  });
+
+  // A model lookup: checks the key, the model and the connection without
+  // spending any generation quota (same check Coffee Shelf does).
+  document.getElementById("btn-settings-gemini-test").addEventListener("click", function () {
+    var btn = this;
+    var key = document.getElementById("settings-gemini-key").value.trim() || savedGeminiKey();
+    if (!key) {
+      showSettingsGeminiStatus("Enter a key first.", "error");
+      return;
+    }
+    var model = geminiModelName();
+    btn.disabled = true;
+    showSettingsGeminiStatus("Testing…", "");
+    fetch(geminiUrl(model, ""), { headers: { "x-goog-api-key": key } }).catch(function (e) {
+      throw geminiNetworkError(e);
+    }).then(function (res) {
+      if (!res.ok) return readGeminiError(res);
+      return res.json().then(function (info) {
+        showSettingsGeminiStatus("Connected ✓ " + (info.displayName || model) + " is ready.", "ok");
+      });
+    }).catch(function (err) {
+      showSettingsGeminiStatus(geminiErrorText(err), "error");
+    }).then(function () {
+      btn.disabled = false;
+    });
   });
 
   var GEMINI_ERRORS = {
     offline: "No internet connection - Gemini can't be reached.",
+    dropped: "The connection to Gemini dropped before it answered. Keep the app open while it works, or try fewer words.",
     badKey: "Gemini didn't accept this API key. Check it at aistudio.google.com/apikey.",
     rateLimit: "Gemini's free limit is used up for now. Wait a minute and try again.",
     noModel: "This Gemini model isn't available for your key.",
@@ -1457,9 +1503,86 @@
     return "api";
   }
 
+  // No response at all: offline, or a connection that dropped mid-answer -
+  // iOS gives up on a connection that stays quiet for about a minute, and
+  // on any request once the app goes to the background.
+  function geminiNetworkError(e) {
+    return new GeminiError(navigator.onLine === false ? "offline" : "dropped", (e && e.message) || "");
+  }
+
+  function readGeminiError(res) {
+    return res.text().catch(function () { return ""; }).then(function (text) {
+      var body = {};
+      try { body = JSON.parse(text); } catch (e) {}
+      if (Array.isArray(body)) body = body[0] || {};
+      throw new GeminiError(geminiErrorKind(res.status, body), (res.status + " " + ((body.error && body.error.message) || "")).trim());
+    });
+  }
+
+  function geminiErrorText(err) {
+    var kind = err instanceof GeminiError ? err.kind : "api";
+    var detail = err instanceof GeminiError ? err.detail : (err && err.message) || "";
+    var showDetail = (kind === "api" || kind === "dropped" || kind === "offline") && detail;
+    return GEMINI_ERRORS[kind] + (showDetail ? " (" + detail.slice(0, 160) + ")" : "");
+  }
+
+  // Server-sent events: one "data: {...}" chunk per event, each carrying the
+  // next slice of the answer. Reading them as they arrive keeps data flowing
+  // while Gemini writes, so a long deck doesn't look like a dead connection.
+  function readGeminiStream(res) {
+    var out = { text: "", finishReason: "", blocked: false };
+
+    function handleEvent(data) {
+      var chunk;
+      try { chunk = JSON.parse(data); } catch (e) { return; }
+      if (chunk.error) throw new GeminiError(geminiErrorKind(chunk.error.code || 0, chunk), chunk.error.message || "");
+      if (chunk.promptFeedback && chunk.promptFeedback.blockReason) out.blocked = true;
+      var candidate = (chunk.candidates || [])[0];
+      if (!candidate) return;
+      ((candidate.content && candidate.content.parts) || []).forEach(function (part) {
+        if (part.text && !part.thought) out.text += part.text;
+      });
+      if (candidate.finishReason) out.finishReason = candidate.finishReason;
+    }
+
+    // Handles every complete event in buf; returns the unfinished rest.
+    function handleBuffer(buf) {
+      var events = buf.replace(/\r\n/g, "\n").split("\n\n");
+      var rest = events.pop();
+      events.forEach(function (event) {
+        var data = event.split("\n")
+          .filter(function (line) { return line.indexOf("data:") === 0; })
+          .map(function (line) { return line.slice(5).trim(); })
+          .join("");
+        if (data) handleEvent(data);
+      });
+      return rest;
+    }
+
+    if (!res.body || !res.body.getReader) {
+      return res.text().then(function (text) { handleBuffer(text + "\n\n"); return out; });
+    }
+    var reader = res.body.getReader();
+    var decoder = new TextDecoder();
+    var buffer = "";
+    function pump() {
+      return reader.read().then(function (step) {
+        if (step.done) {
+          handleBuffer(buffer + decoder.decode() + "\n\n");
+          return out;
+        }
+        buffer = handleBuffer(buffer + decoder.decode(step.value, { stream: true }));
+        return pump();
+      });
+    }
+    return pump().catch(function (e) {
+      if (e instanceof GeminiError) throw e;
+      throw geminiNetworkError(e);
+    });
+  }
+
   function askGeminiForCards(key, prompt) {
-    var model = coffeeShelfGeminiSettings().model || GEMINI_DEFAULT_MODEL;
-    return fetch("https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(model) + ":generateContent", {
+    return fetch(geminiUrl(geminiModelName(), ":streamGenerateContent?alt=sse"), {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-goog-api-key": key },
       body: JSON.stringify({
@@ -1470,26 +1593,22 @@
           maxOutputTokens: 16000
         }
       })
-    }).catch(function () {
-      throw new GeminiError("offline");
+    }).catch(function (e) {
+      throw geminiNetworkError(e);
     }).then(function (res) {
-      return res.json().catch(function () { return {}; }).then(function (body) {
-        if (!res.ok) {
-          throw new GeminiError(geminiErrorKind(res.status, body), (res.status + " " + ((body.error && body.error.message) || "")).trim());
-        }
-        if (body.promptFeedback && body.promptFeedback.blockReason) throw new GeminiError("refusal");
-        var candidate = (body.candidates || [])[0] || {};
-        if (candidate.finishReason === "MAX_TOKENS") throw new GeminiError("truncated");
-        if (candidate.finishReason === "SAFETY" || candidate.finishReason === "PROHIBITED_CONTENT") throw new GeminiError("refusal");
-        var text = ((candidate.content && candidate.content.parts) || []).map(function (part) { return part.text || ""; }).join("");
-        var parsed;
-        try { parsed = JSON.parse(text); } catch (e) { throw new GeminiError("unreadable"); }
-        var list = (parsed && Array.isArray(parsed.cards) ? parsed.cards : []).filter(function (c) {
-          return c && typeof c.word === "string" && c.word.trim() && typeof c.translation === "string" && c.translation.trim();
-        });
-        if (!list.length) throw new GeminiError("unreadable");
-        return list;
+      if (!res.ok) return readGeminiError(res);
+      return readGeminiStream(res);
+    }).then(function (answer) {
+      if (answer.blocked) throw new GeminiError("refusal");
+      if (answer.finishReason === "MAX_TOKENS") throw new GeminiError("truncated");
+      if (answer.finishReason === "SAFETY" || answer.finishReason === "PROHIBITED_CONTENT") throw new GeminiError("refusal");
+      var parsed;
+      try { parsed = JSON.parse(answer.text); } catch (e) { throw new GeminiError("unreadable"); }
+      var list = (parsed && Array.isArray(parsed.cards) ? parsed.cards : []).filter(function (c) {
+        return c && typeof c.word === "string" && c.word.trim() && typeof c.translation === "string" && c.translation.trim();
       });
+      if (!list.length) throw new GeminiError("unreadable");
+      return list;
     });
   }
 
@@ -1504,6 +1623,13 @@
     geminiBusy = true;
     showGeminiError("");
     f.send.textContent = "Creating deck…";
+    // A running clock, so a long deck visibly isn't stuck.
+    var startedAt = Date.now();
+    function tick() {
+      f.status.textContent = "Gemini is writing your deck… " + Math.round((Date.now() - startedAt) / 1000) + "s - keep the app open";
+    }
+    tick();
+    var ticker = setInterval(tick, 1000);
     f.status.classList.remove("hidden");
     updateGeminiSendState();
 
@@ -1528,10 +1654,9 @@
           (skipped > 0 ? " (" + skipped + " you already had joined the deck)" : "") + ".");
       }, 300);
     }).catch(function (err) {
-      var kind = err instanceof GeminiError ? err.kind : "api";
-      var detail = err instanceof GeminiError ? err.detail : (err && err.message) || "";
-      showGeminiError(GEMINI_ERRORS[kind] + (kind === "api" && detail ? " (" + detail.slice(0, 160) + ")" : ""));
+      showGeminiError(geminiErrorText(err));
     }).then(function () {
+      clearInterval(ticker);
       geminiBusy = false;
       f.send.textContent = "Create deck";
       f.status.classList.add("hidden");
@@ -2206,6 +2331,10 @@
     updateStudyCardBackContent();
   }
 
+  // Keep in sync with the page turn's duration in styles.css.
+  var PAGE_TURN_MS = 600;
+  var pendingBackContentTimer = null;
+
   function nextCard() {
     if (session.queue.length === 0) {
       if (session.reviewQueue.length === 0) {
@@ -2222,14 +2351,10 @@
     session.revealed = false;
 
     var cardEl = document.getElementById("card");
-    // The back face (showing what was just answered) stays visible for
-    // roughly the first half of the .flashcard-inner's 0.45s un-flip
-    // transition - backface-visibility only swaps which face is shown
-    // once the rotation crosses 90deg, not the instant "flipped" is
-    // removed. Updating its content immediately flashed the next card's
-    // answer on that still-visible face; the front face has no such risk
-    // (it stays hidden until that same crossing point), so it updates
-    // right away.
+    // The back page (showing what was just answered) stays uncovered until
+    // the front page has turned all the way back down over it (the 0.6s
+    // page turn in styles.css). Updating its content immediately flashed the
+    // next card's answer on it; the front page updates right away.
     var wasFlipped = cardEl.classList.contains("flipped");
     cardEl.classList.remove("flipped", "swipe-pass", "swipe-fail", "answer-correct", "answer-incorrect");
     cardEl.style.transition = "";
@@ -2238,8 +2363,9 @@
     var cardWordEl = document.getElementById("card-word");
     cardWordEl.style.transform = "";
     updateStudyCardFrontContent();
+    clearTimeout(pendingBackContentTimer);
     if (wasFlipped) {
-      setTimeout(updateStudyCardBackContent, 230);
+      pendingBackContentTimer = setTimeout(updateStudyCardBackContent, PAGE_TURN_MS + 20);
     } else {
       updateStudyCardBackContent();
     }
@@ -2327,6 +2453,13 @@
   }
 
   function revealCard(forceIncorrect) {
+    // Turned again before the previous page settled: show this card's
+    // answer now rather than when the delayed update lands.
+    if (pendingBackContentTimer) {
+      clearTimeout(pendingBackContentTimer);
+      pendingBackContentTimer = null;
+      updateStudyCardBackContent();
+    }
     if (session.revealed || !session.current) return;
     session.revealed = true;
     document.getElementById("card").classList.add("flipped");

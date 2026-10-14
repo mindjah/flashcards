@@ -62,6 +62,11 @@
     6px 6px 0 -1px var(--page-edge-2), 6px 6px 0 0 var(--border),
     0 18px 34px -16px rgba(30, 23, 20, 0.28);
   --page-radius: 6px 20px 20px 6px;
+  /* viewport-fit=cover: the page runs under the home indicator (and the
+     status bar, if iOS gives it a translucent one), so bottom-anchored
+     things add these insets themselves. */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -174,6 +179,7 @@ body {
 
 #app {
   height: var(--app-height, 100dvh);
+  padding-top: var(--safe-top);
   background: var(--bg);
   /* Only ever visibly kicks in on a desktop browser window - no real
      phone viewport is this wide, so mobile stays exactly edge-to-edge. */
@@ -225,7 +231,7 @@ body {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  padding-bottom: 16px;
+  padding-bottom: calc(16px + var(--safe-bottom));
   overflow-y: auto;
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
@@ -514,7 +520,7 @@ body {
   flex: 1 1 auto;
   min-height: 0;
   max-height: 380px;
-  perspective: 1200px;
+  perspective: 2000px;
 }
 
 .daily-card-inner {
@@ -522,12 +528,11 @@ body {
   width: 100%;
   height: 100%;
   cursor: pointer;
-  transition: transform 0.45s cubic-bezier(.4, .2, .2, 1);
   transform-style: preserve-3d;
 }
 
 .daily-card.flipped .daily-card-inner {
-  transform: rotateY(180deg);
+  transform: none;
 }
 
 .daily-card-face {
@@ -548,7 +553,7 @@ body {
 }
 
 .daily-card-back {
-  transform: rotateY(180deg);
+  transform: translateZ(-1px);
   background: var(--page-bg-back);
   gap: 8px;
 }
@@ -804,7 +809,7 @@ body {
   max-width: 420px;
   aspect-ratio: 3 / 4;
   max-height: 55vh;
-  perspective: 1200px;
+  perspective: 2000px;
   touch-action: pan-y;
 }
 
@@ -827,23 +832,22 @@ body {
 }
 
 .flashcard.answer-correct .card-face {
-  animation: flash-outline-correct 0.5s ease-in-out 0.45s forwards;
+  animation: flash-outline-correct 0.5s ease-in-out 0.6s forwards;
 }
 
 .flashcard.answer-incorrect .card-face {
-  animation: flash-outline-incorrect 0.5s ease-in-out 0.45s forwards;
+  animation: flash-outline-incorrect 0.5s ease-in-out 0.6s forwards;
 }
 
 .flashcard-inner {
   position: relative;
   width: 100%;
   height: 100%;
-  transition: transform 0.45s cubic-bezier(.4,.2,.2,1);
   transform-style: preserve-3d;
 }
 
 .flashcard.flipped .flashcard-inner {
-  transform: rotateY(180deg);
+  transform: none;
 }
 
 .card-face {
@@ -862,7 +866,9 @@ body {
 }
 
 .card-back {
-  transform: rotateY(180deg);
+  /* The answer page lies underneath; a hair behind so the two pages
+     never z-fight in the shared 3D space. */
+  transform: translateZ(-1px);
   background: var(--page-bg-back);
   flex-direction: column;
   gap: 14px;
@@ -895,14 +901,53 @@ body {
   pointer-events: none;
 }
 
-/* backface-visibility alone doesn't reliably hide a face's own composited
-   children in iOS WebKit (the speaker button showed through on the back of
-   a flipped card), so the face turned away is also hidden outright - the
-   swap waits for the flip's midpoint (half of its 0.45s), exactly when the
-   two faces cross, in either direction. */
-.card-face,
-.daily-card-face {
-  transition: visibility 0s linear 0.225s;
+/* ===== PAGE TURN =====
+   The front page turns over around its left edge (the spine) like a book
+   page, revealing the answer page underneath; turning back lays it down
+   again. Keep the 0.6s in sync with PAGE_TURN_MS in app.js.
+
+   backface-visibility alone doesn't reliably hide a page's own composited
+   children in iOS WebKit (the speaker button showed through), so the page
+   that's out of view is also hidden outright: the front page once it's
+   edge-on (halfway, either way), the answer page only once the front page
+   is all the way back down over it. */
+.card-front,
+.daily-card-front {
+  transform-origin: left center;
+  transition: transform 0.6s cubic-bezier(0.45, 0.05, 0.25, 1), visibility 0s linear 0.3s;
+}
+
+.flashcard.flipped .card-front,
+.daily-card.flipped .daily-card-front {
+  transform: rotateY(-180deg);
+}
+
+/* The lifting page darkens toward its free edge as it turns. */
+.card-front::after,
+.daily-card-front::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(30, 20, 10, 0) 25%, rgba(30, 20, 10, 0.22));
+  opacity: 0;
+  transition: opacity 0.3s ease-in;
+  pointer-events: none;
+}
+
+.flashcard.flipped .card-front::after,
+.daily-card.flipped .daily-card-front::after {
+  opacity: 1;
+}
+
+.flashcard.flipped .card-back,
+.daily-card.flipped .daily-card-back {
+  transition: visibility 0s;
+}
+
+.flashcard:not(.flipped) .card-back,
+.daily-card:not(.flipped) .daily-card-back {
+  transition: visibility 0s linear 0.6s;
 }
 
 .flashcard:not(.flipped) .card-back,
@@ -1111,7 +1156,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 12px 16px 28px;
+  padding: 12px 16px max(28px, calc(12px + var(--safe-bottom)));
   background: transparent;
   z-index: 20;
 }
@@ -2112,31 +2157,32 @@ body {
    between Mastery and the tab bar (66px + a 16px gap), up to a cap. */
 #view-home {
   overflow: hidden;
-  padding-bottom: 82px;
+  /* Tab bar (64px + home indicator) plus a 16px gap. */
+  padding-bottom: calc(80px + var(--safe-bottom));
 }
 
 /* .manage-list (#manage-list, #sections-list) scrolls independently of
    its parent .view, so it needs its own clearance above the floating bar. */
 #view-manage .manage-list, #view-sections .manage-list {
-  padding-bottom: 112px;
+  padding-bottom: calc(96px + var(--safe-bottom));
 }
 
 .bottom-tabbar {
-  /* No env(safe-area-inset-bottom) needed here - without viewport-fit=
-     cover on the meta tag, iOS excludes the home-indicator area from
-     the viewport itself. */
+  /* Docked to the bottom edge; the glass fills the home-indicator area
+     below the tabs (Coffee Shelf's tab bar). */
   position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
-  height: 66px;
+  height: calc(64px + var(--safe-bottom));
   max-width: 500px;
   margin: 0 auto;
   z-index: 50;
   display: flex;
-  align-items: center;
-  justify-content: space-around;
-  padding: 0 8px;
+  align-items: stretch;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 8px calc(6px + var(--safe-bottom));
   border-radius: 0;
   background: var(--glass);
   -webkit-backdrop-filter: blur(24px) saturate(1.6);
@@ -2146,15 +2192,22 @@ body {
 }
 
 .bottom-tabbar::after {
-  content: none;
+  /* Covers any strip below the layout viewport iOS can leave in standalone mode. */
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 120px;
+  background: var(--bg);
 }
 
 .tabbar-indicator {
   position: absolute;
-  top: 7px;
-  bottom: 7px;
+  top: 6px;
   left: 0;
   width: 76px;
+  height: 52px;
   border-radius: 999px;
   background: var(--accent-dim);
   transition: transform 0.45s cubic-bezier(0.34, 1.3, 0.64, 1);
@@ -2165,12 +2218,13 @@ body {
   position: relative;
   z-index: 2;
   flex: 1;
-  height: 100%;
+  max-width: 96px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 2px;
+  padding: 0;
   background: none;
   border: none;
   font-family: inherit;
@@ -2588,3 +2642,24 @@ button.settings-row:active { background: var(--surface-2); }
 }
 
 .settings-input:focus { outline: none; border-color: var(--accent); }
+
+.settings-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.settings-actions .btn {
+  flex: 1;
+  min-height: 42px;
+  padding: 0 12px;
+  font-size: 15px;
+}
+
+.settings-status {
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text-dim);
+}
+
+.settings-status-ok { color: var(--pass-ink); }
+.settings-status-error { color: var(--fail-ink); }

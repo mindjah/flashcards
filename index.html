@@ -300,10 +300,11 @@
       <label>How to name the deck?
         <input type="text" id="gemini-deck-name" autocomplete="off" placeholder="e.g. Cafe words" required>
       </label>
-      <label>Gemini API key
+      <label id="gemini-key-field">Gemini API key
         <input type="password" id="gemini-key" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="AIza...">
       </label>
-      <p class="gemini-instructions">Free from <a class="hint-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">aistudio.google.com/apikey</a>. It's saved on this device only. If you already use Coffee Shelf, its key is filled in for you.</p>
+      <p class="gemini-instructions" id="gemini-key-hint">Free from <a class="hint-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">aistudio.google.com/apikey</a>. It's saved on this device only - you can change it later in Settings.</p>
+      <p class="gemini-instructions hidden" id="gemini-key-note">Uses your Gemini API key from Settings.</p>
 
       <div class="gemini-error hidden" id="gemini-error"></div>
 
@@ -385,6 +386,15 @@
         </div>
       </div>
 
+      <h3 class="settings-section">AI</h3>
+      <div class="settings-group">
+        <label class="settings-row settings-row-field">
+          <span class="settings-row-label">Gemini API key</span>
+          <input type="password" id="settings-gemini-key" class="settings-input" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="AIza...">
+          <span class="settings-row-hint">Used by Ask Gemini to create decks. Free from <a class="hint-link" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">aistudio.google.com/apikey</a> - saved on this device only.</span>
+        </label>
+      </div>
+
       <h3 class="settings-section">Backup</h3>
       <div class="settings-group">
         <button type="button" id="btn-drive" class="settings-row hidden">
@@ -422,7 +432,7 @@
       </div>
 
       <p class="settings-footnote">Your data stays on this device unless you turn on Google Drive backup. Import/export uses Anki's plain-text card format.</p>
-      <p class="app-version">v1.40.0</p>
+      <p class="app-version">v1.41.0</p>
     </div>
   </section>
 
@@ -461,7 +471,7 @@
         <h3>Card decks</h3>
         <p>Decks are tags you can put on a card - a card can belong to any number of decks, or none. Each deck gets a random color as soon as you create it, shown as a tinted glass background on its row and on its tag chips wherever it's listed, so it's easy to spot at a glance.</p>
         <p>Practice setup and Manage cards both let you filter by deck, including a "No card deck" bucket for untagged cards. In Practice setup, use the small <b>Select all</b> / <b>Unselect</b> chips to quickly check or clear every deck - Start practicing stays disabled until at least one is selected. Tapping a deck from the Card decks screen jumps straight into Manage cards filtered to it. Deleting a deck removes that tag from its cards - the cards themselves stay put.</p>
-        <p>In Add card, <b>Ask Gemini to create a deck</b> opens a small form (theme, word count, translation language, deck name and your Gemini API key) - tap <b>Create deck</b> and the app asks Gemini directly, then adds the new deck and its cards (each with pronunciation and an example sentence in the notes) and opens it in Cards. Words you already have aren't added twice; they just join the new deck. The key is free from aistudio.google.com/apikey and stays on this device - if Coffee Shelf already has one, it's filled in for you. This button only appears when adding a brand-new card, not while editing an existing one.</p>
+        <p>In Add card, <b>Ask Gemini to create a deck</b> opens a small form (theme, word count, translation language, deck name and your Gemini API key) - tap <b>Create deck</b> and the app asks Gemini directly, then adds the new deck and its cards (each with pronunciation and an example sentence in the notes) and opens it in Cards. Words you already have aren't added twice; they just join the new deck. The key is free from aistudio.google.com/apikey and lives in Settings → <b>AI</b> (or the form asks for it the first time); it stays on this device. If Coffee Shelf already has a key, it's used until you enter your own. This button only appears when adding a brand-new card, not while editing an existing one.</p>
       </div>
 
       <div class="readme-section">

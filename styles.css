@@ -2567,3 +2567,24 @@ button.settings-row:active { background: var(--surface-2); }
   text-decoration: underline;
   text-underline-offset: 2px;
 }
+
+/* A settings row holding a text field: label, field and hint stacked. */
+.settings-row-field {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  cursor: default;
+}
+
+.settings-input {
+  width: 100%;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 11px 12px;
+  font-size: 16px; /* 16px stops iOS zooming on focus */
+  color: var(--text);
+  font-family: inherit;
+}
+
+.settings-input:focus { outline: none; border-color: var(--accent); }

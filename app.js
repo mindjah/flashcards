@@ -859,6 +859,7 @@
   // ---------- settings ----------
   document.getElementById("btn-settings").addEventListener("click", function () {
     renderDrive();
+    renderSettingsGeminiKey();
     showView("settings");
   });
 
@@ -1309,11 +1310,32 @@
     }
   }
 
-  function savedGeminiKey() {
-    var own = "";
-    try { own = localStorage.getItem(GEMINI_KEY_STORAGE) || ""; } catch (e) {}
-    return own || coffeeShelfGeminiSettings().key;
+  function ownGeminiKey() {
+    try { return localStorage.getItem(GEMINI_KEY_STORAGE) || ""; } catch (e) { return ""; }
   }
+
+  function saveGeminiKey(key) {
+    try {
+      if (key) localStorage.setItem(GEMINI_KEY_STORAGE, key);
+      else localStorage.removeItem(GEMINI_KEY_STORAGE);
+    } catch (e) {}
+  }
+
+  function savedGeminiKey() {
+    return ownGeminiKey() || coffeeShelfGeminiSettings().key;
+  }
+
+  // Settings -> AI: the key Ask Gemini uses. Left empty, Coffee Shelf's
+  // key (if any) is used, which the placeholder says.
+  function renderSettingsGeminiKey() {
+    var input = document.getElementById("settings-gemini-key");
+    input.value = ownGeminiKey();
+    input.placeholder = coffeeShelfGeminiSettings().key ? "Using Coffee Shelf's key" : "AIza...";
+  }
+
+  document.getElementById("settings-gemini-key").addEventListener("input", function () {
+    saveGeminiKey(this.value.trim());
+  });
 
   var GEMINI_ERRORS = {
     offline: "No internet connection - Gemini can't be reached.",
@@ -1370,6 +1392,11 @@
     f.language.value = "";
     f.deckName.value = "";
     f.key.value = savedGeminiKey();
+    // Only ask for a key here when Settings doesn't have one yet.
+    var hasKey = !!f.key.value;
+    document.getElementById("gemini-key-field").classList.toggle("hidden", hasKey);
+    document.getElementById("gemini-key-hint").classList.toggle("hidden", hasKey);
+    document.getElementById("gemini-key-note").classList.toggle("hidden", !hasKey);
     showGeminiError("");
     updateGeminiSendState();
     showView("gemini");
@@ -1481,7 +1508,7 @@
     updateGeminiSendState();
 
     askGeminiForCards(key, prompt).then(function (list) {
-      try { localStorage.setItem(GEMINI_KEY_STORAGE, key); } catch (err) {}
+      if (key !== coffeeShelfGeminiSettings().key) saveGeminiKey(key);
       var deck = getOrCreateSectionByName(deckName);
       var added = mergeIncomingCards(list.map(function (c) {
         return {

@@ -13,10 +13,10 @@
 window.FlashcardsDrive = (function () {
   "use strict";
 
-  // OAuth "Web application" client (shared with Coffee Shelf - both live on
-  // mindjah.github.io). Its Authorized redirect URIs must include this app's
-  // URL, e.g. https://mindjah.github.io/flashcards/. Empty hides the feature.
-  var CLIENT_ID = "1070550439815-0eguk16pr72tp96ta120t7ipdk284afh.apps.googleusercontent.com";
+  // OAuth "Web application" client from Google Cloud Console. Its Authorized
+  // redirect URIs must include this app's URL, e.g.
+  // https://mindjah.github.io/flashcards/. Empty hides the feature.
+  var CLIENT_ID = "237322080557-sq4mdj09bheqqiua6hcnj7cup6ipr7lj.apps.googleusercontent.com";
   // "profile" only adds the name and picture shown as the avatar.
   var SCOPES = "openid email profile https://www.googleapis.com/auth/drive.appdata";
   var FILE_NAME = "flashcards-backup.json";

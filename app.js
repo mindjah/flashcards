@@ -3184,47 +3184,9 @@
   });
 
   // ---------- viewport height ----------
-  // 100dvh under-reports the true screen height in iOS standalone display
-  // mode (it's designed around Safari's own dynamically-appearing toolbar,
-  // which doesn't exist once installed to the Home Screen), leaving a gap
-  // of plain <body> background below #app that no internal CSS can reach.
-  // window.innerHeight reports the real usable height in every mode, so
-  // it drives #app's height directly instead.
-  //
-  // On some Android browsers, window.innerHeight itself shrinks when the
-  // on-screen keyboard opens, which would otherwise re-flow #app's flex
-  // layout and drag the centered flashcard up with it. appHeightFrozen
-  // pauses that recalculation while the type-answer input is focused, so
-  // the card stays put and only the floating input/Check bar tracks the
-  // keyboard (see positionTypeAnswerBar below).
-  //
-  // With viewport-fit=cover, an iOS Home Screen app can also report an
-  // innerHeight that's short by the status bar's height (the page is drawn
-  // under the status bar, but sized as if it weren't), which left a blank
-  // band at the bottom of every screen and lifted the tab bar. The status
-  // bar's inset is added back in that case - never past the real screen.
-  var appHeightFrozen = false;
-  var safeTopProbe = null;
-  function safeAreaTop() {
-    if (!safeTopProbe) {
-      safeTopProbe = document.createElement("div");
-      safeTopProbe.style.cssText = "position:fixed;top:0;left:0;width:0;height:env(safe-area-inset-top, 0px);visibility:hidden;pointer-events:none";
-      document.body.appendChild(safeTopProbe);
-    }
-    return safeTopProbe.offsetHeight;
-  }
-  function setAppHeight() {
-    if (appHeightFrozen) return;
-    var height = window.innerHeight;
-    if (isStandaloneMode()) {
-      height = Math.min(height + safeAreaTop(), Math.max(window.screen.height, height));
-    }
-    document.documentElement.style.setProperty("--app-height", height + "px");
-  }
-  setAppHeight();
-  window.addEventListener("resize", setAppHeight);
-  window.addEventListener("orientationchange", setAppHeight);
-  window.addEventListener("pageshow", setAppHeight);
+  // #app is pinned to all four edges of the screen in CSS (the same setup
+  // as Coffee Shelf: viewport-fit=cover, a translucent status bar and a
+  // document at least a screen tall), so nothing is measured here.
 
   // ---------- type-answer bar follows the keyboard, card stays put ----------
   // iOS pans/scrolls the whole page to bring a focused field above the
@@ -3287,7 +3249,6 @@
   }
 
   typeAnswerInputEl.addEventListener("focus", function () {
-    appHeightFrozen = true;
     if (typeAnswerPositionRaf) cancelAnimationFrame(typeAnswerPositionRaf);
     pollTypeAnswerBarPosition();
   });
@@ -3296,8 +3257,6 @@
       cancelAnimationFrame(typeAnswerPositionRaf);
       typeAnswerPositionRaf = null;
     }
-    appHeightFrozen = false;
-    setAppHeight();
     cancelViewportPan();
     document.getElementById("type-answer-bar").style.bottom = "";
     document.getElementById("card-word").style.transform = "";

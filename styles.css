@@ -160,6 +160,16 @@ html, body {
   overscroll-behavior: none;
 }
 
+/* iOS Home Screen apps size a page shorter than the screen to the screen
+   minus the status bar, which lifts anything pinned to the bottom off the
+   edge; a document at least a screen tall keeps it anchored (Coffee Shelf
+   does the same). overflow: hidden above keeps that extra height from
+   scrolling. */
+html {
+  height: auto;
+  min-height: calc(100% + env(safe-area-inset-top, 0px));
+}
+
 body {
   margin: 0;
   /* var(--bg) here, matching #app - iOS's status bar and rubber-band
@@ -179,16 +189,14 @@ body {
 }
 
 #app {
-  /* Pinned to the top of the screen rather than in the page flow: --app-height
-     can be taller than the viewport iOS reports (see setAppHeight in app.js),
-     and as page content that made the whole app - tab bar included - scroll.
-     Fixed, it adds nothing to scroll; only the views inside scroll. The tab
-     bar and modals are anchored to #app itself. */
+  /* Pinned to all four edges of the screen, outside the page flow, so the
+     page itself never scrolls - only the views inside do. The tab bar and
+     modals are anchored to #app itself. */
   position: fixed;
   top: 0;
+  bottom: 0;
   left: 0;
   right: 0;
-  height: var(--app-height, 100dvh);
   padding-top: var(--safe-top);
   background: var(--bg);
   /* Only ever visibly kicks in on a desktop browser window - no real

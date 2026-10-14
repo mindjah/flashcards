@@ -178,6 +178,8 @@ body {
 }
 
 #app {
+  /* The tab bar is anchored to #app's own bottom edge (see .bottom-tabbar). */
+  position: relative;
   height: var(--app-height, 100dvh);
   padding-top: var(--safe-top);
   background: var(--bg);
@@ -2169,8 +2171,10 @@ body {
 
 .bottom-tabbar {
   /* Docked to the bottom edge; the glass fills the home-indicator area
-     below the tabs (Coffee Shelf's tab bar). */
-  position: fixed;
+     below the tabs (Coffee Shelf's tab bar). Absolute within #app rather
+     than fixed: iOS Home Screen apps can pin fixed elements to a viewport
+     that's short by the status bar's height, lifting the bar off the edge. */
+  position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
@@ -2608,11 +2612,88 @@ button.settings-row:active { background: var(--surface-2); }
   line-height: 1.45;
 }
 
+.gemini-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 4px 0 8px;
+}
+
 .gemini-status {
-  margin: -4px 0 0;
+  margin: 0;
   text-align: center;
-  font-size: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.gemini-status-hint {
+  margin: 0;
+  text-align: center;
+  font-size: 13px;
   color: var(--text-dim);
+}
+
+/* Schematic open book: two ruled pages, and three pages that take turns
+   lifting off the right side and turning over the spine to the left. */
+.book-anim {
+  position: relative;
+  width: 132px;
+  height: 84px;
+  perspective: 500px;
+}
+
+.book-anim::after {
+  /* the spine */
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -3px;
+  bottom: -3px;
+  width: 1.5px;
+  margin-left: -0.75px;
+  background: var(--accent);
+  border-radius: 1px;
+}
+
+.book-page {
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  border: 1.5px solid var(--accent);
+  background:
+    repeating-linear-gradient(180deg, transparent 0, transparent 11px, rgba(var(--accent-rgb), 0.35) 11px, rgba(var(--accent-rgb), 0.35) 12.5px) 9px 10px / calc(100% - 18px) calc(100% - 16px) no-repeat,
+    var(--surface);
+}
+
+.book-page-left {
+  left: 0;
+  border-radius: 8px 2px 2px 8px;
+}
+
+.book-page-right,
+.book-page-turn {
+  left: 50%;
+  border-radius: 2px 8px 8px 2px;
+}
+
+.book-page-turn {
+  transform-origin: left center;
+  animation: book-page-turn 2.4s cubic-bezier(0.45, 0.05, 0.3, 1) infinite;
+}
+
+.book-page-turn:nth-of-type(4) { animation-delay: 0.8s; }
+.book-page-turn:nth-of-type(5) { animation-delay: 1.6s; }
+
+@keyframes book-page-turn {
+  0% { transform: rotateY(0deg); }
+  55%, 100% { transform: rotateY(-180deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .book-page-turn { animation: none; }
 }
 
 .hint-link {

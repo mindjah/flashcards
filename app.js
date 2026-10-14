@@ -1384,7 +1384,7 @@
 
   var GEMINI_ERRORS = {
     offline: "No internet connection - Gemini can't be reached.",
-    dropped: "The connection to Gemini dropped before it answered. Keep the app open while it works, or try fewer words.",
+    dropped: "The connection to Gemini dropped before it answered (twice). Keep the app open while it works and try again.",
     badKey: "Gemini didn't accept this API key. Check it at aistudio.google.com/apikey.",
     rateLimit: "Gemini's free limit is used up for now. Wait a minute and try again.",
     noModel: "This Gemini model isn't available for your key.",
@@ -1465,14 +1465,30 @@
     document.getElementById(id).addEventListener("input", updateGeminiSendState);
   });
 
-  function buildGeminiPrompt(theme, count, language) {
+  // avoid: words earlier batches of the same deck already produced.
+  function buildGeminiPrompt(theme, count, language, avoid) {
     var foreignName = languageByCode(foreignLanguage).name;
     return "Create exactly " + count + " " + foreignName + " vocabulary flashcards about the theme \"" + theme + "\". " +
       "For each card give the " + foreignName + " word or phrase (with its article if it's a noun), its translation into " + language + ", " +
       "and a note with how the word is pronounced and one example sentence in " + foreignName + " showing how it's used, " +
       "followed by that sentence's translation into " + language + " in brackets. " +
-      "Pick common, useful words and don't repeat any.";
+      "Pick common, useful words and don't repeat any." +
+      (avoid && avoid.length ? " These words are already in the deck, so don't use them again: " + avoid.join(", ") + "." : "");
   }
+
+  // Gemini thinks before it writes and sends nothing meanwhile, and iOS
+  // drops a connection that stays quiet for about a minute. So a deck is
+  // asked for in small batches (each answer comes back quickly), with low
+  // thinking and streamed thought summaries (which keep data flowing; the
+  // summaries themselves are skipped). A model that rejects a thinking
+  // setting (400 mentioning "thinking") falls through to the next option.
+  var GEMINI_BATCH_SIZE = 10;
+  var GEMINI_THINKING_OPTIONS = [
+    { thinkingLevel: "low", includeThoughts: true },
+    { includeThoughts: true },
+    null
+  ];
+  var geminiThinkingIndex = 0;
 
   var GEMINI_CARDS_SCHEMA = {
     type: "object",
@@ -1582,16 +1598,19 @@
   }
 
   function askGeminiForCards(key, prompt) {
+    var generationConfig = {
+      responseMimeType: "application/json",
+      responseJsonSchema: GEMINI_CARDS_SCHEMA,
+      maxOutputTokens: 16000
+    };
+    var thinking = GEMINI_THINKING_OPTIONS[geminiThinkingIndex];
+    if (thinking) generationConfig.thinkingConfig = thinking;
     return fetch(geminiUrl(geminiModelName(), ":streamGenerateContent?alt=sse"), {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-goog-api-key": key },
       body: JSON.stringify({
         contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: {
-          responseMimeType: "application/json",
-          responseJsonSchema: GEMINI_CARDS_SCHEMA,
-          maxOutputTokens: 16000
-        }
+        generationConfig: generationConfig
       })
     }).catch(function (e) {
       throw geminiNetworkError(e);
@@ -1609,7 +1628,46 @@
       });
       if (!list.length) throw new GeminiError("unreadable");
       return list;
+    }).catch(function (err) {
+      if (err instanceof GeminiError && err.kind === "api" && /thinking/i.test(err.detail) &&
+          geminiThinkingIndex < GEMINI_THINKING_OPTIONS.length - 1) {
+        geminiThinkingIndex++;
+        return askGeminiForCards(key, prompt);
+      }
+      throw err;
     });
+  }
+
+  // Asks for the deck GEMINI_BATCH_SIZE words at a time, telling each batch
+  // what earlier ones produced. A dropped batch is retried once. On failure
+  // the error carries .partial - the words made so far - so they aren't lost.
+  function createDeckInBatches(key, theme, total, language, onProgress) {
+    var made = [];
+    var seen = {};
+    function nextBatch(attempt) {
+      var remaining = total - made.length;
+      if (remaining <= 0) return Promise.resolve(made);
+      var size = Math.min(GEMINI_BATCH_SIZE, remaining);
+      var prompt = buildGeminiPrompt(theme, size, language, made.map(function (c) { return c.word.trim(); }));
+      return askGeminiForCards(key, prompt).then(function (list) {
+        var fresh = list.filter(function (c) {
+          var k = c.word.trim().toLowerCase();
+          if (seen[k]) return false;
+          seen[k] = true;
+          return true;
+        }).slice(0, size);
+        // Nothing new came back - stop rather than ask forever.
+        if (!fresh.length) return made;
+        made = made.concat(fresh);
+        onProgress(made.length);
+        return nextBatch(0);
+      }, function (err) {
+        if (err instanceof GeminiError && err.kind === "dropped" && attempt < 1) return nextBatch(attempt + 1);
+        err.partial = made;
+        throw err;
+      });
+    }
+    return nextBatch(0);
   }
 
   document.getElementById("form-gemini").addEventListener("submit", function (e) {
@@ -1618,22 +1676,25 @@
     if (f.send.disabled || geminiBusy) return;
     var key = f.key.value.trim();
     var deckName = f.deckName.value.trim();
-    var prompt = buildGeminiPrompt(f.theme.value.trim(), parseInt(f.count.value, 10), f.language.value.trim());
+    var total = parseInt(f.count.value, 10);
+    var progressEl = document.getElementById("gemini-progress");
 
     geminiBusy = true;
     showGeminiError("");
     f.send.textContent = "Creating deck…";
-    // A running clock, so a long deck visibly isn't stuck.
+    // A running clock and word count, so a long deck visibly isn't stuck.
     var startedAt = Date.now();
+    var madeSoFar = 0;
     function tick() {
-      f.status.textContent = "Gemini is writing your deck… " + Math.round((Date.now() - startedAt) / 1000) + "s - keep the app open";
+      f.status.textContent = "Gemini is writing your deck… " + madeSoFar + " of " + total + " words · " +
+        Math.round((Date.now() - startedAt) / 1000) + "s";
     }
     tick();
     var ticker = setInterval(tick, 1000);
-    f.status.classList.remove("hidden");
+    progressEl.classList.remove("hidden");
     updateGeminiSendState();
 
-    askGeminiForCards(key, prompt).then(function (list) {
+    function addToDeck(list, problem) {
       if (key !== coffeeShelfGeminiSettings().key) saveGeminiKey(key);
       var deck = getOrCreateSectionByName(deckName);
       var added = mergeIncomingCards(list.map(function (c) {
@@ -1651,15 +1712,27 @@
       // After the Cards screen has painted, not over the form.
       setTimeout(function () {
         alert("Added " + added + " new card" + (added === 1 ? "" : "s") + " to “" + deck.name + "”" +
-          (skipped > 0 ? " (" + skipped + " you already had joined the deck)" : "") + ".");
+          (skipped > 0 ? " (" + skipped + " you already had joined the deck)" : "") + "." +
+          (problem ? "\n\nGemini stopped after " + list.length + " of " + total + " words: " + problem : ""));
       }, 300);
+    }
+
+    createDeckInBatches(key, f.theme.value.trim(), total, f.language.value.trim(), function (count) {
+      madeSoFar = count;
+      tick();
+    }).then(function (list) {
+      addToDeck(list, "");
     }).catch(function (err) {
-      showGeminiError(geminiErrorText(err));
+      if (err && err.partial && err.partial.length) {
+        addToDeck(err.partial, geminiErrorText(err));
+      } else {
+        showGeminiError(geminiErrorText(err));
+      }
     }).then(function () {
       clearInterval(ticker);
       geminiBusy = false;
       f.send.textContent = "Create deck";
-      f.status.classList.add("hidden");
+      progressEl.classList.add("hidden");
       updateGeminiSendState();
     });
   });
@@ -3120,10 +3193,29 @@
   // pauses that recalculation while the type-answer input is focused, so
   // the card stays put and only the floating input/Check bar tracks the
   // keyboard (see positionTypeAnswerBar below).
+  //
+  // With viewport-fit=cover, an iOS Home Screen app can also report an
+  // innerHeight that's short by the status bar's height (the page is drawn
+  // under the status bar, but sized as if it weren't), which left a blank
+  // band at the bottom of every screen and lifted the tab bar. The status
+  // bar's inset is added back in that case - never past the real screen.
   var appHeightFrozen = false;
+  var safeTopProbe = null;
+  function safeAreaTop() {
+    if (!safeTopProbe) {
+      safeTopProbe = document.createElement("div");
+      safeTopProbe.style.cssText = "position:fixed;top:0;left:0;width:0;height:env(safe-area-inset-top, 0px);visibility:hidden;pointer-events:none";
+      document.body.appendChild(safeTopProbe);
+    }
+    return safeTopProbe.offsetHeight;
+  }
   function setAppHeight() {
     if (appHeightFrozen) return;
-    document.documentElement.style.setProperty("--app-height", window.innerHeight + "px");
+    var height = window.innerHeight;
+    if (isStandaloneMode()) {
+      height = Math.min(height + safeAreaTop(), Math.max(window.screen.height, height));
+    }
+    document.documentElement.style.setProperty("--app-height", height + "px");
   }
   setAppHeight();
   window.addEventListener("resize", setAppHeight);

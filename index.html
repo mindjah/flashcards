@@ -309,7 +309,18 @@
       <div class="gemini-error hidden" id="gemini-error"></div>
 
       <button type="submit" id="btn-gemini-send" class="btn btn-primary btn-big" disabled>Create deck</button>
-      <p class="gemini-status hidden" id="gemini-status">Gemini is writing your deck…</p>
+      <div class="gemini-progress hidden" id="gemini-progress">
+        <p class="gemini-status" id="gemini-status">Gemini is writing your deck…</p>
+        <!-- A little open book whose pages keep turning while Gemini writes. -->
+        <div class="book-anim" aria-hidden="true">
+          <span class="book-page book-page-left"></span>
+          <span class="book-page book-page-right"></span>
+          <span class="book-page book-page-turn"></span>
+          <span class="book-page book-page-turn"></span>
+          <span class="book-page book-page-turn"></span>
+        </div>
+        <p class="gemini-status-hint">Keep the app open while Gemini works.</p>
+      </div>
     </form>
   </section>
 
@@ -437,7 +448,7 @@
       </div>
 
       <p class="settings-footnote">Your data stays on this device unless you turn on Google Drive backup. Import/export uses Anki's plain-text card format.</p>
-      <p class="app-version">v1.42.0</p>
+      <p class="app-version">v1.43.0</p>
     </div>
   </section>
 

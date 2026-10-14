@@ -1438,6 +1438,9 @@
     f.language.value = "";
     f.deckName.value = "";
     f.key.value = savedGeminiKey();
+    // Always open at the top, on the theme field - not wherever the form
+    // was last scrolled to.
+    views.gemini.scrollTop = 0;
     // Only ask for a key here when Settings doesn't have one yet.
     var hasKey = !!f.key.value;
     document.getElementById("gemini-key-field").classList.toggle("hidden", hasKey);
@@ -1446,7 +1449,8 @@
     showGeminiError("");
     updateGeminiSendState();
     showView("gemini");
-    f.theme.focus();
+    views.gemini.scrollTop = 0;
+    f.theme.focus({ preventScroll: true });
   }
 
   document.getElementById("btn-ask-gemini").addEventListener("click", openAskGeminiView);

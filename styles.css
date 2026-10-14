@@ -2641,6 +2641,8 @@ button.settings-row:active { background: var(--surface-2); }
   position: relative;
   width: 132px;
   height: 84px;
+  /* About a text row of air above the book, below the status line. */
+  margin-top: 22px;
   perspective: 500px;
 }
 
@@ -2744,3 +2746,6 @@ button.settings-row:active { background: var(--surface-2); }
 
 .settings-status-ok { color: var(--pass-ink); }
 .settings-status-error { color: var(--fail-ink); }
+
+/* Sits above the word field in Add card, set a little apart from the fields. */
+#btn-ask-gemini { margin-bottom: 8px; }

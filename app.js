@@ -2502,6 +2502,52 @@
       .toLowerCase();
   }
 
+  // Subject pronouns that can only be pronouns, per language - Spanish,
+  // Italian and Portuguese usually drop them, so "yo no hablo español" and
+  // "no hablo español" are both right. Words that double as something else
+  // stay out: "el"/"tu" (unaccented) are also "the"/"your" in Spanish.
+  var OPTIONAL_PRONOUNS = {
+    es: ["yo", "tú", "él", "ella", "usted", "nosotros", "nosotras", "vosotros", "vosotras", "ellos", "ellas", "ustedes"],
+    it: ["io", "lui", "lei", "noi", "voi", "loro"],
+    pt: ["eu", "você", "ele", "ela", "nós", "vós", "eles", "elas", "vocês"]
+  };
+
+  // Lowercased, without a leading optional pronoun (if this language has
+  // any), then normalized like any typed answer, minus light punctuation
+  // and doubled spaces.
+  function answerForms(s) {
+    var lower = s.trim().toLowerCase().replace(/^[¡¿]+/, "");
+    var forms = [lower];
+    (OPTIONAL_PRONOUNS[foreignLanguage] || []).forEach(function (pronoun) {
+      if (lower.indexOf(pronoun + " ") === 0) forms.push(lower.slice(pronoun.length + 1));
+    });
+    return forms.map(function (f) {
+      return normalizeTypedAnswer(f).replace(/[.,;:"'«»]/g, "").replace(/\s+/g, " ").trim();
+    });
+  }
+
+  // The stored answer may list alternatives ("a / b", "a; b") and optional
+  // bits in brackets ("hola (informal)") - any of them counts.
+  function correctAnswerVariants(correct) {
+    var variants = [];
+    correct.split(/[\/;]/).forEach(function (part) {
+      part = part.trim();
+      if (!part) return;
+      variants.push(part);
+      var unbracketed = part.replace(/\([^)]*\)/g, " ").trim();
+      if (unbracketed && unbracketed !== part) variants.push(unbracketed);
+    });
+    return variants.length ? variants : [correct];
+  }
+
+  function typedAnswerMatches(typed, correct) {
+    var typedForms = answerForms(typed);
+    return correctAnswerVariants(correct).some(function (variant) {
+      var correctForms = answerForms(variant);
+      return typedForms.some(function (t) { return t && correctForms.indexOf(t) !== -1; });
+    });
+  }
+
   // Same accent/case leniency as normalizeTypedAnswer, but per character,
   // so a single mismatched letter can be spotted without the accent-mark
   // stripping shifting one string's length relative to the other.
@@ -2549,7 +2595,7 @@
       if (forceIncorrect) {
         correct = false;
       } else {
-        correct = normalizeTypedAnswer(typedValue) === normalizeTypedAnswer(session.current.word);
+        correct = typedAnswerMatches(typedValue, session.current.word);
       }
       session.typeCorrect = correct;
       document.getElementById("card").classList.toggle("answer-correct", correct);
@@ -2805,6 +2851,40 @@
     document.getElementById("match-col-tr-" + face).innerHTML = "";
   }
 
+  function setMatchItemText(item, text) {
+    var span = document.createElement("span");
+    span.className = "match-item-text";
+    span.textContent = text;
+    item.appendChild(span);
+  }
+
+  // A long word or phrase is stepped down from the tile's normal size until
+  // it fits inside the tile (never below 11px).
+  var MATCH_FONT_MAX = 18;
+  var MATCH_FONT_MIN = 11;
+
+  function fitMatchItems(face) {
+    var items = document.querySelectorAll("#match-board-" + face + " .match-item");
+    Array.prototype.forEach.call(items, function (item) {
+      var span = item.querySelector(".match-item-text");
+      if (!span) return;
+      var size = MATCH_FONT_MAX;
+      item.style.fontSize = size + "px";
+      var room = item.clientHeight - 16;
+      if (room <= 0) return;
+      while (span.offsetHeight > room && size > MATCH_FONT_MIN) {
+        size -= 1;
+        item.style.fontSize = size + "px";
+      }
+    });
+  }
+
+  window.addEventListener("resize", function () {
+    if (!document.getElementById("view-study").classList.contains("match-mode")) return;
+    fitMatchItems("front");
+    fitMatchItems("back");
+  });
+
   function renderMatchFace(face, pairs) {
     var leftCol = document.getElementById("match-col-es-" + face);
     var rightCol = document.getElementById("match-col-tr-" + face);
@@ -2815,7 +2895,7 @@
       var leftItem = document.createElement("button");
       leftItem.type = "button";
       leftItem.className = "match-item";
-      leftItem.textContent = pair.card.word;
+      setMatchItemText(leftItem, pair.card.word);
       leftItem.addEventListener("click", function () { onMatchTap(face, pair, leftItem, "left"); });
       leftCol.appendChild(leftItem);
     });
@@ -2824,10 +2904,13 @@
       var rightItem = document.createElement("button");
       rightItem.type = "button";
       rightItem.className = "match-item";
-      rightItem.textContent = pair.card.translation;
+      setMatchItemText(rightItem, pair.card.translation);
       rightItem.addEventListener("click", function () { onMatchTap(face, pair, rightItem, "right"); });
       rightCol.appendChild(rightItem);
     });
+
+    // After layout, once the tiles have their sizes.
+    requestAnimationFrame(function () { fitMatchItems(face); });
   }
 
   function onMatchTap(face, pair, el, side) {
@@ -3230,10 +3313,22 @@
     // natural position. The word's own height is unaffected by its
     // translateY though, so combining that with the parent's rect is exact.
     var frontRect = frontEl.getBoundingClientRect();
-    var wordHeight = wordEl.getBoundingClientRect().height;
-    var naturalBottom = frontRect.top + frontRect.height / 2 + wordHeight / 2;
-    var overlap = naturalBottom + 8 - barTop;
-    wordEl.style.transform = overlap > 0 ? "translateY(-" + overlap + "px)" : "";
+    // offsetHeight, not the rect: the rect includes any scale already applied.
+    var wordHeight = wordEl.offsetHeight;
+    var naturalCenter = frontRect.top + frontRect.height / 2;
+    var naturalBottom = naturalCenter + wordHeight / 2;
+    if (naturalBottom + 8 <= barTop) {
+      wordEl.style.transform = "";
+      return;
+    }
+    // Lift the word above the bar; a long phrase that still wouldn't fit
+    // between the page's top and the bar is scaled down to fit there too.
+    var roomTop = frontRect.top + 24;
+    var room = barTop - 8 - roomTop;
+    var scale = room > 0 ? Math.min(1, room / wordHeight) : 0.4;
+    scale = Math.max(scale, 0.4);
+    var targetCenter = Math.min(naturalCenter, barTop - 8 - wordHeight * scale / 2);
+    wordEl.style.transform = "translateY(" + (targetCenter - naturalCenter) + "px)" + (scale < 1 ? " scale(" + scale + ")" : "");
   }
 
   // Relying only on visualViewport's resize/scroll events proved unreliable

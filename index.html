@@ -448,7 +448,7 @@
       </div>
 
       <p class="settings-footnote">Your data stays on this device unless you turn on Google Drive backup. Import/export uses Anki's plain-text card format.</p>
-      <p class="app-version">v1.43.3</p>
+      <p class="app-version">v1.44.0</p>
     </div>
   </section>
 
@@ -478,7 +478,7 @@
         <h3>Practice modes</h3>
         <p>Choose <b>Flip Foreign word</b>, <b>Flip Translation</b>, <b>Type the Foreign word</b>, or <b>Match the words</b> in Practice setup - swipe the carousel to see them all. Your last choice, along with your deck selection, is remembered for next time.</p>
         <p>In <b>Flip Foreign word</b> and <b>Flip Translation</b>, tap the card to flip it, then swipe right (or tap <b>Knew it</b>) or swipe left (or tap <b>Didn't know</b>) to answer.</p>
-        <p>In <b>Type the Foreign word</b>, the card shows the translation - type the foreign word into the field below it, then tap <b>Check</b> (enabled once you've typed something) to flip the card and check your answer, or tap <b>I don't know</b> to reveal it straight away without guessing. Checking ignores case, accent marks, and ¡¿!? punctuation, so typing without a keyboard for that language still counts as correct. There's no <b>Knew it</b> / <b>Didn't know</b> here: a correct typed answer counts as knew it, an incorrect one or <b>I don't know</b> counts as didn't know, then tap <b>Next</b> to continue.</p>
+        <p>In <b>Type the Foreign word</b>, the card shows the translation - type the foreign word into the field below it, then tap <b>Check</b> (enabled once you've typed something) to flip the card and check your answer, or tap <b>I don't know</b> to reveal it straight away without guessing. Checking ignores case, accent marks and punctuation, so typing without a keyboard for that language still counts as correct. It also accepts any of the alternatives a card lists (split by / or ;), leaves out anything in brackets, and treats a leading subject pronoun as optional in Spanish, Italian and Portuguese - "yo no hablo español" and "no hablo español" both count. There's no <b>Knew it</b> / <b>Didn't know</b> here: a correct typed answer counts as knew it, an incorrect one or <b>I don't know</b> counts as didn't know, then tap <b>Next</b> to continue.</p>
         <p>In <b>Match the words</b>, tap a foreign word then its translation to pair them up - correct pairs fade away, a wrong guess flashes red and you try again. This mode is just a quick warm-up: it never changes a card's due date or mastery, so it can't count as "learnt" (or missed) the way the other modes do.</p>
         <p>Once a card is flipped, a pencil icon appears in its top-right corner - tap it to edit that card without leaving the lesson. Saving your changes (or backing out without saving) drops you right back into the same lesson, on the same card, with your progress untouched.</p>
       </div>
@@ -647,7 +647,7 @@
       <span class="tab-label">Cards</span>
     </button>
     <button type="button" class="tab-btn" id="btn-tab-practice" data-view="practice">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" id="tab-practice-icon"><path d="M9 11h6v9.5H9z"/><path d="M6.5 20.5h11"/><path d="M12 2.8c1.6 1.8 2.2 3 2.2 4.1a2.2 2.2 0 0 1-4.4 0c0-1.1.6-2.3 2.2-4.1z"/><path d="M12 9.1V11"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" id="tab-practice-icon"><path d="M12 6.5C10 5 7 4.5 3.5 5v13.5c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5c-3.5-.5-6.5 0-8.5 1.5z"/><path d="M12 6.5V20"/></svg>
       <span class="tab-label">Practice</span>
     </button>
     <button type="button" class="tab-btn" id="btn-tab-decks" data-view="sections">
@@ -655,7 +655,7 @@
       <span class="tab-label">Decks</span>
     </button>
     <button type="button" class="tab-btn" id="btn-tab-notes" data-view="notes">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5C10 5 7 4.5 3.5 5v13.5c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5c-3.5-.5-6.5 0-8.5 1.5z"/><path d="M12 6.5V20"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4.5" width="14" height="16.5" rx="2"/><path d="M8.5 3v3M12 3v3M15.5 3v3"/><path d="M8.5 10.5h7M8.5 14h7M8.5 17.5h4"/></svg>
       <span class="tab-label">Notes</span>
     </button>
   </nav>

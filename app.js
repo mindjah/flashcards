@@ -358,7 +358,7 @@
       else if (view === "practice") { renderStudySetup(); showView("studySetup"); }
       else if (view === "manage") {
         if (alreadyActive) {
-          document.getElementById("manage-list").scrollTo({ top: 0, behavior: "smooth" });
+          views.manage.scrollTo({ top: 0, behavior: "smooth" });
         } else {
           openManageView();
         }
@@ -726,6 +726,7 @@
     manageSelectedIds.clear();
     updateManageSelectUI();
     renderManageList();
+    views.manage.scrollTop = 0;
     showView("manage");
   }
 
@@ -740,6 +741,7 @@
     manageSelectedIds.clear();
     updateManageSelectUI();
     renderManageList();
+    views.manage.scrollTop = 0;
     showView("manage");
   }
 
@@ -1780,6 +1782,7 @@
   function updateManageSelectUI() {
     document.getElementById("btn-manage-select-toggle").textContent = manageSelectMode ? "Cancel" : "Select";
     document.getElementById("bulk-actions-bar").classList.toggle("hidden", !manageSelectMode);
+    document.getElementById("bulk-actions-buttons").classList.toggle("hidden", !manageSelectMode);
     document.getElementById("bulk-actions-count").textContent = manageSelectedIds.size + " selected";
     document.getElementById("btn-bulk-delete").disabled = manageSelectedIds.size === 0;
     document.getElementById("btn-bulk-move").disabled = manageSelectedIds.size === 0;
@@ -1820,6 +1823,18 @@
     updateGlobalStats();
     renderManageList(document.getElementById("manage-search").value);
   });
+
+  // The Select row sticks just under the sticky search field - its offset
+  // follows the field's real height (font size, Dynamic Type, etc).
+  (function () {
+    var field = document.querySelector("#view-manage .search-field");
+    var bar = document.getElementById("manage-sticky-bar");
+    function sync() {
+      if (field.offsetHeight) bar.style.setProperty("--manage-search-h", field.offsetHeight + "px");
+    }
+    if (window.ResizeObserver) new ResizeObserver(sync).observe(field);
+    sync();
+  })();
 
   // ---------- bulk move to another deck ----------
   // Filtered to one deck, the cards leave that deck for the chosen one and
@@ -2145,6 +2160,7 @@
     manageSelectedIds.clear();
     updateManageSelectUI();
     renderManageList();
+    views.manage.scrollTop = 0;
     showView("manage");
   }
 

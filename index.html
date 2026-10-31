@@ -37,7 +37,7 @@
     <div class="install-banner hidden" id="install-banner">
       <span class="install-banner-text" id="install-banner-text"></span>
       <button type="button" class="install-banner-action hidden" id="btn-install-banner-action">Install</button>
-      <button class="icon-btn" id="btn-install-banner-close">✕</button>
+      <button class="icon-btn icon-btn-close" id="btn-install-banner-close" aria-label="Close">✕</button>
     </div>
 
     <div class="drive-banner hidden" id="drive-banner">
@@ -96,7 +96,7 @@
   <!-- ===== STUDY SETUP VIEW ===== -->
   <section id="view-study-setup" class="view hidden">
     <header class="topbar">
-      <button class="icon-btn" id="btn-study-setup-back">✕</button>
+      <button class="icon-btn icon-btn-close" id="btn-study-setup-back" aria-label="Close">✕</button>
       <h2>Practice setup</h2>
       <span class="spacer"></span>
     </header>
@@ -141,7 +141,7 @@
   <!-- ===== STUDY VIEW ===== -->
   <section id="view-study" class="view hidden">
     <header class="topbar">
-      <button class="icon-btn" id="btn-study-back">✕</button>
+      <button class="icon-btn icon-btn-close" id="btn-study-back" aria-label="Close">✕</button>
       <div class="progress-text" id="study-progress"></div>
       <button class="icon-btn icon-btn-translate" id="btn-study-translate" title="Open in Google Translate">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 5.5h9M8 3.5v2M10.5 5.5c-.8 3.6-3.4 6.4-6.5 7.8M5.8 8.6c1 1.8 2.6 3.4 4.6 4.4"/><path d="M12.5 20.5l4-9.5 4 9.5M14 17h5"/></svg>
@@ -223,7 +223,7 @@
   <!-- ===== ADD CARD VIEW ===== -->
   <section id="view-add" class="view hidden">
     <header class="topbar">
-      <button class="icon-btn" id="btn-add-back">✕</button>
+      <button class="icon-btn icon-btn-close" id="btn-add-back" aria-label="Close">✕</button>
       <h2 id="add-view-title">Add card</h2>
       <button type="button" class="text-action-btn text-action-btn-danger hidden" id="btn-delete-card">Delete</button>
     </header>
@@ -282,7 +282,7 @@
   <!-- ===== ASK GEMINI VIEW ===== -->
   <section id="view-gemini" class="view hidden">
     <header class="topbar">
-      <button class="icon-btn" id="btn-gemini-back">✕</button>
+      <button class="icon-btn icon-btn-close" id="btn-gemini-back" aria-label="Close">✕</button>
       <h2>Ask Gemini</h2>
       <span class="spacer"></span>
     </header>
@@ -327,7 +327,7 @@
   <!-- ===== MANAGE VIEW ===== -->
   <section id="view-manage" class="view hidden">
     <header class="topbar">
-      <button class="icon-btn" id="btn-manage-back">✕</button>
+      <button class="icon-btn icon-btn-close" id="btn-manage-back" aria-label="Close">✕</button>
       <h2>Manage cards</h2>
       <span class="spacer"></span>
       <button type="button" class="btn btn-primary manage-add-btn" id="btn-manage-add-card">+ Add card</button>
@@ -357,14 +357,18 @@
         <option value="mastered">Mastered</option>
       </select>
     </div>
-    <div class="manage-toolbar-row">
-      <button type="button" class="text-action-btn" id="btn-manage-select-toggle">Select</button>
-    </div>
-    <div class="bulk-actions-bar hidden" id="bulk-actions-bar">
-      <button type="button" class="text-action-btn" id="btn-bulk-select-all">Select all</button>
-      <span class="bulk-actions-count" id="bulk-actions-count">0 selected</span>
-      <button type="button" class="btn btn-secondary" id="btn-bulk-move" disabled>Move</button>
-      <button type="button" class="btn btn-fail" id="btn-bulk-delete" disabled>Delete</button>
+    <div class="manage-sticky-bar" id="manage-sticky-bar">
+      <div class="manage-toolbar-row">
+        <button type="button" class="text-action-btn" id="btn-manage-select-toggle">Select</button>
+        <div class="bulk-actions-buttons hidden" id="bulk-actions-buttons">
+          <button type="button" class="btn btn-secondary" id="btn-bulk-move" disabled>Move</button>
+          <button type="button" class="btn btn-fail" id="btn-bulk-delete" disabled>Delete</button>
+        </div>
+      </div>
+      <div class="bulk-actions-bar hidden" id="bulk-actions-bar">
+        <button type="button" class="text-action-btn" id="btn-bulk-select-all">Select all</button>
+        <span class="bulk-actions-count" id="bulk-actions-count">0 selected</span>
+      </div>
     </div>
     <div id="manage-list" class="manage-list"></div>
   </section>
@@ -372,7 +376,7 @@
   <!-- ===== SECTIONS VIEW ===== -->
   <section id="view-sections" class="view hidden">
     <header class="topbar">
-      <button class="icon-btn" id="btn-sections-back">✕</button>
+      <button class="icon-btn icon-btn-close" id="btn-sections-back" aria-label="Close">✕</button>
       <h2>Card decks</h2>
       <button type="button" class="icon-btn icon-btn-plain" id="btn-open-new-deck" title="Add card deck">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
@@ -384,7 +388,7 @@
   <!-- ===== SETTINGS VIEW ===== -->
   <section id="view-settings" class="view hidden">
     <header class="topbar">
-      <button class="icon-btn" id="btn-settings-back">✕</button>
+      <button class="icon-btn icon-btn-close" id="btn-settings-back" aria-label="Close">✕</button>
       <h2>Settings</h2>
       <span class="spacer"></span>
     </header>
@@ -449,14 +453,14 @@
       </div>
 
       <p class="settings-footnote">Your data stays on this device unless you turn on Google Drive backup. Import/export uses Anki's plain-text card format.</p>
-      <p class="app-version">v1.46.1</p>
+      <p class="app-version">v1.47.0</p>
     </div>
   </section>
 
   <!-- ===== README VIEW ===== -->
   <section id="view-readme" class="view hidden">
     <header class="topbar">
-      <button class="icon-btn" id="btn-readme-back">✕</button>
+      <button class="icon-btn icon-btn-close" id="btn-readme-back" aria-label="Close">✕</button>
       <h2>README</h2>
       <span class="spacer"></span>
     </header>
@@ -523,7 +527,7 @@
   <!-- ===== GOOGLE DRIVE VIEW ===== -->
   <section id="view-drive" class="view hidden">
     <header class="topbar">
-      <button class="icon-btn" id="btn-drive-back">✕</button>
+      <button class="icon-btn icon-btn-close" id="btn-drive-back" aria-label="Close">✕</button>
       <h2>Google Drive backup</h2>
       <span class="spacer"></span>
     </header>
@@ -564,7 +568,7 @@
   <!-- ===== NOTES LIST VIEW ===== -->
   <section id="view-notes-list" class="view hidden">
     <header class="topbar">
-      <button class="icon-btn" id="btn-notes-list-back">✕</button>
+      <button class="icon-btn icon-btn-close" id="btn-notes-list-back" aria-label="Close">✕</button>
       <h2>Notes</h2>
       <button type="button" class="icon-btn icon-btn-plain" id="btn-notes-add" title="Add note">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
@@ -578,7 +582,7 @@
   <!-- ===== NOTE EDITOR VIEW ===== -->
   <section id="view-notes" class="view hidden">
     <header class="topbar">
-      <button class="icon-btn" id="btn-notes-back">✕</button>
+      <button class="icon-btn icon-btn-close" id="btn-notes-back" aria-label="Close">✕</button>
       <div class="note-editor-title-group">
         <h2 id="note-editor-title">Note</h2>
         <button type="button" class="icon-btn icon-btn-plain" id="btn-note-rename" title="Rename note">

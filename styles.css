@@ -1625,11 +1625,20 @@ body {
   margin: 0 16px 16px;
 }
 
-.manage-toolbar-row .btn {
-  width: 132px;
-  padding: 8px 12px;
-  font-size: 14px;
-  text-align: center;
+/* Equal side columns keep the title centered; on a narrow screen the
+   wider Add card side wins and the title shifts left instead of overlapping. */
+#view-manage .topbar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+}
+
+#view-manage .topbar .spacer { display: none; }
+
+.manage-add-btn {
+  justify-self: end;
+  min-height: 30px;
+  padding: 0 10px;
+  font-size: 12px;
   white-space: nowrap;
 }
 

@@ -1,66 +1,66 @@
 :root {
-  /* Same family as Coffee Shelf: warm cream, white cards, a coffee-brown
-     accent, New York serif titles over system sans. The book lives in the
-     flashcards themselves - paper pages with a spine and a ribbon. */
+  /* Ink blue: cool paper-white, white cards, a navy ink accent, New York
+     serif titles over system sans. The book lives in the flashcards
+     themselves - paper pages with a spine and a ribbon. */
   color-scheme: light dark;
-  --bg: #fbf8f4;
+  --bg: #f6f7f9;
   --surface: #ffffff;
-  --surface-2: #f4eee7;
-  --paper: #fffdf8;
-  --paper-2: #fcf7ef;
-  --page-edge-1: #f5efe6;
-  --page-edge-2: #eee6da;
-  --border: #ece4da;
-  --rule: #ddd0c1;
-  --text: #1e1714;
-  --text-dim: #8a7a6e;
-  --accent: #7a5134;
-  --accent-rgb: 122, 81, 52;
-  --accent-dim: #e9dccd;
-  --on-accent: #fbf8f4;
-  --pass: #6f7d4f;
-  --pass-rgb: 111, 125, 79;
-  --pass-dim: #e7e9dc;
-  --pass-ink: #5b6940;
+  --surface-2: #eceff4;
+  --paper: #fdfdfb;
+  --paper-2: #f8f8f4;
+  --page-edge-1: #eceff4;
+  --page-edge-2: #e3e7ee;
+  --border: #e2e6ee;
+  --rule: #cfd5e0;
+  --text: #151b26;
+  --text-dim: #6d7688;
+  --accent: #2f4a7a;
+  --accent-rgb: 47, 74, 122;
+  --accent-dim: #e1e7f2;
+  --on-accent: #f6f7f9;
+  --pass: #4f7d64;
+  --pass-rgb: 79, 125, 100;
+  --pass-dim: #dfeee5;
+  --pass-ink: #3f6a52;
   --pass-edge: var(--pass);
-  --fail: #a85f48;
-  --fail-rgb: 168, 95, 72;
-  --fail-dim: #f4e4dd;
-  --fail-ink: #a85f48;
+  --fail: #b0503f;
+  --fail-rgb: 176, 80, 63;
+  --fail-dim: #f6e2de;
+  --fail-ink: #b0503f;
   --fail-edge: var(--fail);
-  /* Read on the dark leather "cover" card, in both themes. */
-  --mastery-new: #c47a60;
-  --mastery-learning: #e0b98e;
-  --mastery-mastered: #a3b17f;
-  --hero-bg: linear-gradient(160deg, #3a2a20, #1e1612);
-  --hero-text: #f5efe8;
-  --hero-dim: #cdb8a4;
-  --hero-accent: #e8c9a6;
-  --glass: rgba(251, 248, 244, 0.86);
-  --shadow-soft: 0 1px 2px rgba(30, 23, 20, 0.04), 0 8px 24px rgba(30, 23, 20, 0.06);
-  --shadow-lift: 0 2px 6px rgba(30, 23, 20, 0.06), 0 18px 40px rgba(30, 23, 20, 0.16);
+  /* Read on the dark navy "cover" card, in both themes. */
+  --mastery-new: #e08a72;
+  --mastery-learning: #9fb8e6;
+  --mastery-mastered: #8fc4a2;
+  --hero-bg: linear-gradient(160deg, #25365a, #111a2c);
+  --hero-text: #eef2f9;
+  --hero-dim: #a9b6cf;
+  --hero-accent: #b9cdf0;
+  --glass: rgba(246, 247, 249, 0.86);
+  --shadow-soft: 0 1px 2px rgba(21, 27, 38, 0.04), 0 8px 24px rgba(21, 27, 38, 0.06);
+  --shadow-lift: 0 2px 6px rgba(21, 27, 38, 0.06), 0 18px 40px rgba(21, 27, 38, 0.16);
   /* Kept under the old token names, which every list row, input and chip uses. */
   --glass-bg: var(--surface);
   --glass-highlight: var(--shadow-soft);
   --serif: ui-serif, "New York", "Iowan Old Style", Georgia, serif;
   /* Roboto (self-hosted above) covers devices without a system UI font. */
   --sans: -apple-system, system-ui, "SF Pro Text", "Segoe UI", "Roboto", sans-serif;
-  --paper-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .4 0 0 0 0 .27 0 0 0 0 .14 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --paper-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .2 0 0 0 0 .25 0 0 0 0 .35 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   /* A book page: a soft spine shadow down the left edge and a faint grain;
      --page-shadow stacks a couple of page edges behind it. */
   --page-bg:
-    linear-gradient(90deg, rgba(90, 60, 35, 0.09), rgba(90, 60, 35, 0.02) 16px, rgba(90, 60, 35, 0) 34px),
+    linear-gradient(90deg, rgba(35, 50, 80, 0.09), rgba(35, 50, 80, 0.02) 16px, rgba(35, 50, 80, 0) 34px),
     var(--paper-grain),
     var(--paper);
   --page-bg-back:
-    linear-gradient(90deg, rgba(90, 60, 35, 0.09), rgba(90, 60, 35, 0.02) 16px, rgba(90, 60, 35, 0) 34px),
+    linear-gradient(90deg, rgba(35, 50, 80, 0.09), rgba(35, 50, 80, 0.02) 16px, rgba(35, 50, 80, 0) 34px),
     var(--paper-grain),
     var(--paper-2);
   --page-shadow:
     inset 0 0 0 1px var(--border),
     3px 3px 0 -1px var(--page-edge-1), 3px 3px 0 0 var(--border),
     6px 6px 0 -1px var(--page-edge-2), 6px 6px 0 0 var(--border),
-    0 18px 34px -16px rgba(30, 23, 20, 0.28);
+    0 18px 34px -16px rgba(21, 27, 38, 0.28);
   --page-radius: 6px 20px 20px 6px;
   /* viewport-fit=cover: the page runs under the home indicator (and the
      status bar, if iOS gives it a translucent one), so bottom-anchored
@@ -71,31 +71,31 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #14110f;
-    --surface: #1d1916;
-    --surface-2: #26201c;
-    --paper: #221d19;
-    --paper-2: #1f1a17;
-    --page-edge-1: #2a2420;
-    --page-edge-2: #241f1b;
-    --border: #2e2722;
-    --rule: #3d342d;
-    --text: #f5efe8;
-    --text-dim: #a39486;
-    --accent: #c99c73;
-    --accent-rgb: 201, 156, 115;
-    --accent-dim: #3a2d23;
-    --on-accent: #14110f;
-    --pass: #9aa877;
-    --pass-rgb: 154, 168, 119;
-    --pass-dim: #2a2c20;
-    --pass-ink: #b5c08f;
-    --fail: #c47a60;
-    --fail-rgb: 196, 122, 96;
-    --fail-dim: #3a241d;
-    --fail-ink: #d99a82;
-    --hero-bg: linear-gradient(160deg, #2e2119, #16100c);
-    --glass: rgba(20, 17, 15, 0.86);
+    --bg: #0f1218;
+    --surface: #171b23;
+    --surface-2: #1e2430;
+    --paper: #1b2029;
+    --paper-2: #191e26;
+    --page-edge-1: #222833;
+    --page-edge-2: #1d222c;
+    --border: #272e3a;
+    --rule: #343c4b;
+    --text: #eef2f9;
+    --text-dim: #8e98ab;
+    --accent: #8fb0e8;
+    --accent-rgb: 143, 176, 232;
+    --accent-dim: #1f2b42;
+    --on-accent: #0f1218;
+    --pass: #7fbf98;
+    --pass-rgb: 127, 191, 152;
+    --pass-dim: #1c2b23;
+    --pass-ink: #9dd2b1;
+    --fail: #e08a72;
+    --fail-rgb: 224, 138, 114;
+    --fail-dim: #35211c;
+    --fail-ink: #eba58f;
+    --hero-bg: linear-gradient(160deg, #1f2c47, #0c111c);
+    --glass: rgba(15, 18, 24, 0.86);
     --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.25);
     --shadow-lift: 0 2px 6px rgba(0, 0, 0, 0.35), 0 18px 40px rgba(0, 0, 0, 0.5);
     --page-shadow:
@@ -954,7 +954,7 @@ body {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: linear-gradient(90deg, rgba(30, 20, 10, 0) 25%, rgba(30, 20, 10, 0.22));
+  background: linear-gradient(90deg, rgba(15, 20, 30, 0) 25%, rgba(15, 20, 30, 0.22));
   opacity: 0;
   transition: opacity 0.3s ease-in;
   pointer-events: none;
@@ -1505,7 +1505,7 @@ body {
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: rgba(20, 17, 15, 0.4);
+  background: rgba(15, 18, 24, 0.4);
   -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
 }
@@ -1520,13 +1520,13 @@ body {
   font: 600 13px/1 var(--sans);
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #f5efe8;
+  color: #eef2f9;
 }
 
 .card-preview-hint {
   margin: 0;
   font-size: 14px;
-  color: #f5efe8;
+  color: #eef2f9;
 }
 
 .modal-sheet {
@@ -1673,23 +1673,6 @@ body {
   min-height: 36px;
   padding: 0 16px;
   font-size: 14px;
-}
-
-/* Equal side columns keep the title centered; on a narrow screen the
-   wider Add card side wins and the title shifts left instead of overlapping. */
-#view-manage .topbar {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-}
-
-#view-manage .topbar .spacer { display: none; }
-
-.manage-add-btn {
-  justify-self: end;
-  min-height: 30px;
-  padding: 0 10px;
-  font-size: 12px;
-  white-space: nowrap;
 }
 
 .bulk-actions-bar {
@@ -2262,6 +2245,10 @@ body {
   padding-bottom: calc(96px + var(--safe-bottom));
 }
 
+/* The on-screen keyboard covers the tab bar anyway; hiding it stops iOS
+   from carrying it along while the page scrolls with a field focused. */
+#app.keyboard-open .bottom-tabbar { display: none; }
+
 .bottom-tabbar {
   /* Docked to the bottom edge; the glass fills the home-indicator area
      below the tabs (Coffee Shelf's tab bar). Absolute within #app rather
@@ -2562,7 +2549,7 @@ body {
    box, so carousel tiles and deck-picker rows use a tight one plus a hairline. */
 .mode-picker .chip,
 .section-picker-row {
-  box-shadow: 0 1px 2px rgba(30, 23, 20, 0.06);
+  box-shadow: 0 1px 2px rgba(21, 27, 38, 0.06);
   border: 1px solid var(--border);
 }
 

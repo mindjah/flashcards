@@ -5,8 +5,8 @@
   var BOX_INTERVALS_DAYS = [0, 1, 3, 7, 16, 35]; // index = box number, box0 = due immediately
   var MAX_BOX = BOX_INTERVALS_DAYS.length - 1;
 
-  // Muted book-cloth colors, shown as each deck's spine - warm enough to
-  // sit next to the coffee-brown accent in both light and dark mode.
+  // Muted book-cloth colors, shown as each deck's spine - soft enough to
+  // sit next to the ink-blue accent in both light and dark mode.
   var SECTION_COLORS = [
     "#9a6c46", "#6f7d4f", "#a85f48", "#4f6a86", "#7a5a78",
     "#c08a5a", "#4f7d78", "#8a4f5f", "#8a8a4a", "#6b6f9a",
@@ -3445,6 +3445,30 @@
     document.getElementById("type-answer-bar").style.bottom = "";
     document.getElementById("card-word").style.transform = "";
   });
+
+  // ---------- hide the tab bar while the keyboard is up ----------
+  // Touch screens only - a desktop has no on-screen keyboard to make room for.
+  (function () {
+    if (!window.matchMedia || !window.matchMedia("(pointer: coarse)").matches) return;
+    var app = document.getElementById("app");
+    function isTextField(el) {
+      if (!el) return false;
+      if (el.tagName === "TEXTAREA" || el.isContentEditable) return true;
+      return el.tagName === "INPUT" && /^(text|search|email|url|password|number|tel)$/.test(el.type);
+    }
+    document.addEventListener("focusin", function (e) {
+      if (isTextField(e.target)) app.classList.add("keyboard-open");
+    });
+    document.addEventListener("focusout", function (e) {
+      if (!isTextField(e.target)) return;
+      // Focus moving straight to another field keeps the keyboard up.
+      setTimeout(function () {
+        if (isTextField(document.activeElement)) return;
+        app.classList.remove("keyboard-open");
+        if (window.scrollX !== 0 || window.scrollY !== 0) window.scrollTo(0, 0);
+      }, 0);
+    });
+  })();
 
   // ---------- install banner (iOS manual steps / Android native prompt) ----------
   var INSTALL_DISMISSED_KEY = "installBannerDismissed";

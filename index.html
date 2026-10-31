@@ -7,8 +7,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, interactive-widget=resizes-visual, viewport-fit=cover">
 <title>Flashcards</title>
 
-<meta name="theme-color" content="#fbf8f4" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#14110f" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f6f7f9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1218" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Flashcards">
@@ -329,8 +329,9 @@
     <header class="topbar">
       <button class="icon-btn icon-btn-close" id="btn-manage-back" aria-label="Close">✕</button>
       <h2>Manage cards</h2>
-      <span class="spacer"></span>
-      <button type="button" class="btn btn-primary manage-add-btn" id="btn-manage-add-card">+ Add card</button>
+      <button type="button" class="icon-btn icon-btn-plain" id="btn-manage-add-card" title="Add card" aria-label="Add card">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
     </header>
     <div class="home-stats">
       <button type="button" class="stat-card info-trigger" id="stat-card-due">
@@ -343,7 +344,7 @@
       </button>
     </div>
     <div class="search-field">
-      <input type="text" id="manage-search" class="search-input" placeholder="Search..." autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+      <input type="text" id="manage-search" class="search-input" placeholder="Search..." autocomplete="off" autocapitalize="sentences" autocorrect="off" spellcheck="false">
       <button type="button" class="search-clear hidden" id="btn-manage-search-clear" title="Clear search" aria-label="Clear search">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8.6 8.6l6.8 6.8M15.4 8.6l-6.8 6.8"/></svg>
       </button>
@@ -453,7 +454,7 @@
       </div>
 
       <p class="settings-footnote">Your data stays on this device unless you turn on Google Drive backup. Import/export uses Anki's plain-text card format.</p>
-      <p class="app-version">v1.47.0</p>
+      <p class="app-version">v1.48.0</p>
     </div>
   </section>
 
@@ -497,7 +498,7 @@
 
       <div class="readme-section">
         <h3>Manage cards (Cards tab)</h3>
-        <p>Search (the ⓧ in the field clears it) and filter by deck or mastery, then tap any card's row to open a flip-able preview - same size and style as the practice card - to check its translation and notes without leaving the list. Swipe a row left to reveal <b>Edit</b> / <b>Delete</b> for that card. Tap <b>Select</b> to check off several cards and delete them together, or tap <b>Move</b> to send them to another deck (filtered to a deck, they leave that deck and keep any others; otherwise their decks are replaced) - <b>Select all</b> toggles to <b>Unselect all</b> once everything's checked - or tap <b>+ Add card</b> (top right) to add a new one; this is now the only way into Add card, which no longer has its own tab. Editing a card shows a <b>Delete</b> option in its own top-right corner instead.</p>
+        <p>Search (the ⓧ in the field clears it) and filter by deck or mastery, then tap any card's row to open a flip-able preview - same size and style as the practice card - to check its translation and notes without leaving the list. Swipe a row left to reveal <b>Edit</b> / <b>Delete</b> for that card. Tap <b>Select</b> to check off several cards and delete them together, or tap <b>Move</b> to send them to another deck (filtered to a deck, they leave that deck and keep any others; otherwise their decks are replaced) - <b>Select all</b> toggles to <b>Unselect all</b> once everything's checked - or tap <b>+</b> (top right) to add a new one; this is now the only way into Add card, which no longer has its own tab. Editing a card shows a <b>Delete</b> option in its own top-right corner instead.</p>
       </div>
 
       <div class="readme-section">

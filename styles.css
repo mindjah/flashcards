@@ -1564,6 +1564,22 @@ body {
 
 .modal-actions .btn { flex: 1; }
 
+.move-deck-hint {
+  margin: -6px 0 0;
+  color: var(--text-dim);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.move-deck-list {
+  max-height: 45vh;
+  overflow-y: auto;
+}
+
+.move-deck-new {
+  border-style: dashed;
+}
+
 /* ===== MANAGE ===== */
 .search-input {
   margin: 8px 16px;
@@ -1620,13 +1636,14 @@ body {
 .bulk-actions-bar {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   margin: 0 16px 12px;
 }
 
 .bulk-actions-count {
   flex: 1;
   min-width: 0;
+  white-space: nowrap;
   color: var(--text-dim);
   font-size: 13px;
   text-align: center;
@@ -1634,7 +1651,7 @@ body {
 
 .bulk-actions-bar .btn {
   flex-shrink: 0;
-  width: 132px;
+  width: 80px;
   padding: 8px 12px;
   font-size: 14px;
   text-align: center;

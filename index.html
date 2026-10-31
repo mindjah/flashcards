@@ -363,6 +363,7 @@
     <div class="bulk-actions-bar hidden" id="bulk-actions-bar">
       <button type="button" class="text-action-btn" id="btn-bulk-select-all">Select all</button>
       <span class="bulk-actions-count" id="bulk-actions-count">0 selected</span>
+      <button type="button" class="btn btn-secondary" id="btn-bulk-move" disabled>Move</button>
       <button type="button" class="btn btn-fail" id="btn-bulk-delete" disabled>Delete</button>
     </div>
     <div id="manage-list" class="manage-list"></div>
@@ -448,7 +449,7 @@
       </div>
 
       <p class="settings-footnote">Your data stays on this device unless you turn on Google Drive backup. Import/export uses Anki's plain-text card format.</p>
-      <p class="app-version">v1.45.0</p>
+      <p class="app-version">v1.46.0</p>
     </div>
   </section>
 
@@ -492,7 +493,7 @@
 
       <div class="readme-section">
         <h3>Manage cards (Cards tab)</h3>
-        <p>Search (the ⓧ in the field clears it) and filter by deck or mastery, then tap any card's row to open a flip-able preview - same size and style as the practice card - to check its translation and notes without leaving the list. Swipe a row left to reveal <b>Edit</b> / <b>Delete</b> for that card. Tap <b>Select</b> to check off several cards and delete them together - <b>Select all</b> toggles to <b>Unselect all</b> once everything's checked - or tap <b>+ Add card</b> (below the filters) to add a new one; this is now the only way into Add card, which no longer has its own tab. Editing a card shows a <b>Delete</b> option in its own top-right corner instead.</p>
+        <p>Search (the ⓧ in the field clears it) and filter by deck or mastery, then tap any card's row to open a flip-able preview - same size and style as the practice card - to check its translation and notes without leaving the list. Swipe a row left to reveal <b>Edit</b> / <b>Delete</b> for that card. Tap <b>Select</b> to check off several cards and delete them together, or tap <b>Move</b> to send them to another deck (filtered to a deck, they leave that deck and keep any others; otherwise their decks are replaced) - <b>Select all</b> toggles to <b>Unselect all</b> once everything's checked - or tap <b>+ Add card</b> (below the filters) to add a new one; this is now the only way into Add card, which no longer has its own tab. Editing a card shows a <b>Delete</b> option in its own top-right corner instead.</p>
       </div>
 
       <div class="readme-section">
@@ -631,6 +632,18 @@
       <div class="modal-actions">
         <button type="button" class="btn btn-ghost" id="new-deck-cancel">Cancel</button>
         <button type="button" class="btn btn-primary" id="new-deck-add" disabled>Add</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MOVE CARDS MODAL ===== -->
+  <div class="modal-overlay hidden" id="move-deck-modal">
+    <div class="modal-sheet">
+      <h3 class="modal-title" id="move-deck-title">Move cards to</h3>
+      <p class="move-deck-hint" id="move-deck-hint"></p>
+      <div class="chip-list move-deck-list" id="move-deck-list"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="move-deck-cancel">Cancel</button>
       </div>
     </div>
   </div>

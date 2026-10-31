@@ -1117,6 +1117,9 @@
       renderAddSectionsPicker();
     } else if (newDeckContext === "sections") {
       renderSectionsList();
+    } else if (newDeckContext === "move") {
+      populateManageSectionFilter();
+      if (section) moveSelectedCards(section.id);
     }
     closeNewDeckModal();
   });
@@ -1779,6 +1782,7 @@
     document.getElementById("bulk-actions-bar").classList.toggle("hidden", !manageSelectMode);
     document.getElementById("bulk-actions-count").textContent = manageSelectedIds.size + " selected";
     document.getElementById("btn-bulk-delete").disabled = manageSelectedIds.size === 0;
+    document.getElementById("btn-bulk-move").disabled = manageSelectedIds.size === 0;
     var allSelected = lastManageListIds.length > 0 && lastManageListIds.every(function (id) { return manageSelectedIds.has(id); });
     document.getElementById("btn-bulk-select-all").textContent = allSelected ? "Unselect all" : "Select all";
   }
@@ -1815,6 +1819,75 @@
     updateManageSelectUI();
     updateGlobalStats();
     renderManageList(document.getElementById("manage-search").value);
+  });
+
+  // ---------- bulk move to another deck ----------
+  // Filtered to one deck, the cards leave that deck for the chosen one and
+  // keep any other decks they're in. Otherwise (all decks / no deck) their
+  // decks are replaced by the chosen one. targetId null means "No card deck".
+  function moveSelectedCards(targetId) {
+    var fromId = document.getElementById("manage-section-filter").value;
+    var fromDeck = fromId && fromId !== "unsectioned" ? fromId : null;
+    cards.forEach(function (c) {
+      if (!manageSelectedIds.has(c.id)) return;
+      if (fromDeck) {
+        c.sectionIds = c.sectionIds.filter(function (id) { return id !== fromDeck; });
+        if (targetId && c.sectionIds.indexOf(targetId) === -1) c.sectionIds.push(targetId);
+      } else {
+        c.sectionIds = targetId ? [targetId] : [];
+      }
+    });
+    saveData();
+    closeMoveDeckModal();
+    manageSelectMode = false;
+    manageSelectedIds.clear();
+    updateManageSelectUI();
+    updateGlobalStats();
+    renderManageList(document.getElementById("manage-search").value);
+  }
+
+  function openMoveDeckModal() {
+    var count = manageSelectedIds.size;
+    if (count === 0) return;
+    var fromId = document.getElementById("manage-section-filter").value;
+    var fromDeck = fromId && fromId !== "unsectioned" ? sectionById(fromId) : null;
+
+    document.getElementById("move-deck-title").textContent = "Move " + count + " card" + (count === 1 ? "" : "s") + " to";
+    document.getElementById("move-deck-hint").textContent = fromDeck
+      ? "They leave “" + fromDeck.name + "” and stay in any other decks they're in."
+      : "Their current decks are replaced with the one you pick.";
+
+    var list = document.getElementById("move-deck-list");
+    list.innerHTML = "";
+    function addChip(label, onClick, extraClass) {
+      var chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "chip" + (extraClass ? " " + extraClass : "");
+      chip.textContent = label;
+      chip.addEventListener("click", onClick);
+      list.appendChild(chip);
+    }
+    sections.forEach(function (s) {
+      if (fromDeck && s.id === fromDeck.id) return;
+      addChip(s.name, function () { moveSelectedCards(s.id); });
+    });
+    if (fromId !== "unsectioned") addChip("No card deck", function () { moveSelectedCards(null); });
+    addChip("+ New deck", function () {
+      closeMoveDeckModal();
+      openNewDeckModal("move");
+    }, "move-deck-new");
+
+    document.getElementById("move-deck-modal").classList.remove("hidden");
+  }
+
+  function closeMoveDeckModal() {
+    document.getElementById("move-deck-modal").classList.add("hidden");
+  }
+
+  document.getElementById("btn-bulk-move").addEventListener("click", openMoveDeckModal);
+  document.getElementById("move-deck-cancel").addEventListener("click", closeMoveDeckModal);
+  document.getElementById("move-deck-modal").addEventListener("click", function (e) {
+    if (e.target === this) closeMoveDeckModal();
   });
 
   // Case- and accent-insensitive: "o" matches "ó", "n" matches "ñ", etc.

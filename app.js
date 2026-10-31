@@ -3173,23 +3173,54 @@
       ].join("\t"));
     });
 
-    var data = lines.join("\n") + "\n";
-    var blob = new Blob([data], { type: "text/plain" });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement("a");
     var date = new Date().toISOString().slice(0, 10);
-    a.href = url;
-    a.download = "flashcards-" + date + ".txt";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    downloadTextFile("flashcards-" + date + ".txt", lines.join("\n") + "\n");
 
     lastExportAt = Date.now();
     saveData();
   }
 
+  function downloadTextFile(filename, text) {
+    var blob = new Blob([text], { type: "text/plain" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+
   document.getElementById("btn-export").addEventListener("click", performExport);
+
+  // A sample to fill in and import. "#" lines are skipped on import, so the
+  // instructions can live in the file itself.
+  var IMPORT_EXAMPLE = [
+    "#separator:tab",
+    "#html:false",
+    "#notetype:Basic",
+    "#tags column:4",
+    "# Example import file - lines starting with # are ignored.",
+    "# One card per line, columns separated by a TAB (not spaces):",
+    "#   word <TAB> translation <TAB> notes <TAB> decks",
+    "# Notes and decks are optional; leave notes empty but keep its tab.",
+    "# Decks are written deck::Name, with _ for spaces (deck::Common_Phrases).",
+    "# Several decks: separate with a space. Missing decks are created.",
+    "# Importing only adds new cards - a word + translation you already have is",
+    "# skipped (its decks are still added), nothing is overwritten.",
+    "el perro\tthe dog\tmasculine noun\tdeck::Animals",
+    "la gata\tthe cat (female)\t\tdeck::Animals",
+    "el caballo\tthe horse\t\tdeck::Animals deck::Farm",
+    "tener hambre\tto be hungry\tlit. \"to have hunger\"\tdeck::Common_Phrases",
+    "¿Qué tal?\tHow are you? / How's it going?\tinformal\tdeck::Common_Phrases deck::Greetings",
+    "buenos días\tgood morning\t\tdeck::Greetings",
+    "la mesa\tthe table"
+  ].join("\n") + "\n";
+
+  document.getElementById("btn-import-example").addEventListener("click", function () {
+    downloadTextFile("flashcards-import-example.txt", IMPORT_EXAMPLE);
+  });
 
   document.getElementById("btn-import").addEventListener("click", function () {
     document.getElementById("file-import").click();

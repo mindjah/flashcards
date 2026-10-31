@@ -433,12 +433,23 @@
           </span>
           <svg class="settings-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
         </button>
+      </div>
+
+      <h3 class="settings-section">Import</h3>
+      <div class="settings-group">
         <button type="button" id="btn-import" class="settings-row">
           <span class="settings-row-text">
             <span class="settings-row-label">Import</span>
             <span class="settings-row-hint">Add new words from a .txt file</span>
           </span>
           <svg class="settings-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <button type="button" id="btn-import-example" class="settings-row">
+          <span class="settings-row-text">
+            <span class="settings-row-label">Example import file</span>
+            <span class="settings-row-hint">Download a sample .txt to fill in and import</span>
+          </span>
+          <svg class="settings-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M7 11l5 5 5-5M5 20h14"/></svg>
         </button>
       </div>
 
@@ -454,7 +465,7 @@
       </div>
 
       <p class="settings-footnote">Your data stays on this device unless you turn on Google Drive backup. Import/export uses Anki's plain-text card format.</p>
-      <p class="app-version">v1.48.0</p>
+      <p class="app-version">v1.48.1</p>
     </div>
   </section>
 
@@ -467,6 +478,11 @@
     </header>
 
     <div class="readme-content">
+      <div class="readme-section">
+        <h3>Learning language</h3>
+        <p>Settings → <b>Learning language</b> picks which language you're learning, out of the 10 most commonly learned ones. It sets the flag on Home, the "word / phrase" label in Add card and the language Ask Gemini writes decks in. Your cards stay the same when you switch.</p>
+      </div>
+
       <div class="readme-section">
         <h3>Practice &amp; "To learn"</h3>
         <p>Every card sits in a box from 0 to 5, a spaced-repetition schedule. New cards start in box 0, due immediately. <b>To learn</b> on the home screen is simply the count of cards whose due date has already passed - box 0 cards plus anything whose review interval has come back around.</p>
@@ -491,19 +507,20 @@
 
       <div class="readme-section">
         <h3>Card decks</h3>
-        <p>Decks are tags you can put on a card - a card can belong to any number of decks, or none. Each deck gets a random color as soon as you create it, shown as a tinted glass background on its row and on its tag chips wherever it's listed, so it's easy to spot at a glance.</p>
+        <p>Decks are tags you can put on a card - a card can belong to any number of decks, or none. Each deck gets its own muted color when you create it, shown as a colored stripe down the side of its row and a tint on its tag chips wherever it's listed, so it's easy to spot at a glance.</p>
         <p>Practice setup and Manage cards both let you filter by deck, including a "No card deck" bucket for untagged cards. In Practice setup, use the small <b>Select all</b> / <b>Unselect</b> chips to quickly check or clear every deck - Start practicing stays disabled until at least one is selected. Tapping a deck from the Card decks screen jumps straight into Manage cards filtered to it. Deleting a deck removes that tag from its cards - the cards themselves stay put.</p>
-        <p>In Add card, <b>Ask Gemini to create a deck</b> (at the top) opens a small form (theme, word count, translation language, deck name and your Gemini API key) - tap <b>Create deck</b> and the app asks Gemini directly, then adds the new deck and its cards (each with pronunciation and an example sentence in the notes) and opens it in Cards. Words you already have aren't added twice; they just join the new deck. The key is free from aistudio.google.com/apikey and lives in Settings → <b>AI</b> (or the form asks for it the first time); it stays on this device. If Coffee Shelf already has a key, it's used until you enter your own. This button only appears when adding a brand-new card, not while editing an existing one.</p>
+        <p>In Add card, <b>Ask Gemini to create a deck</b> (above the word field) opens a small form: theme, how many words (up to 100), translation language, deck name and your Gemini API key. Tap <b>Create deck</b> and the app asks Gemini directly, 10 words at a time, with a live count of how many are done - keep the app open while it works. The new deck and its cards (each with pronunciation and an example sentence in the notes) are added and opened in Cards. If Gemini stops partway, the words it already made are still added. Words you already have aren't added twice; they just join the new deck. The key is free from aistudio.google.com/apikey and lives in Settings → <b>AI</b> (or the form asks for it the first time); it stays on this device. If Coffee Shelf already has a key, it's used until you enter your own. This button only appears when adding a brand-new card, not while editing an existing one.</p>
       </div>
 
       <div class="readme-section">
         <h3>Manage cards (Cards tab)</h3>
-        <p>Search (the ⓧ in the field clears it) and filter by deck or mastery, then tap any card's row to open a flip-able preview - same size and style as the practice card - to check its translation and notes without leaving the list. Swipe a row left to reveal <b>Edit</b> / <b>Delete</b> for that card. Tap <b>Select</b> to check off several cards and delete them together, or tap <b>Move</b> to send them to another deck (filtered to a deck, they leave that deck and keep any others; otherwise their decks are replaced) - <b>Select all</b> toggles to <b>Unselect all</b> once everything's checked - or tap <b>+</b> (top right) to add a new one; this is now the only way into Add card, which no longer has its own tab. Editing a card shows a <b>Delete</b> option in its own top-right corner instead.</p>
+        <p>Tap <b>+</b> (top right) to add a card - this is the only way into Add card. Search (it starts with a capital letter; the ⓧ clears it) and filter by deck or mastery, then tap any card's row to open a flip-able preview - same size and style as the practice card - to check its translation and notes without leaving the list. Swipe a row left to reveal <b>Edit</b> / <b>Delete</b> for that card; editing a card also shows <b>Delete</b> in its top-right corner. As you scroll, the search field and the <b>Select</b> row stay pinned to the top while everything above them scrolls away.</p>
+        <p>Tap <b>Select</b> to check off several cards. The top line then shows <b>Cancel</b>, <b>Move</b> and <b>Delete</b>; the line below has <b>Select all</b> (which turns into <b>Unselect all</b> once everything's checked) and how many are selected. <b>Move</b> sends the checked cards to a deck you pick, to <b>No card deck</b>, or to a <b>+ New deck</b> you name on the spot. When the list is filtered to one deck, the cards leave that deck and keep any others they're in; otherwise their decks are replaced by the one you pick.</p>
       </div>
 
       <div class="readme-section">
         <h3>Card of the day</h3>
-        <p>The home screen features one card, picked at random and kept the same all day, filling the page below Mastery. Tap it to flip between the word and its translation/notes, just like in practice.</p>
+        <p>The home screen features one card, picked at random and kept the same all day, filling the page below Mastery. Tap it to flip between the word and its translation/notes, just like in practice. When learning Spanish, the speaker button reads the word aloud.</p>
       </div>
 
       <div class="readme-section">
@@ -513,14 +530,16 @@
 
       <div class="readme-section">
         <h3>Google Drive backup</h3>
-        <p>Settings (the gear on Home) → <b>Google Drive backup</b> → <b>Sign in with Google</b>. The app talks to Google directly (no server in between) and keeps one backup file in a hidden app folder in your Google Drive - it can't see any of your other files. While connected, it backs up by itself a few seconds after each change. Google's sign-in lasts about an hour; after that, a "Changes not backed up" reminder on the home screen reconnects with one tap.</p>
+        <p>Settings (the gear on Home) → <b>Google Drive backup</b> → <b>Sign in with Google</b>. The app talks to Google directly (no server in between) and keeps one backup file in a hidden app folder in your Google Drive - it can't see any of your other files. While connected, it backs up by itself a few seconds after each change. Once signed in, your Google picture on Home opens this screen.</p>
+        <p>Google's sign-in lasts about an hour. After that, a "Changes not backed up to Google Drive" banner appears on Home when there's something new to save. Tap <b>Back up</b>: Google may ask you to confirm your account, then you come straight back to Home, where the banner shows the backup's progress and a ✓ "Backed up to Google Drive" once it's done. If it fails, <b>Details</b> opens the Google Drive screen with the reason.</p>
         <p>On a new phone, signing in finds the existing backup and asks whether to <b>Restore it here</b> or <b>Replace with this phone</b> - nothing is overwritten until you choose. Restoring replaces everything on the phone with the backup. Once Drive backup is set up, the weekly "export your cards" reminder stops.</p>
       </div>
 
       <div class="readme-section">
         <h3>Export / Import</h3>
-        <p>Export saves a plain-text file in Anki's tab-separated note format (word, translation, notes, deck tags, box, due date, reviewed), so it opens directly in Anki too. Deck memberships are stored as <code>deck::Name</code> tags - a card in several decks gets several tags. Your notes are saved in a header comment line.</p>
-        <p>Import reads that same format (older JSON exports still work too). Matching is by word + translation, case-insensitive: a duplicate isn't re-added, but any new deck tags on it are merged in. Missing decks mentioned in tags are created automatically. If it's been a week since your last export, the app will offer to back up on launch. Imported notes are only adopted if you have none yet - so importing cards never overwrites progress you're already building on this device.</p>
+        <p>Settings → Backup → <b>Export</b> saves a plain-text file in Anki's tab-separated note format (word, translation, notes, deck tags, box, due date, reviewed), so it opens directly in Anki too. Deck memberships are stored as <code>deck::Name</code> tags - a card in several decks gets several tags. Your notes are saved in a header comment line. If it's been a week since your last export (and Drive backup isn't set up), the app offers to export on launch.</p>
+        <p>Settings → Import → <b>Import</b> reads that same format (older JSON exports still work too). It only ever adds: matching is by word + translation, ignoring upper/lower case - a duplicate isn't re-added, but any new deck tags on it are merged in, and nothing you already have is overwritten. Missing decks mentioned in tags are created automatically. Imported notes are only adopted if you have none yet.</p>
+        <p>To write your own file, tap <b>Example import file</b> (same section) for a ready-made sample with instructions inside. Each line is one card: word, translation, notes, decks - separated by a TAB. Notes and decks are optional; decks are written <code>deck::Name</code> with <code>_</code> for spaces (<code>deck::Common_Phrases</code>), several separated by a space. Lines starting with <code>#</code> are ignored.</p>
       </div>
     </div>
   </section>

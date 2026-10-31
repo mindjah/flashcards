@@ -36,6 +36,8 @@ window.FlashcardsDrive = (function () {
   // Drive has a backup but this device hasn't chosen between restoring and replacing it.
   var choose = null;
   var cameBack = false;
+  // Which screen started the sign-in round trip, e.g. "home", so the app can return there.
+  var cameBackFrom = null;
   var hooks = { exportData: null, importData: null };
   var listeners = [];
 
@@ -91,9 +93,10 @@ window.FlashcardsDrive = (function () {
 
   // Leaves the app for Google's sign-in page; handleRedirect() finishes on return.
   // forceConsent shows Google's permission screen again, e.g. after the Drive box was left unticked.
-  function signIn(intent, forceConsent) {
+  // from names the screen to come back to, read back with signInFrom().
+  function signIn(intent, forceConsent, from) {
     var stateToken = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now());
-    update({ pending: { state: stateToken, intent: intent || "connect" } });
+    update({ pending: { state: stateToken, intent: intent || "connect", from: from || null } });
     var params = new URLSearchParams({
       client_id: CLIENT_ID,
       redirect_uri: redirectUri(),
@@ -126,6 +129,10 @@ window.FlashcardsDrive = (function () {
     return cameBack;
   }
 
+  function signInFrom() {
+    return cameBackFrom;
+  }
+
   // Call once at startup: picks up the token Google puts in the URL fragment after sign-in.
   function handleRedirect() {
     if (location.hash.indexOf("access_token=") === -1 && location.hash.indexOf("error=") === -1) {
@@ -135,6 +142,7 @@ window.FlashcardsDrive = (function () {
     var params = new URLSearchParams(location.hash.slice(1));
     history.replaceState(null, "", location.pathname + location.search);
     var pending = stored.pending;
+    cameBackFrom = (pending && pending.from) || null;
     if (!pending || params.get("state") !== pending.state) {
       update({ pending: undefined });
       return Promise.resolve();
@@ -340,6 +348,7 @@ window.FlashcardsDrive = (function () {
     signOut: signOut,
     handleRedirect: handleRedirect,
     cameBackFromSignIn: cameBackFromSignIn,
+    signInFrom: signInFrom,
     backupNow: backupNow,
     restoreFromDrive: restoreFromDrive,
     markChanged: markChanged

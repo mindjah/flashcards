@@ -3090,7 +3090,7 @@
     var a = document.createElement("a");
     var date = new Date().toISOString().slice(0, 10);
     a.href = url;
-    a.download = "spanish-cards-" + date + ".txt";
+    a.download = "flashcards-" + date + ".txt";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -3520,9 +3520,7 @@
       ? "Keep your cards safe in Google Drive"
       : st.lastBackup ? "Last backup: " + driveWhen(st.lastBackup) : "Signed in as " + st.email;
 
-    // Changes are waiting and the Google connection has lapsed.
-    document.getElementById("drive-banner").classList.toggle("hidden",
-      !(st.signedIn && st.linked && st.unsaved && !st.connected && !st.busy));
+    renderDriveBanner(st);
 
     document.getElementById("drive-signed-out").classList.toggle("hidden", st.signedIn);
     document.getElementById("drive-signed-in").classList.toggle("hidden", !st.signedIn);
@@ -3559,6 +3557,54 @@
 
   drive.subscribe(renderDrive);
 
+  // A backup started from the home banner reports its progress there too,
+  // instead of sending the user off to the Drive screen: "syncing" while it
+  // runs, "done" briefly once it lands, "error" if it didn't.
+  var homeSync = null;
+  var homeSyncDoneTimer = null;
+
+  function renderDriveBanner(st) {
+    if (homeSync === "syncing" || homeSync === "waiting") {
+      if (st.busy) homeSync = "syncing";
+      else if (st.error) homeSync = "error";
+      // Restore/replace choice needs the Drive screen's buttons.
+      else if (st.choose) { homeSync = null; openDriveView("home"); }
+      else if (homeSync === "syncing" && !st.unsaved) {
+        homeSync = "done";
+        clearTimeout(homeSyncDoneTimer);
+        homeSyncDoneTimer = setTimeout(function () { homeSync = null; renderDrive(); }, 2500);
+      }
+    }
+
+    var banner = document.getElementById("drive-banner");
+    var text = banner.querySelector(".drive-banner-text");
+    var action = document.getElementById("btn-drive-banner-action");
+    banner.classList.toggle("is-syncing", homeSync === "syncing" || homeSync === "waiting");
+    banner.classList.toggle("is-done", homeSync === "done");
+
+    if (homeSync === "syncing" || homeSync === "waiting") {
+      text.textContent = "Backing up to Google Drive…";
+      action.classList.add("hidden");
+      banner.classList.remove("hidden");
+    } else if (homeSync === "done") {
+      text.textContent = "Backed up to Google Drive";
+      action.classList.add("hidden");
+      banner.classList.remove("hidden");
+    } else if (homeSync === "error") {
+      text.textContent = "Backup didn't finish.";
+      action.textContent = "Details";
+      action.classList.remove("hidden");
+      banner.classList.remove("hidden");
+    } else {
+      text.textContent = "Changes not backed up to Google Drive";
+      action.textContent = "Back up";
+      action.classList.remove("hidden");
+      // Changes are waiting and the Google connection has lapsed.
+      banner.classList.toggle("hidden",
+        !(st.signedIn && st.linked && st.unsaved && !st.connected && !st.busy));
+    }
+  }
+
   // Settings or the home avatar - back returns there.
   var driveReturnTo = "home";
 
@@ -3581,7 +3627,18 @@
   document.getElementById("btn-drive-signin").addEventListener("click", function () { drive.signIn("connect"); });
   document.getElementById("btn-drive-signin-again").addEventListener("click", function () { drive.signIn("connect", true); });
   document.getElementById("btn-drive-backup").addEventListener("click", function () { drive.backupNow(); });
-  document.getElementById("btn-drive-banner-action").addEventListener("click", function () { drive.backupNow(); });
+  document.getElementById("btn-drive-banner-action").addEventListener("click", function () {
+    if (homeSync === "error") {
+      homeSync = null;
+      openDriveView("home");
+      return;
+    }
+    homeSync = "waiting";
+    renderDrive();
+    // Signing in leaves the app for Google; coming back lands on Home again.
+    if (drive.state().connected) drive.backupNow();
+    else drive.signIn("backup", false, "home");
+  });
   document.getElementById("btn-drive-restore").addEventListener("click", function () {
     if (confirm("Replace everything on this phone with the Google Drive backup?")) drive.restoreFromDrive();
   });
@@ -3610,9 +3667,11 @@
   applyLanguage();
   refreshHome();
   drive.handleRedirect();
+  // Back from a sign-in the home banner started: the banner shows the backup's progress.
+  if (drive.cameBackFromSignIn() && drive.signInFrom() === "home") homeSync = "waiting";
   renderDrive();
   // Back from Google's sign-in page: land where the outcome is shown.
-  if (drive.cameBackFromSignIn()) {
+  if (drive.cameBackFromSignIn() && drive.signInFrom() !== "home") {
     showView("drive");
     return;
   }

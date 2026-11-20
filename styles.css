@@ -578,7 +578,6 @@ body {
 }
 
 .daily-card-back {
-  transform: translateZ(-1px);
   background: var(--page-bg-back);
   gap: 8px;
 }
@@ -891,9 +890,6 @@ body {
 }
 
 .card-back {
-  /* The answer page lies underneath; a hair behind so the two pages
-     never z-fight in the shared 3D space. */
-  transform: translateZ(-1px);
   background: var(--page-bg-back);
   flex-direction: column;
   gap: 14px;
@@ -936,15 +932,21 @@ body {
    that's out of view is also hidden outright: the front page once it's
    edge-on (halfway, either way), the answer page only once the front page
    is all the way back down over it. */
+/* The front page sits a hair in front of the answer page so the two never
+   z-fight in the shared 3D space. Not the answer page a hair behind: that
+   put it behind its own .flashcard-inner, which then took every tap meant
+   for the answer page's edit and speaker buttons. Same function list in
+   both states so the turn interpolates rotateY on its own. */
 .card-front,
 .daily-card-front {
+  transform: rotateY(0deg) translateZ(1px);
   transform-origin: left center;
   transition: transform 0.6s cubic-bezier(0.45, 0.05, 0.25, 1), visibility 0s linear 0.3s;
 }
 
 .flashcard.flipped .card-front,
 .daily-card.flipped .daily-card-front {
-  transform: rotateY(-180deg);
+  transform: rotateY(-180deg) translateZ(1px);
 }
 
 /* The lifting page darkens toward its free edge as it turns. */
